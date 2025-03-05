@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter une Filière</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-3">Ajouter une Nouvelle Filière</h1>
+
+        <div class="card mb-3">
+            <form class="form-group">
+                <div class="form-group">
+                    <label class="form-label">Nom de la Filière</label>
+                    <input type="text" class="form-control" placeholder="Ex: Génie Informatique">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Code de la Filière</label>
+                    <input type="text" class="form-control" placeholder="Ex: GI">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Durée (années)</label>
+                    <select class="form-control">
+                        <option>3</option>
+                        <option>5</option>
+                    </select>
+                </div>
+
+                <div class="card mb-2">
+                    <h3>Modules</h3>
+                    <div id="modulesList">
+                        <div class="form-group">
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="text" class="form-control" placeholder="Nom du module" style="flex: 2;">
+                                <select class="form-control" style="flex: 1;">
+                                    <option>Semestre 1</option>
+                                    <option>Semestre 2</option>
+                                </select>
+                                <button type="button" class="btn btn-danger">Supprimer</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="addModule()">Ajouter un Module</button>
+                </div>
+
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary">Enregistrer la Filière</button>
+                    <button type="reset" class="btn btn-danger">Réinitialiser</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function addModule() {
+            const modulesList = document.getElementById('modulesList');
+            const newModule = document.createElement('div');
+            newModule.className = 'form-group';
+            newModule.innerHTML = `
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" class="form-control" placeholder="Nom du module" style="flex: 2;">
+                    <select class="form-control" style="flex: 1;">
+                        <option>Semestre 1</option>
+                        <option>Semestre 2</option>
+                    </select>
+                    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">Supprimer</button>
+                </div>
+            `;
+            modulesList.appendChild(newModule);
+        }
+    </script>
+</body>
+</html>

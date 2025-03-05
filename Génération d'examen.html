@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Examens - Portail Enseignant</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-3">Gestion des Examens et QCM</h1>
+
+        <!-- Quick Actions Card -->
+        <div class="card mb-3">
+            <h3>Actions Rapides</h3>
+            <div class="btn-group">
+                <button class="btn btn-primary mb-1" style="margin-right: 10px;">Créer un Nouvel Examen</button>
+                <button class="btn btn-success mb-1" style="margin-right: 10px;">Générer un QCM</button>
+                <button class="btn btn-primary mb-1">Banque de Questions</button>
+            </div>
+        </div>
+
+        <!-- Updated Exam Creation Form -->
+        <div class="card mb-3">
+            <h3>Créer un Nouvel Examen</h3>
+            <form class="form-group">
+                <div class="form-group">
+                    <label class="form-label">Filière</label>
+                    <select class="form-control" id="filiereSelect" onchange="loadModules()">
+                        <option value="">Sélectionner une filière</option>
+                        <option value="GI">Génie Informatique</option>
+                        <option value="GC">Génie Civil</option>
+                        <option value="GE">Génie Électrique</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Module</label>
+                    <select class="form-control" id="moduleSelect" disabled>
+                        <option value="">Sélectionner un module</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Type d'Examen</label>
+                    <select class="form-control">
+                        <option>Examen Final</option>
+                        <option>Contrôle Continu</option>
+                        <option>QCM</option>
+                        <option>TP</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date de l'Examen</label>
+                    <input type="datetime-local" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Durée (minutes)</label>
+                    <input type="number" class="form-control" placeholder="60">
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Créer l'Examen</button>
+                    <button type="reset" class="btn btn-danger">Réinitialiser</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Existing Exams Table -->
+        <div class="card mb-3">
+            <h3>Examens Planifiés</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Filière</th>
+                            <th>Module</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Examen Final - Java</td>
+                            <td>Génie Informatique</td>
+                            <td>Programmation Java</td>
+                            <td>2024-01-20</td>
+                            <td>Final</td>
+                            <td>
+                                <button class="btn btn-primary" style="padding: 5px 10px;">Éditer</button>
+                                <button class="btn btn-danger" style="padding: 5px 10px;">Supprimer</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add JavaScript for dynamic module loading
+        const modulesByFiliere = {
+            'GI': [
+                { id: 'JAVA', name: 'Programmation Java' },
+                { id: 'BDD', name: 'Base de données' },
+                { id: 'WEB', name: 'Développement Web' }
+            ],
+            'GC': [
+                { id: 'STR', name: 'Structures' },
+                { id: 'MAT', name: 'Matériaux' }
+            ],
+            'GE': [
+                { id: 'ELEC', name: 'Électronique' },
+                { id: 'AUTO', name: 'Automatisme' }
+            ]
+        };
+
+        function loadModules() {
+            const filiereSelect = document.getElementById('filiereSelect');
+            const moduleSelect = document.getElementById('moduleSelect');
+            const selectedFiliere = filiereSelect.value;
+
+            moduleSelect.innerHTML = '<option value="">Sélectionner un module</option>';
+            moduleSelect.disabled = !selectedFiliere;
+
+            if (selectedFiliere) {
+                const modules = modulesByFiliere[selectedFiliere] || [];
+                modules.forEach(module => {
+                    const option = document.createElement('option');
+                    option.value = module.id;
+                    option.textContent = module.name;
+                    moduleSelect.appendChild(option);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
