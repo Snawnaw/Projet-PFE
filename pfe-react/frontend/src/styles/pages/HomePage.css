@@ -1,0 +1,29 @@
+.home {
+    text-align: center;
+    padding: 2rem;
+}
+
+.home h1 {
+    margin-bottom: 3rem;
+    color: #333;
+}
+
+.navigation-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.navigation-buttons .btn {
+    padding: 2rem;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+.navigation-buttons .btn:hover {
+    transform: translateY(-5px);
+}
