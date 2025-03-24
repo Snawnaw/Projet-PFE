@@ -5,7 +5,8 @@ import AjouterEnseignant from './pages/AjouterEnseignant';
 import AjouterFiliere from './pages/AjouterFiliere';
 import AjouterSalle from './pages/AjouterSalle';
 import AjouterSection from './pages/AjouterSection';
-import Connexion from './pages/Connexion';
+import GénérateurExamen from './pages/GénérateurExamen';
+import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import Home from './pages/Home';
 
@@ -19,7 +20,8 @@ function App() {
           <Route path="/AjouterFiliere" element={<AjouterFiliere />} />
           <Route path="/AjouterSalle" element={<AjouterSalle />} />
           <Route path="/AjouterSection" element={<AjouterSection />} />
-          <Route path="/Connexion" element={<Connexion />} />
+          <Route path="/GénérateurExamen" element={<GénérateurExamen />} />
+          <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/Home" element={<Home />} />
         </Routes>

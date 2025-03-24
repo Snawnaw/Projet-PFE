@@ -30,7 +30,7 @@ function AjouterSalle() {
                 <div class="text-right">
                     <button type="submit" class="btn btn-primary">Ajouter</button>
                     <button type="reset" class="btn btn-danger">Annuler</button>
-                    <a href="AdminAcces.html" class="btn btn-primary">Retour</a>
+                    <a href='#'  class="btn btn-primary">Retour</a>
                 </div>
             </form>
         </div>

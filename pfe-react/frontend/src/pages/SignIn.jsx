@@ -65,9 +65,8 @@ const SignIn = () => {
                             )}
                         </FormGroup>
 
-                        <button type="submit" className="btn btn-primary w-100">
-                            Se connecter
-                        </button>
+                        <button type="submit" className="btn btn-primary w-100">Se connecter</button>
+                        <p>Vous n'avez pas un compte ? <a href="Creation de compte.html">Créer un compte</a></p>
                     </Form>
                 )}
             </Formik>

@@ -2,17 +2,23 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/pages/Home.css';
 
+
+//Basicly so for implementing components
+import Navbar from '../components/Navbar';
+
 const Home = () => {
     return (
         <div className="home">
-            <h1>Système de Gestion Universitaire</h1>
+            <Navbar />
+            <h1>Système de d'examen </h1>
             <div className="navigation-buttons">
                 <Link to="/AjouterEnseignant" className="btn btn-primary">Ajouter Enseignants</Link>
                 <Link to="/AjouterSection" className="btn btn-primary">Ajouter Sections</Link>
                 <Link to="/AjouterFiliere" className="btn btn-primary">Ajouter Filières</Link>
                 <Link to="/AjouterSalle" className="btn btn-primary">Ajouter Salles</Link>
-                <Link to="/SignIn" className="btn btn-primary">Sign in</Link>
-                <Link to="/Connexion" className="btn btn-primary">Connexion</Link>
+                <Link to="/SignIn" className="btn btn-primary">Se connecter</Link>
+                <Link to="/SignUp" className="btn btn-primary">Créer un compte</Link>
+                <Link to="/GénérateurExamen" className="btn btn-primary">Générateur d'examen</Link>
             </div>
         </div>
     );

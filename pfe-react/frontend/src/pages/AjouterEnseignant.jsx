@@ -41,7 +41,7 @@ const AjouterEnseignant = () => {
                     <div className="text-right">
                         <button type="submit" className="btn btn-primary">Ajouter</button>
                         <button type="reset" className="btn btn-danger">Annuler</button>
-                        <a href="AdminAcces.html" className="btn btn-primary">Retour</a>
+                        <a href='#' className="btn btn-primary">Retour</a>
                     </div>
                 </form>
             </div>
