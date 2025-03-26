@@ -1,4 +1,4 @@
-const user await User.create({
+const user = await User.create({
     nom,
     prenom,
     dateNaissance,
