@@ -9,6 +9,7 @@ import GénérateurExamen from './pages/GénérateurExamen';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import Home from './pages/Home';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/Home" element={<Home />} />
+          <Route path="/Admin" element={<Admin />} />
         </Routes>
       </div>
     </Router>

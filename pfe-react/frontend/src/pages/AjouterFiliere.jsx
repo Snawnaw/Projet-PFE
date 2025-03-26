@@ -4,12 +4,12 @@ import { Button } from 'react-bootstrap';
 const AjouterFiliere = () => {
     const [filiereName, setFiliereName] = useState('');
     const [code, setCode] = useState('');
-    const [duree, setDuree] = useState('');
+    const [cycle, setCycle] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
         // Add your submit logic here
-        console.log('Filiere submitted:', { filiereName, code, duree });
+        console.log('Filiere submitted:', { filiereName, code, cycle });
     };
 
     return (
@@ -37,14 +37,16 @@ const AjouterFiliere = () => {
             </div>
 
             <div className="form-group">
-                <label className="form-label">Années</label>
-                <input 
-                    type="text" 
+                <label className="form-label">Cycle</label>
+                <select 
                     className="form-control" 
-                    placeholder="Ex: 3"
-                    value={duree}
-                    onChange={(e) => setDuree(e.target.value)}
-                />
+                    value={cycle} 
+                    onChange={(e) => setCycle(e.target.value)}
+                >
+                    <option value="" disabled>Choisissez un cycle</option>
+                    <option value="1">Licence</option>
+                    <option value="2">Master</option>
+                </select>
             </div>
 
             <div className="buttons-group">

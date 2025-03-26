@@ -10,7 +10,7 @@ const Home = () => {
     return (
         <div className="home">
             <Navbar />
-            <h1>Système de d'examen </h1>
+            <h1>Système de generation d'examen </h1>
             <div className="navigation-buttons">
                 <Link to="/AjouterEnseignant" className="btn btn-primary">Ajouter Enseignants</Link>
                 <Link to="/AjouterSection" className="btn btn-primary">Ajouter Sections</Link>
@@ -19,6 +19,7 @@ const Home = () => {
                 <Link to="/SignIn" className="btn btn-primary">Se connecter</Link>
                 <Link to="/SignUp" className="btn btn-primary">Créer un compte</Link>
                 <Link to="/GénérateurExamen" className="btn btn-primary">Générateur d'examen</Link>
+                <Link to="/Admin" className="btn btn-primary">Admin</Link>
             </div>
         </div>
     );
