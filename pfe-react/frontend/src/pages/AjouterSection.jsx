@@ -15,9 +15,6 @@ const AjouterSection = () => {
                     <input type="text" class="form-control" name="niveau" placeholder="Niveau" />
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" name="annee" placeholder="Annee" />
-                </div>
-                <div class="form-group">
                     <input type="text" class="form-control" name="nbgroupes" placeholder="Nombre de groupes" />
                 </div>
                 <div class="text-right">
