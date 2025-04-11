@@ -1,6 +1,15 @@
 const Section = require('../models/Section');
 const CatchAsyncError = require('../middleware/CatchAsyncError');
 
+//check if section exists
+const checkSectionExists = await Section.findOne({ nom: req.body.nom });
+if (checkSectionExists) {
+    return res.status(400).json({
+        success: false,
+        message: 'Section already exists'
+    });
+}
+
 // Get all sections
 exports.getAllSections = CatchAsyncError(async (req, res) => {
     const sections = await Section.find();
