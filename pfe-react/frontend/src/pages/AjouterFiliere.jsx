@@ -15,6 +15,7 @@ const AjouterFiliere = () => {
     return (
         <form onSubmit={handleSubmit} className="AjouterFiliere">
             <div className="form-group">
+                <h1>Ajouter une filière</h1>
                 <label className="form-label">Nom de la Filière</label>
                 <input 
                     type="text" 

@@ -21,8 +21,10 @@ const AjouterEnseignant = () => {
                     <div className="form-group">
                         <select className="form-control" name="grade" placeholder="Grade" required>
                             <option value="">Sélectionner un grade</option>
-                            <option value="">Chef departement</option>
-                            <option value="">Maitre de conférance</option>
+                            <option value="">Professeur</option>
+                            <option value="">Maitre de conférence A</option>
+                            <option value="">Maitre de conférence B</option>
+                            <option value="">Maitre assistant</option>
                         </select>
                     </div>
                     <div className="form-group">
@@ -35,8 +37,8 @@ const AjouterEnseignant = () => {
                     <div className="form-group">
                         <label className="form-label">Sections assignées:</label>
                         <select className="form-control" name="sections[]" multiple required>
-                            <option value="S001">Section A - Informatique</option>
-                            <option value="S002">Section B - Mathématiques</option>
+                            <option value="S001">Section A</option>
+                            <option value="S002">Section B</option>
                         </select>
                     </div>
                     <div className="text-right">

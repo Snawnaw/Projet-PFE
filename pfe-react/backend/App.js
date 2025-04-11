@@ -28,7 +28,16 @@ app.use(morgan('dev'));
 
 // Routes
 const auth = require('./routes/Auth.routes');
+const section = require('./routes/Section.routes');
+const filiere = require('./routes/Filiere.routes');
+/*const salle = require('./routes/Salle.routes');*/
+
+
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/section', section);
+app.use('/api/v1/filiere', filiere);
+/*app.use('/api/v1/salle', salle);*/
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

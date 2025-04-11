@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
-module.exports = async (req, res, next) => { // req : request, res : response, next : next middleware
+const ErrorHandler = require('../utils/ErrorHandler');
+const CatchAsyncErrors = require('../middleware/CatchAsyncError');
+/* 
+exports.isAuth = async (req, res, next) => { // req : request, res : response, next : next middleware
     try {
         // Get token from header
         const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -29,10 +31,34 @@ module.exports = async (req, res, next) => { // req : request, res : response, n
         // Add user to request
         req.user = user;
         next();
+        
     } catch (error) {
         return res.status(401).json({
             success: false,
             message: 'Non autorisé. Veuillez vous connecter'
         });
     }
+};
+*/
+exports.isAuthenticatedUser = CatchAsyncErrors(async (req, res, next) => {
+    const { token } = req.cookies;
+    
+    if(!token) {
+        return next(new ErrorHandler('Login to access this resource', 401));
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id);
+    next();
+});
+
+exports.authorizedRoles = (...roles) => {
+    return (req , res, next ) => {
+        if(!roles.includes(req.user.role)){
+            return next (
+                new ErrorHandler(`Role (${req.user.role}) is not allowed`,403)
+            );
+        }
+        next();
+    };
 };

@@ -6,30 +6,26 @@ const userSchema = new mongoose.Schema({
     nom: {
         type: String,
         required: [true, "Veuillez saisir votre nom"],
-        maxLength: [25, "Le nom ne doit pas depasser 25 caracteres"],
+        maxLength: [25, "Le nom ne doit pas dépasser 25 caractères"],
     },
-
     prenom: {
         type: String,
-        required: [true, "Veuillez saisir votre prenom"],
-        maxLength: [30, "Le prenom ne doit pas depasser 30 caracteres"],
+        required: [true, "Veuillez saisir votre prénom"],
+        maxLength: [30, "Le prénom ne doit pas dépasser 30 caractères"],
     },
-
     dateNaissance: {
         type: Date,
         required: [true, "Veuillez saisir votre date de naissance"],
     },
-
     numeroTel: {
         type: String,
-        required: [true, "Veuillez saisir votre numero de telephone"],
+        required: [true, "Veuillez saisir votre numéro de téléphone"],
         unique: true,
         match: [
             /^0[5-7][0-9]{8}$/,
-            'Veuillez saisir un numero de telephone valide'
+            'Veuillez saisir un numéro de téléphone valide'
         ]
     },
-
     email: {
         type: String,
         required: [true, "Veuillez saisir votre email"],
@@ -39,30 +35,36 @@ const userSchema = new mongoose.Schema({
             'Veuillez saisir un email valide'
         ]
     },
-
     password: {
         type: String,
         required: [true, "Veuillez saisir votre mot de passe"],
-        minLength: [9, "Le mot de passe doit contenir au moins 9 caracteres"],
+        minLength: [9, "Le mot de passe doit contenir au moins 9 caractères"],
         select: false,
     },
-
+    role: {
+        type: String,
+        enum: {
+            values: ['user', 'admin', 'professeur'],
+            message: 'Veuillez choisir un rôle valide : user, admin ou professeur'
+        },
+        default: 'user'
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
 
-// Password encryption before saving
-userSchema.pre('save', async function(next) {
+// Hash password before saving
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
-        next();
+        return next();
     }
-    
+
     this.password = await bcrypt.hash(this.password, 10);
 });
 
-// JWT Token
+// JWT Token method
 userSchema.methods.getJWTToken = function () {
     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE || '7d'

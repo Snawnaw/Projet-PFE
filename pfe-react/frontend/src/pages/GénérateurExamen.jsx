@@ -44,85 +44,107 @@ const GénérateurExamen = () => {
                 </div>
             </div>
 
-            {/* Exam Creation Form */}
-            <div className="card mb-3">
-                <div className="card-body">
-                    <h3>Créer un Nouvel Examen</h3>
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <label className="form-label">Filière</label>
-                            <select 
-                                className="form-control"
-                                value={selectedFiliere}
-                                onChange={(e) => setSelectedFiliere(e.target.value)}
-                            >
-                                <option value="">Sélectionner une filière</option>
-                                <option value="GI">Génie Informatique</option>
-                                <option value="GC">Génie Civil</option>
-                                <option value="GE">Génie Électrique</option>
-                            </select>
+                        <div className="card mb-3">
+                            <div className="card-body">
+                                <h3>Créer un Nouvel Examen</h3>
+                                <form onSubmit={handleSubmit}>
+                                    <div className="mb-3">
+                                        <label className="form-label">Filière</label>
+                                        <select 
+                                            className="form-control"
+                                            value={selectedFiliere}
+                                            onChange={(e) => setSelectedFiliere(e.target.value)}
+                                        >
+                                            <option value="">Sélectionner une filière</option>
+                                            <option value="GI">Génie Informatique</option>
+                                            <option value="GC">Génie Civil</option>
+                                            <option value="GE">Génie Électrique</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Module</label>
+                                        <select 
+                                            className="form-control"
+                                            value={selectedModule}
+                                            onChange={(e) => setSelectedModule(e.target.value)}
+                                            disabled={!selectedFiliere}
+                                        >
+                                            <option value="">Sélectionner un module</option>
+                                            {selectedFiliere && modulesByFiliere[selectedFiliere].map(module => (
+                                                <option key={module.id} value={module.id}>
+                                                    {module.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Type d'Examen</label>
+                                        <select 
+                                            className="form-control"
+                                            value={examType}
+                                            onChange={(e) => setExamType(e.target.value)}
+                                        >
+                                            <option value="final">Examen Final</option>
+                                            <option value="cc">Contrôle Continu</option>
+                                            <option value="tp">TP</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="form-label">Difficulté</label>
+                                        <select className="form-select mb-3" aria-label="Sélectionner la difficulté">
+                                            <option selected>Sélectionner la difficulté</option>
+                                            <option value="facile">Facile</option>
+                                            <option value="moyen">Moyen</option>
+                                            <option value="difficile">Difficile</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="form-label">Nombre de questions</label>
+                                        <input 
+                                            type="number"
+                                            className="form-control mb-3"
+                                            min="1"
+                                            max="30"
+                                            step="1"
+                                            defaultValue="1"
+                                            aria-label="Nombre de questions"
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Date de l'Examen</label>
+                                        <input 
+                                            type="datetime-local"
+                                            className="form-control"
+                                            value={examDate}
+                                            onChange={(e) => setExamDate(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Durée (minutes)</label>
+                                        <input 
+                                            type="number"
+                                            className="form-control"
+                                            value={duration}
+                                            onChange={(e) => setDuration(e.target.value)}
+                                            placeholder="60"
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <button type="submit" className="btn btn-primary me-2">Créer l'Examen</button>
+                                        <button type="reset" className="btn btn-danger">Réinitialiser</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
 
-                        <div className="mb-3">
-                            <label className="form-label">Module</label>
-                            <select 
-                                className="form-control"
-                                value={selectedModule}
-                                onChange={(e) => setSelectedModule(e.target.value)}
-                                disabled={!selectedFiliere}
-                            >
-                                <option value="">Sélectionner un module</option>
-                                {selectedFiliere && modulesByFiliere[selectedFiliere].map(module => (
-                                    <option key={module.id} value={module.id}>
-                                        {module.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="mb-3">
-                            <label className="form-label">Type d'Examen</label>
-                            <select 
-                                className="form-control"
-                                value={examType}
-                                onChange={(e) => setExamType(e.target.value)}
-                            >
-                                <option value="final">Examen Final</option>
-                                <option value="cc">Contrôle Continu</option>
-                                <option value="tp">TP</option>
-                            </select>
-                        </div>
-
-                        <div className="mb-3">
-                            <label className="form-label">Date de l'Examen</label>
-                            <input 
-                                type="datetime-local"
-                                className="form-control"
-                                value={examDate}
-                                onChange={(e) => setExamDate(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="mb-3">
-                            <label className="form-label">Durée (minutes)</label>
-                            <input 
-                                type="number"
-                                className="form-control"
-                                value={duration}
-                                onChange={(e) => setDuration(e.target.value)}
-                                placeholder="60"
-                            />
-                        </div>
-
-                        <div className="mb-3">
-                            <button type="submit" className="btn btn-primary me-2">Créer l'Examen</button>
-                            <button type="reset" className="btn btn-danger">Réinitialiser</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            {/* Exams Table */}
+                        {/* Exams Table */}
             <div className="card mb-3">
                 <div className="card-body">
                     <h3>Examens Planifiés</h3>

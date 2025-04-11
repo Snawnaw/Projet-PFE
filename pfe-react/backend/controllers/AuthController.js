@@ -1,11 +1,13 @@
 const CatchAsyncError = require("../middleware/CatchAsyncError");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const jwt = require('jsonwebtoken');
 
 // Register a new user
 exports.registerUser = CatchAsyncError(async (req, res, next) => {
-    const { nom, prenom, dateNaissance, numeroTel, email, password } = req.body;
-    
+    const { nom, prenom, dateNaissance, numeroTel, email, password, role } = req.body;
+
+    // Créer l'utilisateur avec le rôle fourni
     const user = await User.create({
         nom,
         prenom,
@@ -13,6 +15,7 @@ exports.registerUser = CatchAsyncError(async (req, res, next) => {
         numeroTel,
         email,
         password,
+        role // 'admin' ou 'user' selon req.body
     });
 
     const token = user.getJWTToken();
@@ -20,7 +23,16 @@ exports.registerUser = CatchAsyncError(async (req, res, next) => {
     res.status(201).json({
         success: true,
         token,
-        user
+        user: {
+            _id: user._id,
+            nom: user.nom,
+            prenom: user.prenom,
+            email: user.email,
+            numeroTel: user.numeroTel,
+            dateNaissance: user.dateNaissance,
+            role: user.role, // bien renvoyer le rôle ici
+            createdAt: user.createdAt
+        }
     });
 });
 
@@ -28,7 +40,6 @@ exports.registerUser = CatchAsyncError(async (req, res, next) => {
 exports.loginUser = CatchAsyncError(async (req, res, next) => {
     const { email, password } = req.body;
 
-    // Check if email and password are entered
     if (!email || !password) {
         return res.status(400).json({ 
             success: false,
@@ -36,9 +47,8 @@ exports.loginUser = CatchAsyncError(async (req, res, next) => {
         });
     }
 
-    // Find user in database
     const user = await User.findOne({ email }).select("+password");
-    
+
     if (!user) {
         return res.status(401).json({ 
             success: false,
@@ -46,7 +56,6 @@ exports.loginUser = CatchAsyncError(async (req, res, next) => {
         });
     }
 
-    // Check if password is correct
     const isPasswordMatched = await bcrypt.compare(password, user.password);
     
     if (!isPasswordMatched) {
@@ -56,11 +65,53 @@ exports.loginUser = CatchAsyncError(async (req, res, next) => {
         });
     }
 
-    const token = user.getJWTToken();
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRE || "7d"
+    });
+
+    const cookieOptions = {
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/"
+    };
     
+    res.status(200)
+        .cookie("token", token, cookieOptions)
+        .json({
+            success: true,
+            token,
+            user: {
+                _id: user._id,
+                nom: user.nom,
+                prenom: user.prenom,
+                email: user.email,
+                numeroTel: user.numeroTel,
+                dateNaissance: user.dateNaissance,
+                role: user.role,
+                createdAt: user.createdAt
+            }
+        });
+});
+
+exports.logout = CatchAsyncError(async (req, res, next) => {
+    res.cookie('token', null, {
+        expires: new Date(Date.now()),
+        httpOnly: true
+    });
+
     res.status(200).json({
         success: true,
-        token,
+        message: 'Logged out'
+    });
+});
+
+exports.getUserProfile = CatchAsyncError(async (req, res, next) => {
+    const user = await User.findById(req.user.id);
+
+    res.status(200).json({
+        success: true,
         user
     });
 });

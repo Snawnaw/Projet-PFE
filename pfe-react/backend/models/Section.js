@@ -1,4 +1,7 @@
-const SectionSchema = new Schema ({
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const SectionSchema = new Schema({
     nom: {
         type: String,
         required: [true, "Veuillez saisir le nom de la section"],
@@ -20,3 +23,5 @@ const SectionSchema = new Schema ({
         required: [true, "Veuillez saisir le nombre de groupes de la section"],
     },
 });
+
+module.exports = mongoose.model("Section", SectionSchema);
