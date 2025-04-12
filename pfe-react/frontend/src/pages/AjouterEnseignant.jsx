@@ -20,7 +20,7 @@ const AjouterEnseignant = () => {
                     </div>
                     <div className="form-group">
                         <select className="form-control" name="grade" placeholder="Grade" required>
-                            <option value="">Sélectionner un grade</option>
+                            <option  default="" color="red">Sélectionner un grade</option>
                             <option value="">Professeur</option>
                             <option value="">Maitre de conférence A</option>
                             <option value="">Maitre de conférence B</option>
