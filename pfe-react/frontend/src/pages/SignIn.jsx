@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import styled from "styled-components";
 import { auth } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const SignInContainer = styled.div`
   max-width: 400px;
@@ -22,18 +23,38 @@ const SignInSchema = Yup.object().shape({
 });
 
 const SignIn = () => {
-    const handleSubmit = async (values) => {
+    const navigate = useNavigate();
+    const [error, setError] = useState('');
+    
+    const handleSubmit = async (values, { setSubmitting }) => {
+        setError('');
         try {
             const response = await auth.login(values.email, values.password);
-            console.log(response);
+            console.log('Response:', response); // Debug log
+            
+            if (response && response.data) {
+                const { user, token } = response.data;
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                if (user.role === 'admin') {
+                    navigate('/admin');
+                } else if (user.role === 'professeur' || user.role === 'etudiant') {
+                    navigate('/user');
+                }
+            }
         } catch (error) {
-            console.error(error);
+            console.error('Login error:', error);
+            setError(error.message || 'Erreur de connexion. Veuillez réessayer.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
         <SignInContainer>
             <h1>Connexion</h1>
+            {error && <div className="alert alert-danger">{error}</div>}
             <Formik
                 initialValues={{ email: '', password: '' }}
                 validationSchema={SignInSchema}

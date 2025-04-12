@@ -11,6 +11,8 @@ import SignIn from './pages/SignIn';
 import Home from './pages/Home';
 import GénérerExamen from './pages/GénérerExamen';
 import Admin from './pages/Admin';
+import Sections from './pages/Sections';
+import User from './pages/User';
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/Home" element={<Home />} />
           <Route path="/Admin" element={<Admin />} />
+          <Route path="/Sections" element={<Sections />} />
+          <Route path="User" element={<User />} />
         </Routes>
       </div>
     </Router>

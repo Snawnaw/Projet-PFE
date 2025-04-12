@@ -1,37 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
-import { Button, Typography, Box } from '@mui/material';
+import { 
+    Button, 
+    Typography, 
+    Box, 
+    Drawer, 
+    IconButton, 
+    List, 
+    ListItem, 
+    ListItemIcon, 
+    ListItemText,
+    AppBar,
+    Toolbar
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import PersonIcon from '@mui/icons-material/Person';
+import SchoolIcon from '@mui/icons-material/School';
+import ClassIcon from '@mui/icons-material/Class';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import CategoryIcon from '@mui/icons-material/Category';
 
 const Admin = () => {
     const navigate = useNavigate();
+    const [open, setOpen] = useState(false);
+    const [currentView, setCurrentView] = useState('sections');
+
+    // Sample data - replace with your actual data fetching logic
+    const sectionsData = [
+        { id: 1, nom: 'Section A', filiere: 'Informatique', niveau: '2ème année' },
+        { id: 2, nom: 'Section B', filiere: 'Génie Civil', niveau: '1ère année' },
+    ];
+
+    const teachersData = [
+        { id: 1, nom: 'Doe', prenom: 'John', email: 'john@example.com' },
+        { id: 2, nom: 'Smith', prenom: 'Jane', email: 'jane@example.com' },
+    ];
+
+    const sallesData = [
+        { id: 1, numero: 'A101', type: 'Cours', capacite: 30 },
+        { id: 2, numero: 'B202', type: 'TP', capacite: 20 },
+    ];
 
     const sectionsColumns = [
         { field: 'id', headerName: 'ID', width: 90 },
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'filiere', headerName: 'Filière', width: 130 },
-        { field: 'niveau', headerName: 'Niveau', width: 90 },
-        { field: 'groupes', headerName: 'Nombre de Groupes', width: 130 },
-        {
-            field: 'actions',
-            headerName: 'Actions',
-            width: 200,
-            renderCell: (params) => (
-                <>
-                    <Button onClick={() => navigate(`/modifier-section/${params.row.id}`)}>
-                        Modifier
-                    </Button>
-                    <Button onClick={() => handleDelete('section', params.row.id)} color="error">
-                        Supprimer
-                    </Button>
-                </>
-            ),
-        },
-    ];
-
-    const sectionsData = [
-        { id: 'S001', nom: 'Section A', filiere: 'Informatique', niveau: 2, groupes: 3 },
-        { id: 'S002', nom: 'Section B', filiere: 'Mathématiques', niveau: 1, groupes: 2 }
+        { field: 'niveau', headerName: 'Niveau', width: 130 },
     ];
 
     const teachersColumns = [
@@ -39,29 +54,6 @@ const Admin = () => {
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'prenom', headerName: 'Prénom', width: 130 },
         { field: 'email', headerName: 'Email', width: 200 },
-        { field: 'grade', headerName: 'Grade', width: 130 },
-        { field: 'filiere', headerName: 'Filière', width: 130 },
-        { field: 'sections', headerName: 'Sections Assignées', width: 200 },
-        {
-            field: 'actions',
-            headerName: 'Actions',
-            width: 200,
-            renderCell: (params) => (
-                <>
-                    <Button onClick={() => navigate(`/modifier-enseignant/${params.row.id}`)}>
-                        Modifier
-                    </Button>
-                    <Button onClick={() => handleDelete('enseignant', params.row.id)} color="error">
-                        Supprimer
-                    </Button>
-                </>
-            ),
-        },
-    ];
-
-    const teachersData = [
-        { id: 'E001', nom: 'Doe', prenom: 'John', email: 'john.doe@example.com', grade: 'Professeur', filiere: 'Informatique', sections: 'Section A, Section B' },
-        { id: 'E002', nom: 'Smith', prenom: 'Jane', email: 'jane.smith@example.com', grade: 'Maître de conférences', filiere: 'Mathématiques', sections: 'Section B' }
     ];
 
     const sallesColumns = [
@@ -69,78 +61,150 @@ const Admin = () => {
         { field: 'numero', headerName: 'Numéro', width: 130 },
         { field: 'type', headerName: 'Type', width: 130 },
         { field: 'capacite', headerName: 'Capacité', width: 130 },
-        { field: 'departement', headerName: 'Département', width: 130 },
-        {
-            field: 'actions',
-            headerName: 'Actions',
-            width: 200,
-            renderCell: (params) => (
-                <>
-                    <Button onClick={() => navigate(`/modifier-salle/${params.row.id}`)}>
-                        Modifier
-                    </Button>
-                    <Button onClick={() => handleDelete('salle', params.row.id)} color="error">
-                        Supprimer
-                    </Button>
-                </>
-            ),
-        },
     ];
 
-    const sallesData = [
-        { id: 'R001', numero: '101', type: 'Salle de cours', capacite: 30, departement: 'Informatique' },
-        { id: 'R002', numero: 'Lab-01', type: 'Laboratoire', capacite: 20, departement: 'Informatique' }
+    const toggleDrawer = () => {
+        setOpen(!open);
+    };
+
+    const menuItems = [
+        { text: 'Mon Profil', icon: <PersonIcon />, view: 'profile' },
+        { text: 'Enseignants', icon: <SchoolIcon />, view: 'enseignants' },
+        { text: 'Filières', icon: <CategoryIcon />, view: 'filieres' },
+        { text: 'Sections', icon: <ClassIcon />, view: 'sections' },
+        { text: 'Salles', icon: <MeetingRoomIcon />, view: 'salles' },
+        { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
     ];
 
-    const handleDelete = (type, id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
-            console.log(`Deleting ${type} with id: ${id}`);
-        }
+    const handleMenuClick = (view) => {
+        setCurrentView(view);
+        setOpen(false);
     };
 
     return (
-        <Box sx={{ width: '100%', p: 2 }}>
-            <Box sx={{ mb: 2 }}>
-                <Button variant="contained" onClick={() => navigate('/AjouterSection')} sx={{ mr: 1 }}>
-                    Ajouter Section
-                </Button>
-                <Button variant="contained" onClick={() => navigate('/AjouterEnseignant')} sx={{ mr: 1 }}>
-                    Ajouter Enseignant
-                </Button>
-                <Button variant="contained" onClick={() => navigate('/AjouterSalle')}>
-                    Ajouter Salle
-                </Button>
+        <Box sx={{ display: 'flex' }}>
+            {/* App Bar */}
+            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                <Toolbar>
+                    <IconButton
+                        color="inherit"
+                        onClick={toggleDrawer}
+                        edge="start"
+                        sx={{ mr: 2 }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography variant="h6" noWrap>
+                        Dashboard Admin
+                    </Typography>
+                </Toolbar>
+            </AppBar>
+
+            {/* Sidebar */}
+            <Drawer
+                variant="temporary"
+                anchor="left"
+                open={open}
+                onClose={toggleDrawer}
+                sx={{
+                    width: 240,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: 240,
+                        boxSizing: 'border-box',
+                        backgroundColor: '#f5f5f5',
+                    },
+                }}
+            >
+                <Toolbar /> {/* This creates space below the AppBar */}
+                <List>
+                    {menuItems.map((item) => (
+                        <ListItem 
+                            button 
+                            key={item.text}
+                            onClick={() => handleMenuClick(item.view)}
+                        >
+                            <ListItemIcon>
+                                {item.icon}
+                            </ListItemIcon>
+                            <ListItemText primary={item.text} />
+                        </ListItem>
+                    ))}
+                </List>
+            </Drawer>
+
+            {/* Main Content */}
+            <Box 
+                component="main" 
+                sx={{ 
+                    flexGrow: 1, 
+                    p: 3, 
+                    backgroundColor: '#fafafa',
+                    minHeight: '100vh'
+                }}
+            >
+                <Toolbar /> {/* This creates space below the AppBar */}
+                
+                {currentView === 'profile' && (
+                    <Typography variant="h6">Mon Profil</Typography>
+                )}
+                {currentView === 'filieres' && (
+                    <>
+                        <Button variant="contained" onClick={() => navigate('/AjouterFiliere')} sx={{ mb: 2 }}>
+                            Ajouter Filière
+                        </Button>
+                        <Typography variant="h6">Gestion des Filières</Typography>
+                    </>
+                )}
+                {currentView === 'sections' && (
+                    <>
+                        <Button variant="contained" onClick={() => navigate('/AjouterSection')} sx={{ mb: 2 }}>
+                            Ajouter Section
+                        </Button>
+                        <DataGrid
+                            rows={sectionsData}
+                            columns={sectionsColumns}
+                            pageSize={5}
+                            rowsPerPageOptions={[5]}
+                            autoHeight
+                            disableSelectionOnClick
+                        />
+                    </>
+                )}
+                {currentView === 'enseignants' && (
+                    <>
+                        <Button variant="contained" onClick={() => navigate('/AjouterEnseignant')} sx={{ mb: 2 }}>
+                            Ajouter Enseignant
+                        </Button>
+                        <DataGrid
+                            rows={teachersData}
+                            columns={teachersColumns}
+                            pageSize={5}
+                            rowsPerPageOptions={[5]}
+                            autoHeight
+                            disableSelectionOnClick
+                        />
+                    </>
+                )}
+                {currentView === 'salles' && (
+                    <>
+                        <Button variant="contained" onClick={() => navigate('/AjouterSalle')} sx={{ mb: 2 }}>
+                            Ajouter Salle
+                        </Button>
+                        <DataGrid
+                            rows={sallesData}
+                            columns={sallesColumns}
+                            pageSize={5}
+                            rowsPerPageOptions={[5]}
+                            autoHeight
+                            disableSelectionOnClick
+                        />
+                    </>
+                )}
+                {currentView === 'génerer examen' && (
+                    <Typography variant="h6">Générer Examen</Typography>
+                )}
             </Box>
-
-            <Typography variant="h5" sx={{ mb: 2 }}>Sections</Typography>
-            <DataGrid
-                rows={sectionsData}
-                columns={sectionsColumns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                autoHeight
-                disableSelectionOnClick
-            />
-
-            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Enseignants</Typography>
-            <DataGrid
-                rows={teachersData}
-                columns={teachersColumns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                autoHeight
-                disableSelectionOnClick
-            />
-
-            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Salles</Typography>
-            <DataGrid
-                rows={sallesData}
-                columns={sallesColumns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                autoHeight
-                disableSelectionOnClick
-            />
         </Box>
     );
 };
