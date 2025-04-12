@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getAllSalle, createSalle, updateSalle, deleteSalle } = require('../controllers/SalleController');
-const isAuth = require('../middleware/Auth'); // Import the authentication middleware
+const { isAuthenticatedUser, authorizedRoles } = require('../middleware/Auth'); // Import the authentication middleware
 
 router.get('/AllSalles', isAuthenticatedUser, getAllSalle); // Get all salles
 router.post('/SalleCreate', isAuthenticatedUser, authorizedRoles("admin"), createSalle); // Create a new salle
