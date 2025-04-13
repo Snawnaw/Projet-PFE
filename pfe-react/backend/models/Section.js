@@ -18,7 +18,7 @@ const SectionSchema = new Schema({
         required: [true, "Veuillez saisir le niveau de la section"],
     },
 
-    nomber_de_groupes: {
+    nombre_de_groupes: {
         type: Number,
         required: [true, "Veuillez saisir le nombre de groupes de la section"],
     },

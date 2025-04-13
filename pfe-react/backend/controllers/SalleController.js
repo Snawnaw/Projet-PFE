@@ -3,33 +3,12 @@ const Salle = require('../models/Salle');
 
 // Get all salles
 exports.getAllSalles = CatchAsyncError(async (req, res) => {
-    const salles = await Salle.find({});
-    if (!salles || salles.length === 0) {
-        return res.status(404).json({
-            success: false,
-            message: 'Aucune salle trouvée',
-        });
-    }
-
+    const salles = await Salle.find();
+    
     res.status(200).json({
         success: true,
-        salles,
-    });
-});
-
-// Get one salle
-exports.getSalle = CatchAsyncError(async (req, res) => {
-    const salle = await Salle.findById(req.params.id);
-    if (!salle) {
-        return res.status(404).json({
-            success: false,
-            message: 'Salle not found',
-        });
-    }
-
-    res.status(200).json({
-        success: true,
-        salle,
+        count: salles.length,
+        salles
     });
 });
 
@@ -41,21 +20,22 @@ exports.createSalle = CatchAsyncError(async (req, res) => {
     if (isSalleExist) {
         return res.status(400).json({
             success: false,
-            message: 'Salle already exists',
+            message: 'Une salle avec ce numéro existe déjà'
         });
     }
 
-    const newSalle = await Salle.create({
+    const salle = await Salle.create({
         numero,
         nom,
         capacite,
         type,
-        departement,
+        departement
     });
 
     res.status(201).json({
         success: true,
-        salle: newSalle,
+        message: 'Salle créée avec succès',
+        salle
     });
 });
 
@@ -63,12 +43,22 @@ exports.createSalle = CatchAsyncError(async (req, res) => {
 exports.updateSalle = CatchAsyncError(async (req, res) => {
     const { numero, nom, capacite, type, departement } = req.body;
 
-    let salle = await Salle.findById(req.params.id);
-
+    const salle = await Salle.findById(req.params.id);
     if (!salle) {
         return res.status(404).json({
             success: false,
-            message: 'Salle not found',
+            message: 'Salle non trouvée'
+        });
+    }
+
+    const duplicateSalle = await Salle.findOne({ 
+        numero, 
+        _id: { $ne: req.params.id } 
+    });
+    if (duplicateSalle) {
+        return res.status(400).json({
+            success: false,
+            message: 'Une salle avec ce numéro existe déjà'
         });
     }
 
@@ -82,24 +72,25 @@ exports.updateSalle = CatchAsyncError(async (req, res) => {
 
     res.status(200).json({
         success: true,
-        message: 'Salle updated successfully',
-        salle,
+        message: 'Salle mise à jour avec succès',
+        salle
     });
 });
 
 // Delete salle
 exports.deleteSalle = CatchAsyncError(async (req, res) => {
-    const salle = await Salle.findByIdAndDelete(req.params.id);
-
+    const salle = await Salle.findById(req.params.id);
     if (!salle) {
         return res.status(404).json({
             success: false,
-            message: 'Salle not found',
+            message: 'Salle non trouvée'
         });
     }
 
+    await salle.deleteOne();
+
     res.status(200).json({
         success: true,
-        message: 'Salle deleted successfully',
+        message: 'Salle supprimée avec succès'
     });
 });

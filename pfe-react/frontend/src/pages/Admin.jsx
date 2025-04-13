@@ -23,6 +23,7 @@ import ClassIcon from '@mui/icons-material/Class';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import CategoryIcon from '@mui/icons-material/Category';
 import { admin, auth } from '../services/api';
+import API from '../services/api';
 
 const Admin = () => {
     const navigate = useNavigate();
@@ -33,7 +34,6 @@ const Admin = () => {
     
     // Data states
     const [sectionsData, setSectionsData] = useState([]);
-    const [teachersData, setTeachersData] = useState([]);
     const [sallesData, setSallesData] = useState([]);
     const [filieresData, setFilieresData] = useState([]);
     const [userProfile, setUserProfile] = useState(null);
@@ -75,29 +75,33 @@ const Admin = () => {
                     
                 case 'sections':
                     if (sectionsData.length === 0) {
-                        const response = await admin.getSections();
-                        setSectionsData(response.data.sections || []);
+                        const response = await API.get('/section/AllSections');
+                        console.log('SECTIONS:', response.data); // 🔍 DEBUG
+                        return response.data.sections;
                     }
                     break;
                     
                 case 'enseignants':
                     if (teachersData.length === 0) {
-                        const response = await admin.getTeachers();
-                        setTeachersData(response.data.teachers || []);
+                        const response = await API.get('/enseignants/AllEnseignants');
+                        console.log('TEACHERS:', response.data); // 🔍 DEBUG
+                        return response.data.enseignants;
                     }
                     break;
                     
                 case 'salles':
                     if (sallesData.length === 0) {
-                        const response = await admin.getSalles();
-                        setSallesData(response.data.salles || []);
+                        const salles = await API.get('/salles/AllSalles');
+                        console.log('SALLES:', salles.data); // 🔍 DEBUG
+                        return salles.data.salles;
                     }
                     break;
                     
                 case 'filieres':
                     if (filieresData.length === 0) {
-                        const response = await admin.getFilieres();
-                        setFilieresData(response.data.filieres || []);
+                        const response = await API.get('/filiere/AllFilieres');
+                        console.log('FILIERES:', response.data); // 🔍 DEBUG
+                        return response.data.filieres;
                     }
                     break;
                     

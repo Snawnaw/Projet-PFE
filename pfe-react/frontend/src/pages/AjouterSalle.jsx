@@ -1,15 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function AjouterSalle() {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        numero: '',
+        type: '',
+        capacite: '',
+        departement: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('http://localhost:5000/api/salles', formData);
+            alert('Salle ajoutée avec succès');
+            navigate('/salles'); // Redirect to salles list
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors de l\'ajout de la salle');
+        }
+    };
+
     return (
         <div className="AjouterSalle">
             <h1>Ajouter une salle</h1>
-            <form>
-                <div class="form-group">
-                    <input type="text" class="form-control" name="numero" placeholder="Numéro de salle" required />
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <input 
+                        type="text" 
+                        className="form-control" 
+                        name="numero" 
+                        placeholder="Numéro de salle" 
+                        value={formData.numero}
+                        onChange={handleChange}
+                        required 
+                    />
                 </div>
-                <div class="form-group">
-                    <select class="form-control" name="type" required>
+                <div className="form-group">
+                    <select 
+                        className="form-control" 
+                        name="type" 
+                        value={formData.type}
+                        onChange={handleChange}
+                        required
+                    >
                         <option value="">Type de salle</option>
                         <option value="cours">Salle de cours</option>
                         <option value="td">Salle TD</option>
@@ -17,20 +60,34 @@ function AjouterSalle() {
                         <option value="amphi">Amphithéâtre</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <input type="number" class="form-control" name="capacite" placeholder="Capacité" required />
+                <div className="form-group">
+                    <input 
+                        type="number" 
+                        className="form-control" 
+                        name="capacite" 
+                        placeholder="Capacité" 
+                        value={formData.capacite}
+                        onChange={handleChange}
+                        required 
+                    />
                 </div>
-                <div class="form-group">
-                    <select class="form-control" name="departement" required>
+                <div className="form-group">
+                    <select 
+                        className="form-control" 
+                        name="departement" 
+                        value={formData.departement}
+                        onChange={handleChange}
+                        required
+                    >
                         <option value="">Département</option>
                         <option value="Informatique">Informatique</option>
                         <option value="Mathématiques">Mathématiques</option>
                     </select>
                 </div>
-                <div class="text-right">
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                    <button type="reset" class="btn btn-danger">Annuler</button>
-                    <a href='#'  class="btn btn-primary">Retour</a>
+                <div className="text-right">
+                    <button type="submit" className="btn btn-primary">Ajouter</button>
+                    <button type="reset" className="btn btn-danger">Annuler</button>
+                    <button type="button" className="btn btn-primary" onClick={() => navigate('/salles')}>Retour</button>
                 </div>
             </form>
         </div>

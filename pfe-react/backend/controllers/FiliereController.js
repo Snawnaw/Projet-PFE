@@ -53,8 +53,7 @@ exports.getAllFilieres = CatchAsyncError(async (req, res) => {
     
     res.status(200).json({
         success: true,
-        count: filieres.length,
-        filieres
+        filieres: filieres // Make sure we explicitly include the filieres array
     });
 });
 

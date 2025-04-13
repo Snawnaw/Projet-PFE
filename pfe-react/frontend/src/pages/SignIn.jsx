@@ -28,39 +28,23 @@ const SignIn = () => {
     
     const handleSubmit = async (values, { setSubmitting }) => {
         setError('');
-        console.log('Submitting login form with:', values.email);
         try {
             const response = await auth.login(values.email, values.password);
-        
-        if (response && response.data) {
-            const { user, token } = response.data;
-            
-            // Store user data and token
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-            
-            // Redirect based on user role
-            if (user.role === 'admin') {
-                navigate('/admin');
-            } else {
-                navigate('/user');
+            if (response && response.data && response.data.user) {
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+                
+                if (response.data.user.role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/user');
+                }
             }
-        }
         } catch (error) {
-            console.error('Detailed login error:', error);
-            if (error.response) {
-                // Server responded with error
-                setError(error.response.data.message || 'Identifiants invalides');
-            } else if (error.request) {
-                // No response received
-                setError('Impossible de joindre le serveur. Vérifiez votre connexion.');
-            } else {
-                // Other errors
-                setError(error.message || 'Erreur de connexion');
-            }
-        } finally {
-            setSubmitting(false);
+            setError('Identifiants invalides');
+            console.error('Login error:', error);
         }
+        setSubmitting(false);
     };
 
     return (

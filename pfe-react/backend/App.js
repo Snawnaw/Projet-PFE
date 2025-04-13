@@ -42,7 +42,7 @@ const salle = require('./routes/Salle.routes');
 
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/section', section);
-app.use('/api/v1/filiere', filiere);
+app.use('/api/v1/filiere', filiere); 
 app.use('/api/v1/salle', salle);
 
 // Error handling middleware

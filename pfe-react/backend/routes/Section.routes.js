@@ -15,4 +15,5 @@ router.post('/SectionCreate', isAuthenticatedUser, authorizedRoles("admin"), cre
 router.put('/SectionEdit/:id', isAuthenticatedUser, authorizedRoles("admin"), updateSection); // Update a section by ID
 router.delete('/SectionDelete/:id', isAuthenticatedUser, authorizedRoles("admin"), deleteSection); // Delete a section by ID
 
+
 module.exports = router;
