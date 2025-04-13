@@ -1,6 +1,40 @@
+const CatchAsyncError = require('../middleware/CatchAsyncError');
 const Salle = require('../models/Salle');
 
-exports.createSalle = async (req, res) => {
+// Get all salles
+exports.getAllSalles = CatchAsyncError(async (req, res) => {
+    const salles = await Salle.find({});
+    if (!salles || salles.length === 0) {
+        return res.status(404).json({
+            success: false,
+            message: 'Aucune salle trouvée',
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        salles,
+    });
+});
+
+// Get one salle
+exports.getSalle = CatchAsyncError(async (req, res) => {
+    const salle = await Salle.findById(req.params.id);
+    if (!salle) {
+        return res.status(404).json({
+            success: false,
+            message: 'Salle not found',
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        salle,
+    });
+});
+
+// Create salle
+exports.createSalle = CatchAsyncError(async (req, res) => {
     const { numero, nom, capacite, type, departement } = req.body;
 
     const isSalleExist = await Salle.findOne({ numero });
@@ -11,7 +45,7 @@ exports.createSalle = async (req, res) => {
         });
     }
 
-    const Salle = await Salle.create({
+    const newSalle = await Salle.create({
         numero,
         nom,
         capacite,
@@ -19,47 +53,14 @@ exports.createSalle = async (req, res) => {
         departement,
     });
 
-    const token = Salle.getJWTToken();
-
     res.status(201).json({
         success: true,
-        token,
-        Salle,
+        salle: newSalle,
     });
+});
 
-    //find les salles in database
-    const salles = await Salle.find({});
-    if (!salles) {
-        return res.status(401).json({
-            success: false,
-            message: 'Aucune salle trouvée',
-        });
-    }
-
-    res.status(200).json({
-        success: true,
-        salles,
-    });
-
-    
-}
-
-exports.getAllSalle = async (req, res) => {
-    const salles = await Salle.find({});
-    if (!salles) {
-        return res.status(401).json({
-            success: false,
-            message: 'Aucune salle trouvée',
-        });
-    }
-
-    res.status(200).json({
-        success: true,
-        salles,
-    });
-}
-
-exports.updateSalle = async (req, res) => {
+// Update salle
+exports.updateSalle = CatchAsyncError(async (req, res) => {
     const { numero, nom, capacite, type, departement } = req.body;
 
     let salle = await Salle.findById(req.params.id);
@@ -84,10 +85,11 @@ exports.updateSalle = async (req, res) => {
         message: 'Salle updated successfully',
         salle,
     });
-}
+});
 
-exports.deleteSalle = async (req, res) => {
-    const salle = await Salle.findById(req.params.id);
+// Delete salle
+exports.deleteSalle = CatchAsyncError(async (req, res) => {
+    const salle = await Salle.findByIdAndDelete(req.params.id);
 
     if (!salle) {
         return res.status(404).json({
@@ -96,11 +98,8 @@ exports.deleteSalle = async (req, res) => {
         });
     }
 
-    await salle.deleteOne();
-
     res.status(200).json({
         success: true,
         message: 'Salle deleted successfully',
     });
-}
-
+});

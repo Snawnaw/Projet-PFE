@@ -17,31 +17,33 @@ const limiter = rateLimit({
     max: 100 // limit each IP to 100 requests per windowMs
 });
 
-// Middleware
-app.use(cors());  // Add CORS middleware
+// Middleware - correct order matters!
+// Configure CORS with credentials first
+app.use(cors({
+    origin: 'http://localhost:5173', // Your frontend URL
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Add OPTIONS for preflight
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Other middleware
 app.use(limiter); // Apply rate limiting
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(helmet());
 app.use(morgan('dev'));
-app.use(cors({
-    origin: 'http://localhost:5173', // Your frontend URL
-    credentials: true
-}));
 
 // Routes
 const auth = require('./routes/Auth.routes');
 const section = require('./routes/Section.routes');
 const filiere = require('./routes/Filiere.routes');
-/*const salle = require('./routes/Salle.routes');*/
-
+const salle = require('./routes/Salle.routes');
 
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/section', section);
 app.use('/api/v1/filiere', filiere);
-/*app.use('/api/v1/salle', salle);*/
-
+app.use('/api/v1/salle', salle);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

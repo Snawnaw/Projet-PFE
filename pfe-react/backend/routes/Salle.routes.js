@@ -1,11 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { getAllSalle, createSalle, updateSalle, deleteSalle } = require('../controllers/SalleController');
-const { isAuthenticatedUser, authorizedRoles } = require('../middleware/Auth'); // Import the authentication middleware
+const { isAuthenticatedUser, authorizedRoles } = require('../middleware/Auth');
 
-router.get('/AllSalles', isAuthenticatedUser, getAllSalle); // Get all salles
-router.post('/SalleCreate', isAuthenticatedUser, authorizedRoles("admin"), createSalle); // Create a new salle
-router.put('/SalleEdit', isAuthenticatedUser, authorizedRoles("admin"), updateSalle); // Update a salle by ID
-router.delete('/SalleDelete', isAuthenticatedUser, authorizedRoles("admin"), deleteSalle); // Delete a salle by ID
+// Import the controller (you'll need to create this too)
+const { 
+    getAllSalles,
+    createSalle,
+    updateSalle,
+    deleteSalle
+} = require('../controllers/SalleController');
+
+// Define routes
+router.route('AllSalle/').get(getAllSalles);
+router.route('SalleCreate/').post(isAuthenticatedUser, authorizedRoles('admin'), createSalle);
+router.route('SalleEdit/:id').put(isAuthenticatedUser, authorizedRoles('admin'), updateSalle);
+router.route('SalleDelete/:id').delete(isAuthenticatedUser, authorizedRoles('admin'), deleteSalle);
 
 module.exports = router;

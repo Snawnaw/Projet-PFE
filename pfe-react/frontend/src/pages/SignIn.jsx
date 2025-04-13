@@ -28,24 +28,36 @@ const SignIn = () => {
     
     const handleSubmit = async (values, { setSubmitting }) => {
         setError('');
+        console.log('Submitting login form with:', values.email);
         try {
             const response = await auth.login(values.email, values.password);
-            console.log('Response:', response); // Debug log
+        
+        if (response && response.data) {
+            const { user, token } = response.data;
             
-            if (response && response.data) {
-                const { user, token } = response.data;
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(user));
-                
-                if (user.role === 'admin') {
-                    navigate('/admin');
-                } else if (user.role === 'professeur' || user.role === 'etudiant') {
-                    navigate('/user');
-                }
+            // Store user data and token
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            // Redirect based on user role
+            if (user.role === 'admin') {
+                navigate('/admin');
+            } else {
+                navigate('/user');
             }
+        }
         } catch (error) {
-            console.error('Login error:', error);
-            setError(error.message || 'Erreur de connexion. Veuillez réessayer.');
+            console.error('Detailed login error:', error);
+            if (error.response) {
+                // Server responded with error
+                setError(error.response.data.message || 'Identifiants invalides');
+            } else if (error.request) {
+                // No response received
+                setError('Impossible de joindre le serveur. Vérifiez votre connexion.');
+            } else {
+                // Other errors
+                setError(error.message || 'Erreur de connexion');
+            }
         } finally {
             setSubmitting(false);
         }
@@ -87,7 +99,7 @@ const SignIn = () => {
                         </FormGroup>
 
                         <button type="submit" className="btn btn-primary w-100">Se connecter</button>
-                        <p>Vous n'avez pas un compte ? <a href="Creation de compte.html">Créer un compte</a></p>
+                        <p>Vous n'avez pas un compte ? <a href="SignUp">Créer un compte</a></p>
                     </Form>
                 )}
             </Formik>

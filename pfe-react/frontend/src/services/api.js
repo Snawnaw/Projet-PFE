@@ -1,52 +1,78 @@
+// src/services/api.js
 import axios from 'axios';
 
-// Create axios instance with base URL
-const api = axios.create({
-    baseURL: 'http://localhost:5000',
-    timeout: 5000,
-    headers: {
-        'Content-Type': 'application/json'
-    }
+// Create an axios instance with default config
+const API = axios.create({
+  baseURL: 'http://localhost:5000/api/v1',
+  withCredentials: true, // Important for cookies
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
-// Add request interceptor to handle auth token
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+// Add token to requests if available
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
+// Auth services
 export const auth = {
-    login: async (email, password) => {
-        try {
-            const response = await api.post('/api/auth/login', {
-                email,
-                password
-            });
-            console.log('Login response:', response); // Debug log
-            return response;
-        } catch (error) {
-            console.error('Login error:', error);
-            if (error.code === 'ECONNREFUSED') {
-                throw new Error('Impossible de se connecter au serveur. Vérifiez que le serveur est en cours d\'exécution.');
-            }
-            throw error.response?.data || error;
-        }
-    },
-    getUser: async () => {
-        try {
-            const response = await api.get('/api/auth/user');
-            return response;
-        } catch (error) {
-            console.error('Get user error:', error);
-            throw error.response?.data || error;
-        }
-    }
+  // Login user
+  login: async (email, password) => {
+    return await API.post('/auth/login', { email, password });
+  },
+  
+  // Register user
+  register: async (userData) => {
+    return await API.post('/auth/register', userData);
+  },
+  
+  // Get current user profile
+  getProfile: async () => {
+    return await API.get('/auth/me');
+  },
+  
+  // Logout user
+  logout: async () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    return await API.get('/auth/logout');
+  }
 };
+
+// Admin services
+export const admin = {
+  // Get all sections
+  getSections: async () => {
+    return await API.get('/section');
+  },
+  
+  // Add new section
+  addSection: async (sectionData) => {
+    return await API.post('/section', sectionData);
+  },
+  
+  // Get all teachers
+  getTeachers: async () => {
+    return await API.get('/auth/teachers');
+  },
+  
+  // Get all salles
+  getSalles: async () => {
+    return await API.get('/salle');
+  },
+  
+  // Get all filieres
+  getFilieres: async () => {
+    return await API.get('/filiere');
+  }
+};
+
+export default API;
