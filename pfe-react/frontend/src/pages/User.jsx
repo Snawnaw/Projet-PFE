@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
-import { 
-    Button, 
-    Typography, 
-    Box, 
-    Drawer, 
-    IconButton, 
-    List, 
-    ListItem, 
-    ListItemIcon, 
+import {
+    Button,
+    Typography,
+    Box,
+    Drawer,
+    IconButton,
+    List,
+    ListItem,
+    ListItemIcon,
     ListItemText,
     AppBar,
-    Toolbar
+    Toolbar,
+    Card,
+    CardContent,
+    TextField,
+    Divider
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
@@ -24,22 +28,11 @@ import CategoryIcon from '@mui/icons-material/Category';
 const User = () => {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
-    const [currentView, setCurrentView] = useState('sections');
+    const [currentView, setCurrentView] = useState('generer'); // page par défaut
 
-    // Sample data - replace with your actual data fetching logic
     const sectionsData = [
         { id: 1, nom: 'Section A', filiere: 'Informatique', niveau: '2ème année' },
         { id: 2, nom: 'Section B', filiere: 'Génie Civil', niveau: '1ère année' },
-    ];
-
-    const teachersData = [
-        { id: 1, nom: 'Doe', prenom: 'John', email: 'john@example.com' },
-        { id: 2, nom: 'Smith', prenom: 'Jane', email: 'jane@example.com' },
-    ];
-
-    const sallesData = [
-        { id: 1, numero: 'A101', type: 'Cours', capacite: 30 },
-        { id: 2, numero: 'B202', type: 'TP', capacite: 20 },
     ];
 
     const sectionsColumns = [
@@ -49,33 +42,121 @@ const User = () => {
         { field: 'niveau', headerName: 'Niveau', width: 130 },
     ];
 
-    const teachersColumns = [
-        { field: 'id', headerName: 'ID', width: 90 },
-        { field: 'nom', headerName: 'Nom', width: 130 },
-        { field: 'prenom', headerName: 'Prénom', width: 130 },
-        { field: 'email', headerName: 'Email', width: 200 },
-    ];
-
-    const sallesColumns = [
-        { field: 'id', headerName: 'ID', width: 90 },
-        { field: 'numero', headerName: 'Numéro', width: 130 },
-        { field: 'type', headerName: 'Type', width: 130 },
-        { field: 'capacite', headerName: 'Capacité', width: 130 },
-    ];
-
     const toggleDrawer = () => {
         setOpen(!open);
     };
 
     const menuItems = [
         { text: 'Mon Profil', icon: <PersonIcon />, view: 'profile' },
-        { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
+        { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'generer' },
         { text: 'Filières', icon: <CategoryIcon />, view: 'filieres' },
+        { text: 'Banque de Questions', icon: <ClassIcon />, view: 'banque' },
     ];
 
     const handleMenuClick = (view) => {
         setCurrentView(view);
         setOpen(false);
+    };
+
+    const renderMainContent = () => {
+        switch (currentView) {
+            case 'generer':
+                return null;
+            case 'filieres':
+                return (
+                    <Box>
+                        <Typography variant="h5" gutterBottom>
+                            Filières et Sections
+                        </Typography>
+                        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
+                            <Button variant="contained" color="success" sx={{ borderRadius: 2 }}>
+                                + Question
+                            </Button>
+                            <Button variant="contained" color="info" sx={{ borderRadius: 2 }}>
+                                Créer Examen
+                            </Button>
+                        </Box>
+
+                        <Card elevation={3} sx={{ p: 2, mb: 3 }}>
+                            <Typography variant="h6" gutterBottom>Filtrer par Filière / Section</Typography>
+                            <Box display="flex" gap={2}>
+                                <TextField label="Filière" variant="outlined" />
+                                <TextField label="Section" variant="outlined" />
+                                <Button variant="outlined">Appliquer</Button>
+                            </Box>
+                        </Card>
+
+                        <Card elevation={3}>
+                            <CardContent>
+                                <Typography variant="h6" gutterBottom>
+                                    Précision des Filières / Sections
+                                </Typography>
+                                <DataGrid
+                                    rows={sectionsData}
+                                    columns={sectionsColumns}
+                                    autoHeight
+                                    pageSize={5}
+                                />
+                            </CardContent>
+                        </Card>
+                    </Box>
+                );
+            case 'banque':
+                return (
+                    <Box>
+                        <Typography variant="h5" gutterBottom>Banque de Questions</Typography>
+                        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
+                            <Button variant="contained" color="success" sx={{ borderRadius: 2 }}>
+                                + Question
+                            </Button>
+                            <Button variant="contained" color="info" sx={{ borderRadius: 2 }}>
+                                Créer Examen
+                            </Button>
+                        </Box>
+                    
+                        <Card elevation={3} sx={{ p: 2, mb: 3 }}>
+                            <Typography variant="h6" gutterBottom>Filtrer par Filière / Section</Typography>
+                            <Typography variant="body2" gutterBottom>
+                            Ajoutez, modifiez ou filtrez les questions à travers une interface simple.
+                        </Typography>
+                            <Box display="flex" gap={2}>
+                                <TextField label="Filière" variant="outlined" />
+                                <TextField label="Section" variant="outlined" />
+                                <Button variant="outlined">Appliquer</Button>
+                            </Box>
+                        </Card>
+                        {/* Liste des questions à venir */}
+                        <Typography variant="body2" color="text.secondary">
+                            📌 Aucune question disponible pour le moment. Ajoutez-en à l’aide du bouton en haut.
+                        </Typography>
+                    </Box>
+                );
+            case 'profile':
+                return( 
+                    <Box sx={{width:600, mx: 'auto',mt:2, p: 2, mb: 3 }}>
+                        <card elevation={2} >
+                            <Typography variant="h6" gutterBottom>Informations personnelles</Typography>
+                            <TextField fullWidth label="Nom complet" margin="normal" defaultValue="John Doe" />
+                            <TextField fullWidth label="Email" margin="normal" defaultValue="john.doe@example.com" />
+                            <TextField fullWidth label="Date de naissance" margin="normal" defaultValue="1990-01-01" type="date" InputLabelProps={{ shrink: true }} />
+                            <Button variant="contained" fullWidth sx={{ my: 2 }}>Mettre à jour</Button>
+                        </card>
+                        <Box  sx={{ maxWidth: 600, mx: 'auto', mt: 2 }}>
+                            <Typography variant="h6" gutterBottom>Sécurité</Typography>
+                            <TextField fullWidth label="Mot de passe actuel" margin="normal" type="password" />
+                            <TextField fullWidth label="Nouveau mot de passe" margin="normal" type="password" />
+                            <TextField fullWidth label="Confirmer le mot de passe" margin="normal" type="password" />
+                            <Typography variant="body2" color="error">
+                                - Au moins 8 caractères<br />
+                                - Majuscule, minuscule, chiffre<br />
+                                - Les mots de passe doivent correspondre
+                            </Typography>
+                            <Button variant="contained" color="primary" fullWidth sx={{ my: 2 }}>Changer mot de passe</Button>
+                            <Button variant="contained" color="error" fullWidth>Supprimer le compte</Button>
+                        </Box>
+                    </Box>
+            );
+        }
     };
 
     return (
@@ -113,11 +194,11 @@ const User = () => {
                     },
                 }}
             >
-                <Toolbar /> {/* This creates space below the AppBar */}
+                <Toolbar />
                 <List>
                     {menuItems.map((item) => (
-                        <ListItem 
-                            button 
+                        <ListItem
+                            button
                             key={item.text}
                             onClick={() => handleMenuClick(item.view)}
                         >
@@ -131,18 +212,18 @@ const User = () => {
             </Drawer>
 
             {/* Main Content */}
-            <Box 
-                component="main" 
-                sx={{ 
-                    flexGrow: 1, 
-                    p: 3, 
-                    mt: 8,  // Added margin top
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    p: 3,
+                    mt: 8,
                     backgroundColor: '#fafafa',
                     minHeight: '100vh',
-                    width: '100%'
+                    width: '100%',
                 }}
             >
-                
+                {renderMainContent()}
             </Box>
         </Box>
     );
