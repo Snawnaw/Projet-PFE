@@ -49,29 +49,63 @@ export const auth = {
 
 // Admin services
 export const admin = {
-  // Get all sections
-  getSections: async () => {
+  // Sections
+  getAllSections: async () => {
     return await API.get('/section');
   },
-  
-  // Add new section
+  getSection: async (id) => {
+    return await API.get(`/section/${id}`);
+  },
   addSection: async (sectionData) => {
     return await API.post('/section', sectionData);
   },
-  
-  // Get all teachers
-  getTeachers: async () => {
+  updateSection: async (id, sectionData) => {
+    return await API.put(`/section/${id}`, sectionData);
+  },
+  deleteSection: async (id) => {
+    return await API.delete(`/section/${id}`);
+  },
+
+  // Teachers
+  /*getAllTeachers: async () => {
     return await API.get('/auth/teachers');
   },
-  
-  // Get all salles
-  getSalles: async () => {
+  getTeacher: async (id) => {
+    return await API.get(`/auth/teachers/${id}`);
+  },*/
+
+  // Salles
+  getAllSalles: async () => {
     return await API.get('/salle');
   },
-  
-  // Get all filieres
-  getFilieres: async () => {
+  getSalle: async (id) => {
+    return await API.get(`/salle/${id}`);
+  },
+  addSalle: async (salleData) => {
+    return await API.post('/salle', salleData);
+  },
+  updateSalle: async (id, salleData) => {
+    return await API.put(`/salle/${id}`, salleData);
+  },
+  deleteSalle: async (id) => {
+    return await API.delete(`/salle/${id}`);
+  },
+
+  // Filieres
+  getAllFilieres: async () => {
     return await API.get('/filiere');
+  },
+  getFiliere: async (id) => {
+    return await API.get(`/filiere/${id}`);
+  },
+  addFiliere: async (filiereData) => {
+    return await API.post('/filiere', filiereData);
+  },
+  updateFiliere: async (id, filiereData) => {
+    return await API.put(`/filiere/${id}`, filiereData);
+  },
+  deleteFiliere: async (id) => {
+    return await API.delete(`/filiere/${id}`);
   }
 };
 
