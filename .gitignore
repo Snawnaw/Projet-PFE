@@ -1,0 +1,6 @@
+pfe-react/frontend/node_modules
+pfe-react/backend/node_modules
+pfe-react/frontend/package.json
+pfe-react/frontend/package-lock.json
+pfe-react/frontend/.env
+pfe-react/frontend/debug.log
