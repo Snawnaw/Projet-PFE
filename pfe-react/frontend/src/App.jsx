@@ -1,18 +1,21 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './styles/global/App.css';
 import AjouterEnseignant from './pages/AjouterEnseignant';
-import AjouterFiliere from './pages/AjouterFiliere';
-import AjouterSalle from './pages/AjouterSalle';
-import AjouterSection from './pages/AjouterSection';
 import GénérateurExamen from './pages/GénérateurExamen';
+import AjouterSection from './pages/AjouterSection';
+import AjouterFiliere from './pages/AjouterFiliere';
+import GénérerExamen from './pages/GénérerExamen';
+import AjouterSalle from './pages/AjouterSalle';
+import Sections from './pages/Sections';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
-import Home from './pages/Home';
-import GénérerExamen from './pages/GénérerExamen';
 import Admin from './pages/Admin';
-import Sections from './pages/Sections';
+import './styles/global/App.css';
+import Home from './pages/Home';
 import User from './pages/User';
+import React from 'react';
+
+
+
 
 function App() {
   return (
