@@ -3,7 +3,7 @@ import AjouterEnseignant from './pages/AjouterEnseignant';
 import GénérateurExamen from './pages/GénérateurExamen';
 import AjouterSection from './pages/AjouterSection';
 import AjouterFiliere from './pages/AjouterFiliere';
-import GénérerExamen from './pages/GénérerExamen';
+import CréerQuestion from './pages/CréerQuestion';
 import AjouterSalle from './pages/AjouterSalle';
 import Sections from './pages/Sections';
 import SignUp from './pages/SignUp';
@@ -28,7 +28,7 @@ function App() {
           <Route path="/AjouterSalle" element={<AjouterSalle />} />
           <Route path="/AjouterSection" element={<AjouterSection />} />
           <Route path="/GénérateurExamen" element={<GénérateurExamen />} />
-          <Route path="/GénérerExamen" element={<GénérerExamen />} />
+          <Route path="/CréerQuestion" element={<CréerQuestion />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/Home" element={<Home />} />

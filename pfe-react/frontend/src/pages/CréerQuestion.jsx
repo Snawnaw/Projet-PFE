@@ -1,7 +1,9 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-const GénérerExamen = () => {
+
+const CréerQuestion = () => {
     return (
         <div className="container mt-5">
             <div className="card">
@@ -41,4 +43,4 @@ const GénérerExamen = () => {
     );
 }
 
-export default GénérerExamen;
+export default CréerQuestion;

@@ -32,7 +32,7 @@ const GénérateurExamen = () => {
         <div className="container">
             <h1 className="text-center mb-3">Gestion des Examens et QCM</h1>
 
-            {/* Quick Actions Card */}
+            {/* Quick Actions Card 
             <div className="card mb-3">
                 <div className="card-body">
                     <h3>Actions Rapides</h3>
@@ -42,7 +42,7 @@ const GénérateurExamen = () => {
                         <button className="btn btn-primary">Banque de Questions</button>
                     </div>
                 </div>
-            </div>
+            </div>*/}
 
                         <div className="card mb-3">
                             <div className="card-body">
@@ -137,7 +137,10 @@ const GénérateurExamen = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <button type="submit" className="btn btn-primary me-2">Créer l'Examen</button>
+                                        <button /*onClick={() => navigate('/GénérerExamen')}*/
+                                        type="submit" className="btn btn-primary me-2">
+                                            Créer l'Examen
+                                        </button>
                                         <button type="reset" className="btn btn-danger">Réinitialiser</button>
                                     </div>
                                 </form>
