@@ -1,0 +1,196 @@
+{
+  "questions": [
+    {
+      "id": "1",
+      "enoncé": "Dans un système distribué, il est facile d'espionner, censurer ou modifier des données.",
+      "difficulte": "facile",
+      "type": "QCU"
+    },
+    {
+      "id": "2",
+      "enoncé": "Dans une architecture client/serveur, une application est exécutée par plusieurs machines serveurs et client.",
+      "difficulte": "facile",
+      "type": "QCU"
+    },
+    {
+      "id": "3",
+      "enoncé": "Les sockets permettent à des programmes de réaliser.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "4",
+      "enoncé": "Le client dans une communication par socket UDP.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "5",
+      "enoncé": "Le client dans une communication par socket TCP.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "6",
+      "enoncé": "Le client dans une communication par RMI.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "7",
+      "enoncé": "Dans un EJB Stateful :",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "8",
+      "enoncé": "Dans un EJB Stateless :",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "9",
+      "enoncé": "send() est une méthode bloquante :",
+      "difficulte": "facile",
+      "type": "QCU"
+    },
+    {
+      "id": "10",
+      "enoncé": "recieve() est une méthode bloquante :",
+      "difficulte": "facile",
+      "type": "QCU"
+    },
+    {
+      "id": "11",
+      "enoncé": "accept() est une méthode bloquante :",
+      "difficulte": "facile",
+      "type": "QCU"
+    },
+    {
+      "id": "12",
+      "enoncé": "Sélectionner les sarveurs d'application pour Java :",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "13",
+      "enoncé": "Les EJB3 sont composés de :",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "14",
+      "enoncé": "Les types des composants EJB3 sont :",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "15",
+      "enoncé": "Les sockets TCP utilisent :",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "16",
+      "enoncé": "Les sockets UDP utilisent :",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "17",
+      "enoncé": "La communication RMI utilise :",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "18",
+      "enoncé": "La communication dans un système client/serveur peut se faire par :",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "19",
+      "enoncé": "La communication ",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "20",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "difficile",
+      "type": "QCM"
+    },
+    {
+      "id": "21",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "22",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "23",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "24",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "25",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "26",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "27",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "28",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "29",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "30",
+      "enoncé": "Plusieurs réponses possibles.",
+      "difficulte": "moyen",
+      "type": "QCM"
+    },
+    {
+      "id": "31",
+      "enoncé": "Une seule réponse possible.",
+      "difficulte": "facile",
+      "type": "QCU"
+    },
+    {
+      "id": "32",
+      "enoncé": "Une seule réponse possible.",
+      "difficulte": "facile",
+      "type": "QCU"
+    }
+  ]
+}
