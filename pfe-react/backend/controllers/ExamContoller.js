@@ -4,6 +4,8 @@ import Reponse from '../models/Response';
 export const createQuestion = async (req, res) => {
     const { question: questionText, reponse: reponseText, typeQuestion, idFiliere, idSection } = req.body;
 
+    const Exam = await 
+
     const newQuestion = await Question.create({
         question: questionText,
         reponse: reponseText,
@@ -26,7 +28,7 @@ export const createQuestion = async (req, res) => {
     });
 
     //find les questions in database
-    const questions = await Question.find({});
+    const Findquestions = await Question.find({});
     if (!questions) {
         return res.status(401).json({
             success: false,
@@ -38,5 +40,8 @@ export const createQuestion = async (req, res) => {
         success: true,
         questions,
     });
+
+
+    
 }
 
