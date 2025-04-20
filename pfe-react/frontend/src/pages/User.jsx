@@ -28,7 +28,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 const User = () => {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
-    const [currentView, setCurrentView] = useState('generer'); // page par défaut
+    const [currentView, setCurrentView] = useState('génerer examen'); // page par défaut
 
     const sectionsData = [
         { id: 1, nom: 'Section A', filiere: 'Informatique', niveau: '2ème année' },
@@ -48,7 +48,7 @@ const User = () => {
 
     const menuItems = [
         { text: 'Mon Profil', icon: <PersonIcon />, view: 'profile' },
-        { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'generer' },
+        { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
         { text: 'Filières', icon: <CategoryIcon />, view: 'filieres' },
         { text: 'Banque de Questions', icon: <ClassIcon />, view: 'banque' },
     ];
@@ -60,8 +60,20 @@ const User = () => {
 
     const renderMainContent = () => {
         switch (currentView) {
-            case 'generer':
-                return null;
+            case 'génerer examen':
+                    {currentView === 'génerer examen' && (
+                        <>
+                            <Button 
+                                variant="contained" 
+                                onClick={() => navigate('/GénérerExamen')} 
+                                sx={{ mb: 2 }}
+                            >
+                                Générer un nouvel examen
+                            </Button>
+                            <Typography variant="h6">Générer Examen</Typography>
+                        </>
+                    )}
+                
             case 'filieres':
                 return (
                     <Box>
@@ -69,8 +81,8 @@ const User = () => {
                             Filières et Sections
                         </Typography>
                         <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-                            <Button variant="contained" color="success" sx={{ borderRadius: 2 }}>
-                                + Question
+                            <Button onClick={() => navigate('/GénérerExamen')} variant="contained" color="success" sx={{ borderRadius: 2 }}>
+                            + Question
                             </Button>
                             <Button variant="contained" color="info" sx={{ borderRadius: 2 }}>
                                 Créer Examen

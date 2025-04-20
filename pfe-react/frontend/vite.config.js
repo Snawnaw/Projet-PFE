@@ -4,6 +4,9 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  json: {
+    namedExports: false  // <- C'est ça l'important
+  },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.css'],
     mainFields: ['module', 'main', 'browser'],
