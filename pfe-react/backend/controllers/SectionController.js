@@ -2,7 +2,7 @@ const Section = require('../models/Section');
 const CatchAsyncError = require('../middleware/CatchAsyncError');
 
 // Get all sections
-exports.getAllSections = async (req, res) => {
+exports.getAllSections = CatchAsyncError(async (req, res) => {
     try {
         const sections = await Section.find();
         res.status(200).json({
@@ -16,7 +16,7 @@ exports.getAllSections = async (req, res) => {
             message: error.message
         });
     }
-};
+});
 
 // Create new section
 exports.createSection = async (req, res) => {
@@ -36,7 +36,7 @@ exports.createSection = async (req, res) => {
             nom,
             filiere,
             niveau,
-            nomber_de_groupes
+            nombre_de_groupes
         });
 
         res.status(201).json({

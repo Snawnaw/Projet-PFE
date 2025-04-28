@@ -10,9 +10,9 @@ const {
 } = require('../controllers/SalleController');
 
 // Fix the route handlers
-router.route('/AllSalle').get(isAuthenticatedUser, getAllSalles);
-router.route('/SalleCreate').post(isAuthenticatedUser, authorizedRoles('admin'), createSalle);
-router.route('/SalleEdit/:id').put(isAuthenticatedUser, authorizedRoles('admin'), updateSalle);
-router.route('/SalleDelete/:id').delete(isAuthenticatedUser, authorizedRoles('admin'), deleteSalle);
+router.get('/AllSalle', isAuthenticatedUser, getAllSalles);
+router.post('/SalleCreate', isAuthenticatedUser, authorizedRoles('admin'), createSalle);
+router.put('/SalleEdit/:id', isAuthenticatedUser, authorizedRoles('admin'), updateSalle);
+router.delete('/SalleDelete/:id', isAuthenticatedUser, authorizedRoles('admin'), deleteSalle);
 
 module.exports = router;

@@ -15,7 +15,7 @@ const Home = () => {
                 <Link to="/SignIn" className="btn btn-primary">Se connecter</Link>
                 <Link to="/SignUp" className="btn btn-primary">Créer un compte</Link>
                 <Link to="/GénérateurExamen" className="btn btn-primary">Générateur d'examen</Link>
-                <Link to="/GénérerExamen" className="btn btn-primary">Générer Examen</Link>
+                {/*<Link to="/CreerQuestion" className="btn btn-primary">Créer Question</Link>*/}
                 <Link to="/Admin" className="btn btn-primary">Admin</Link>
                 <Link to="/User" className="btn btn-primary">User</Link>
             </div>

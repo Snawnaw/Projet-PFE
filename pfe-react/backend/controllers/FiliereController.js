@@ -1,19 +1,39 @@
 const CatchAsyncError = require('../middleware/CatchAsyncError');
 const Filiere = require('../models/Filiere');
 
-exports.createFiliere = CatchAsyncError(async (req, res, next) => {
-    const { nom, code, cycle } = req.body;
-
-    // Check if filiere with same code already exists
-    const existingFiliere = await Filiere.findOne({ code });
-    if (existingFiliere) {
-        return res.status(400).json({
-            success: false,
-            message: `Filiere with code ${code} already exists`
+// Get all filieres
+exports.getAllFilieres = CatchAsyncError(async (req, res) => {
+    try{
+        const filieres = await Filiere.find();
+        res.status(200).json({
+            success: true,
+            filieres: filieres // Make sure we explicitly include the filieres array
         });
     }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching filieres',
+            error: error.message
+        });
+    }
+    
+});
 
+exports.createFiliere = CatchAsyncError(async (req, res, next) => {
     try {
+        const { nom, code, cycle } = req.body;
+
+        // Check if filiere with same code already exists
+        const existingFiliere = await Filiere.findOne({ code });
+        if (existingFiliere) {
+            return res.status(400).json({
+                success: false,
+                message: `Filiere with code ${code} already exists`
+            });
+        }
+
+    
         const filiere = await Filiere.create({
             nom,
             code,
@@ -45,16 +65,6 @@ exports.createFiliere = CatchAsyncError(async (req, res, next) => {
             error: error.message
         });
     }
-});
-
-// Get all filieres
-exports.getAllFilieres = CatchAsyncError(async (req, res) => {
-    const filieres = await Filiere.find();
-    
-    res.status(200).json({
-        success: true,
-        filieres: filieres // Make sure we explicitly include the filieres array
-    });
 });
 
 // Update a filiere

@@ -35,15 +35,21 @@ app.use(helmet());
 app.use(morgan('dev'));
 
 // Routes
+// ...existing code...
+
+// Routes
 const auth = require('./routes/Auth.routes');
 const section = require('./routes/Section.routes');
 const filiere = require('./routes/Filiere.routes');
 const salle = require('./routes/Salle.routes');
+const enseignant = require('./routes/Enseignant.routes');
 
+// Mount routes
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/section', section);
-app.use('/api/v1/filiere', filiere); 
+app.use('/api/v1/filiere', filiere);
 app.use('/api/v1/salle', salle);
+app.use('/api/v1/enseignant', enseignant);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

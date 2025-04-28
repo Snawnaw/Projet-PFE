@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
+import GénérateurExamen from './GénérateurExamen';  // adjust the path as needed
 import {
     Button,
     Typography,
@@ -61,19 +62,33 @@ const User = () => {
     const renderMainContent = () => {
         switch (currentView) {
             case 'génerer examen':
-                    {currentView === 'génerer examen' && (
-                        <>
+                return (
+                    <Box>
+                        <Typography variant="h5" gutterBottom>
+                            Générateur d'Examen
+                        </Typography>
+                        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
                             <Button 
                                 variant="contained" 
                                 onClick={() => navigate('/GénérerExamen')} 
-                                sx={{ mb: 2 }}
+                                color="success"
+                                sx={{ borderRadius: 2 }}
                             >
-                                Générer un nouvel examen
+                                + Question
                             </Button>
-                            <Typography variant="h6">Générer Examen</Typography>
-                        </>
-                    )}
-                
+                            <Button 
+                                variant="contained" 
+                                onClick={() => navigate('/GénérerExamen')}
+                                color="info"
+                                sx={{ borderRadius: 2 }}
+                            >
+                                Générer un Examen
+                            </Button>
+                        </Box>
+                        <GénérateurExamen />;
+                    </Box>
+                );
+                                
             case 'filieres':
                 return (
                     <Box>

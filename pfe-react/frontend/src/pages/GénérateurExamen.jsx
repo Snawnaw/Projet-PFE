@@ -32,18 +32,6 @@ const GénérateurExamen = () => {
         <div className="container">
             <h1 className="text-center mb-3">Gestion des Examens et QCM</h1>
 
-            {/* Quick Actions Card */}
-            <div className="card mb-3">
-                <div className="card-body">
-                    <h3>Actions Rapides</h3>
-                    <div className="btn-group">
-                        <button className="btn btn-primary me-2">Créer un Nouvel Examen</button>
-                        <button className="btn btn-success me-2">Générer un QCM</button>
-                        <button className="btn btn-primary">Banque de Questions</button>
-                    </div>
-                </div>
-            </div>
-
                         <div className="card mb-3">
                             <div className="card-body">
                                 <h3>Créer un Nouvel Examen</h3>

@@ -9,6 +9,11 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { admin, auth } from '../services/api';
 import { DataGrid } from '@mui/x-data-grid';
+import GénérateurExamen from './GénérateurExamen';
+/*import axios from 'axios';
+import { response } from '../../../backend/App';
+import { NavItem } from 'react-bootstrap';*/
+
 import { 
     CircularProgress,
     ListItemIcon,
@@ -24,6 +29,7 @@ import {
     List,
     Box
 } from '@mui/material';
+import { date } from 'yup';
 
 const Admin = () => {
     const navigate = useNavigate();
@@ -36,7 +42,9 @@ const Admin = () => {
     const [sectionsData, setSectionsData] = useState([]);
     const [sallesData, setSallesData] = useState([]);
     const [filieresData, setFilieresData] = useState([]);
-    const [userProfile, setUserProfile] = useState(null);
+    const [userData, setUserProfile] = useState([]);
+    const [adminData, setAdminData] = useState([]);
+    const [teacherData, setTeacherData] = useState([]);
 
     useEffect(() => {
         // Check if user is logged in and is admin
@@ -67,9 +75,10 @@ const Admin = () => {
         try {
             switch (view) {
                 case 'profile':
-                    if (!userProfile) {
-                        const response = await auth.getProfile();
-                        setUserProfile(response.data.user);
+                    if (!adminData) {
+                        const response = await API.get('');  // Endpoint to get admin data
+                        console.log('ADMIN DATA:', response.data); // 🔍 DEBUG
+                        setAdminData(response.data.admin);
                     }
                     break;
                     
@@ -77,31 +86,30 @@ const Admin = () => {
                     if (sectionsData.length === 0) {
                         const response = await API.get('/section/AllSections');
                         console.log('SECTIONS:', response.data); // 🔍 DEBUG
-                        return response.data.sections;
+                        setSectionsData(response.data.sections);
                     }
                     break;
                     
                 case 'enseignants':
-                    if (teachersData.length === 0) {
-                        const response = await API.get('/enseignants/AllEnseignants');
-                        console.log('TEACHERS:', response.data); // 🔍 DEBUG
-                        return response.data.enseignants;
+                    if (teacherData.length === 0) {
+                        const response = await API.get('/enseignant/AllEnseignant');
+                        setTeacherData(response.data);
                     }
                     break;
                     
                 case 'salles':
                     if (sallesData.length === 0) {
-                        const salles = await API.get('/salles/AllSalles');
-                        console.log('SALLES:', salles.data); // 🔍 DEBUG
-                        return salles.data.salles;
+                        const response = await API.get('/salle/AllSalle');
+                        console.log('SALLES:', response.data); // 🔍 DEBUG
+                        setSallesData(response.data.salles);
                     }
                     break;
                     
                 case 'filieres':
                     if (filieresData.length === 0) {
-                        const response = await API.get('/filiere/AllFilieres');
+                        const response = await API.get('/filiere/AllFiliere');
                         console.log('FILIERES:', response.data); // 🔍 DEBUG
-                        return response.data.filieres;
+                        setFilieresData(response.data.filieres);
                     }
                     break;
                     
@@ -128,15 +136,67 @@ const Admin = () => {
     const sectionsColumns = [
         { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
-        { field: 'filiere', headerName: 'Filière', width: 130, valueGetter: (params) => params.row.filiere?.nom || '' },
+        { 
+            field: 'filiere', 
+            headerName: 'Filière', 
+            width: 130, 
+            valueGetter: (params) => params.row?.filiere?.nom ?? 'N/A'
+        },
         { field: 'niveau', headerName: 'Niveau', width: 130 },
+        { field: 'nbgroupes', headerName: 'Nombre de groupes', width: 180 },
     ];
 
+    const filiereColumns = [
+        { field: '_id', headerName: 'ID', width: 220 },
+        { field: 'nom', headerName: 'Nom', width: 130 },
+        { field: 'code', headerName: 'Code', width: 130 },
+        { field: 'cycle', headerName: 'Cycle', width: 200 },
+    ];
+
+    const AdminColumns = [
+        { field: '_id', headerName: 'ID', width: 220 },
+        { field: 'nom', headerName: 'Nom', width: 130 },
+        { field: 'prenom', headerName: 'Prénom', width: 130 },
+        { field: 'date_naissance', headerName: 'Date de naissance', width: 180 },
+        { field: 'numero_tel', headerName: 'Numéro de téléphone', width: 180 },
+        { field: 'email', headerName: 'Email', width: 200 },
+        { field: 'password', headerName: 'Mot de passe', width: 180 },
+        { field: 'role', headerName: 'Rôle', width: 130 },
+        { field: 'createdAt', headerName: 'Date de création', width: 180, type: 'date' },
+    ];
+
+    // Add this utility function at the top of your file
+    const formatDate = (params) => {
+        if (!params || !params.value) return '';
+        try {
+            return new Date(params.value).toLocaleDateString('fr-FR');
+        } catch (error) {
+            return '';
+        }
+    };
+
+    // Update your columns definition
     const teachersColumns = [
         { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'prenom', headerName: 'Prénom', width: 130 },
+        { 
+            field: 'date_naissance',
+            headerName: 'Date de naissance',
+            width: 150,
+            type: 'date',
+            valueFormatter: formatDate
+        },
         { field: 'email', headerName: 'Email', width: 200 },
+        { field: 'numero_tel', headerName: 'Téléphone', width: 130 },
+        { field: 'role', headerName: 'Rôle', width: 100 },
+        {
+            field: 'createdAt',
+            headerName: 'Date de création',
+            width: 150,
+            type: 'date',
+            valueFormatter: formatDate
+        }
     ];
 
     const sallesColumns = [
@@ -244,18 +304,20 @@ const Admin = () => {
                     </Box>
                 ) : (
                     <>
-                        {currentView === 'profile' && userProfile && (
+                        {currentView === 'profile' && adminData && (
                             <Box>
                                 <Typography variant="h6" gutterBottom>Mon Profil</Typography>
-                                <Typography><strong>Nom:</strong> {userProfile.nom}</Typography>
-                                <Typography><strong>Prénom:</strong> {userProfile.prenom}</Typography>
-                                <Typography><strong>Email:</strong> {userProfile.email}</Typography>
-                                <Typography><strong>Téléphone:</strong> {userProfile.numeroTel}</Typography>
-                                <Typography><strong>Rôle:</strong> {userProfile.role}</Typography>
+                                <Typography><strong>Nom:</strong> {adminData.nom}</Typography>
+                                <Typography><strong>Prénom:</strong> {adminData.prenom}</Typography>
+                                <Typography><strong>Date de naissance:</strong> {adminData.dateNaissance}</Typography>
+                                <Typography><strong>Email:</strong> {adminData.email}</Typography>
+                                <Typography><strong>Mot de passe:</strong> {adminData.password}</Typography>
+                                <Typography><strong>Téléphone:</strong> {adminData.numeroTel}</Typography>
+                                <Typography><strong>Rôle:</strong> {adminData.role}</Typography>
                             </Box>
                         )}
                         
-                        {currentView === 'filieres' && (
+                        {currentView === 'filieres' && filieresData && (
                             <>
                                 <Button 
                                     variant="contained" 
@@ -267,12 +329,14 @@ const Admin = () => {
                                 <Typography variant="h6">Gestion des Filières</Typography>
                                 {filieresData.length > 0 ? (
                                     <DataGrid
-                                        rows={filieresData.map(f => ({...f, id: f._id}))}
-                                        columns={[
-                                            { field: 'id', headerName: 'ID', width: 220 },
-                                            { field: 'nom', headerName: 'Nom', width: 130 },
-                                            { field: 'description', headerName: 'Description', width: 300 },
-                                        ]}
+                                        rows={filieresData.map(filiere => ({
+                                            id: filiere._id,
+                                            _id: filiere._id,
+                                            nom: filiere.nom,
+                                            code: filiere.code,
+                                            cycle: filiere.cycle
+                                        }))}
+                                        columns={filiereColumns}
                                         pageSize={5}
                                         rowsPerPageOptions={[5]}
                                         autoHeight
@@ -295,19 +359,51 @@ const Admin = () => {
                                     Ajouter Section
                                 </Button>
                                 <DataGrid
-                                    rows={sectionsData.map(s => ({...s, id: s._id}))}
+                                    rows={sectionsData.map(s => ({
+                                        id: s._id,
+                                        _id: s._id,
+                                        nom: s.nom,
+                                        filiere: s.filiere, // Keep the whole filiere object
+                                        niveau: s.niveau,
+                                        nbgroupes: s.nombre_de_groupes,
+                                    }))}
                                     columns={sectionsColumns}
                                     pageSize={5}
                                     rowsPerPageOptions={[5]}
                                     autoHeight
                                     disableSelectionOnClick
-                                    getRowId={(row) => row.id}
+                                />
+                            </>
+                        )}
+
+                        {currentView === 'salles' && sallesData && (
+                            <>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => navigate('/AjouterSalle')}
+                                    sx={{ mb: 2 }}
+                                >
+                                    Ajouter Salle
+                                </Button>
+                                <DataGrid
+                                    rows={sallesData.map(salle => ({
+                                        id: salle._id,
+                                        _id: salle._id,
+                                        numero: salle.numero,
+                                        type: salle.type,
+                                        capacite: salle.capacite,
+                                    }))}
+                                    columns={sallesColumns}
+                                    pageSize={5}
+                                    rowsPerPageOptions={[5]}
+                                    autoHeight
+                                    disableSelectionOnClick
                                 />
                             </>
                         )}
                         
-                        {currentView === 'enseignants' && (
-                            <>
+                        {currentView === 'enseignants' && teacherData && (
+                            <Box sx={{ width: '100%', height: '100%' }}>
                                 <Button 
                                     variant="contained" 
                                     onClick={() => navigate('/AjouterEnseignant')} 
@@ -315,49 +411,55 @@ const Admin = () => {
                                 >
                                     Ajouter Enseignant
                                 </Button>
-                                <DataGrid
-                                    rows={teachersData.map(t => ({...t, id: t._id}))}
-                                    columns={teachersColumns}
-                                    pageSize={5}
-                                    rowsPerPageOptions={[5]}
-                                    autoHeight
-                                    disableSelectionOnClick
-                                    getRowId={(row) => row.id}
-                                />
-                            </>
-                        )}
-                        
-                        {currentView === 'salles' && (
-                            <>
-                                <Button 
-                                    variant="contained" 
-                                    onClick={() => navigate('/AjouterSalle')} 
-                                    sx={{ mb: 2 }}
-                                >
-                                    Ajouter Salle
-                                </Button>
-                                <DataGrid
-                                    rows={sallesData.map(s => ({...s, id: s._id}))}
-                                    columns={sallesColumns}
-                                    pageSize={5}
-                                    rowsPerPageOptions={[5]}
-                                    autoHeight
-                                    disableSelectionOnClick
-                                    getRowId={(row) => row.id}
-                                />
-                            </>
+                                <Box sx={{ height: 400, width: '100%' }}>
+                                    <DataGrid
+                                        rows={teacherData.map(t => ({
+                                            id: t._id || Math.random(),
+                                            _id: t._id,
+                                            nom: t.nom || '',
+                                            prenom: t.prenom || '',
+                                            date_naissance: t.date_naissance ? new Date(t.date_naissance) : null,
+                                            numero_tel: t.numero_tel || '',
+                                            email: t.email || '',
+                                            role: t.role || '',
+                                            createdAt: t.createdAt ? new Date(t.createdAt) : null
+                                        }))}
+                                        columns={teachersColumns}
+                                        pageSize={5}
+                                        rowsPerPageOptions={[5]}
+                                        autoHeight
+                                        disableSelectionOnClick
+                                    />
+                                </Box>
+                            </Box>
                         )}
                         
                         {currentView === 'génerer examen' && (
                             <>
-                                <Button 
-                                    variant="contained" 
-                                    onClick={() => navigate('/GénérerExamen')} 
-                                    sx={{ mb: 2 }}
-                                >
-                                    Générer un nouvel examen
-                                </Button>
-                                <Typography variant="h6">Générer Examen</Typography>
+                                <Box>
+                        <Typography variant="h5" gutterBottom>
+                            Générateur d'Examen
+                        </Typography>
+                        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
+                            <Button 
+                                variant="contained" 
+                                onClick={() => navigate('/GénérerExamen')} 
+                                color="success"
+                                sx={{ borderRadius: 2 }}
+                            >
+                                + Question
+                            </Button>
+                            <Button 
+                                variant="contained" 
+                                onClick={() => navigate('/GénérerExamen')}
+                                color="info"
+                                sx={{ borderRadius: 2 }}
+                            >
+                                Générer un Examen
+                            </Button>
+                        </Box>
+                        <GénérateurExamen />;
+                    </Box>
                             </>
                         )}
                     </>

@@ -3,13 +3,20 @@ const Salle = require('../models/Salle');
 
 // Get all salles
 exports.getAllSalles = CatchAsyncError(async (req, res) => {
-    const salles = await Salle.find();
-    
-    res.status(200).json({
-        success: true,
-        count: salles.length,
-        salles
-    });
+    try {
+        const salles = await Salle.find();
+        res.status(200).json({
+            success: true,
+            count: salles.length,
+            salles
+        });
+    } catch (error) {
+        // Fixed catch block
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 });
 
 // Create salle

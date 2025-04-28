@@ -1,6 +1,6 @@
 import Question from '../models/Question';
 import Reponse from '../models/Response';
-
+/*
 export const createQuestion = async (req, res) => {
     const { question: questionText, reponse: reponseText, typeQuestion, idFiliere, idSection } = req.body;
 
@@ -43,5 +43,5 @@ export const createQuestion = async (req, res) => {
 
 
     
-}
+}*/
 

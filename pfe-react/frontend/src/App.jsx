@@ -3,7 +3,7 @@ import AjouterEnseignant from './pages/AjouterEnseignant';
 import GénérateurExamen from './pages/GénérateurExamen';
 import AjouterSection from './pages/AjouterSection';
 import AjouterFiliere from './pages/AjouterFiliere';
-import GénérerExamen from './pages/GénérerExamen';
+//import CreerQuestion from './pages/CreerQuestion';
 import AjouterSalle from './pages/AjouterSalle';
 import Sections from './pages/Sections';
 import SignUp from './pages/SignUp';
@@ -13,9 +13,6 @@ import './styles/global/App.css';
 import Home from './pages/Home';
 import User from './pages/User';
 import React from 'react';
-
-
-
 
 function App() {
   return (
@@ -28,7 +25,7 @@ function App() {
           <Route path="/AjouterSalle" element={<AjouterSalle />} />
           <Route path="/AjouterSection" element={<AjouterSection />} />
           <Route path="/GénérateurExamen" element={<GénérateurExamen />} />
-          <Route path="/GénérerExamen" element={<GénérerExamen />} />
+          {/*<Route path="/CreerQuestion" element={<CreerQuestion />} />*/}
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/SignIn" element={<SignIn />} />
           <Route path="/Home" element={<Home />} />
