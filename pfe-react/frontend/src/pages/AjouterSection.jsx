@@ -1,6 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const AjouterSection = () => {
+    const [filieres, setFilieres] = useState([]); // State to store filieres
+    const [error, setError] = useState(null); // State to handle errors
+
+    useEffect(() => {
+        const fetchFilieres = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/v1/filiere/AllFiliere', {
+                    credentials: 'include',});
+                if (!response.ok) {
+                    throw new Error('Failed to fetch filieres');
+                }
+                const data = await response.json();
+                setFilieres(data.filieres); // Assuming the API returns an array of filieres
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+
+        fetchFilieres();
+    }, []); // Empty dependency array to run once on mount
+
     return (
         <div className="AjouterSection">
             <h1>Ajouter une section</h1>
@@ -11,8 +32,11 @@ const AjouterSection = () => {
                 <div className="form-group">
                         <select className="form-control" name="filiere" placeholder="Filiere" required>
                             <option value="">Sélectionner une filière</option>
-                            <option value="Informatique">Informatique</option>
-                            <option value="Mathématiques">Mathématiques</option>
+                            {filieres.map((filiere) => (
+                                <option key={filiere._id} value={filiere._id}>
+                                    {filiere.nom}
+                                </option>
+                            ))}
                         </select>
                 </div>
                 <div className="form-group">

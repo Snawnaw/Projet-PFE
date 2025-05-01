@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
 
-const GénérerExamen = () => {
+const CreerQuestion = () => {
     return (
         <div className="container mt-5">
             <div className="card">
@@ -41,4 +41,4 @@ const GénérerExamen = () => {
     );
 }
 
-export default GénérerExamen;
+export default CreerQuestion;

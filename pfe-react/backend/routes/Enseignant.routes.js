@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-//const { isAuthenticatedUser, authorizedRoles } = require('../middleware/Auth');
+const { isAuthenticatedUser, authorizedRoles } = require('../middleware/Auth');
 
 const { 
     getAllEnseignants, 

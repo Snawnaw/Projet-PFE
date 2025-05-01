@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const ErrorHandler = require('../utils/ErrorHandler');
-const CatchAsyncErrors = require('../middleware/CatchAsyncError');
+const catchAsyncErrors = require('../middleware/catchAsyncError');
 /* 
 exports.isAuth = async (req, res, next) => { // req : request, res : response, next : next middleware
     try {
@@ -40,7 +40,7 @@ exports.isAuth = async (req, res, next) => { // req : request, res : response, n
     }
 };
 */
-exports.isAuthenticatedUser = CatchAsyncErrors(async (req, res, next) => {
+exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
     const { token } = req.cookies;
     
     if(!token) {

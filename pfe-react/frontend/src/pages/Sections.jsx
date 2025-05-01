@@ -24,7 +24,7 @@ const Sections = () => {
                     nom: section.nom,
                     filiere: section.filiere,
                     niveau: section.niveau,
-                    groupes: section.nomber_de_groupes
+                    groupes: section.nombre_de_groupes,
                 }));
                 setSectionsData(formattedData);
             }

@@ -1,13 +1,12 @@
 const Section = require('../models/Section');
-const CatchAsyncError = require('../middleware/CatchAsyncError');
+const catchAsyncError = require('../middleware/catchAsyncError');
 
 // Get all sections
-exports.getAllSections = CatchAsyncError(async (req, res) => {
+exports.getAllSections = catchAsyncError(async (req, res) => {
     try {
         const sections = await Section.find();
         res.status(200).json({
             success: true,
-            count: sections.length,
             sections
         });
     } catch (error) {
@@ -21,7 +20,7 @@ exports.getAllSections = CatchAsyncError(async (req, res) => {
 // Create new section
 exports.createSection = async (req, res) => {
     try {
-        const { nom, filiere, niveau, nomber_de_groupes } = req.body;
+        const { nom, filiere, niveau, nombre_de_groupes } = req.body;
         
         // Check if section already exists
         const existingSection = await Section.findOne({ nom });

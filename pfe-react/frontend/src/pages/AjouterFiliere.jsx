@@ -20,11 +20,12 @@ const AjouterFiliere = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/v1/filiere/create', {
+            const response = await fetch('http://localhost:5000/api/v1/filiere/FiliereCreate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     nom: filiere,
                     code: code,

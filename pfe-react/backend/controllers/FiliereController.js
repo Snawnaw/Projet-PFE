@@ -1,4 +1,4 @@
-const CatchAsyncError = require('../middleware/CatchAsyncError');
+const CatchAsyncError = require('../middleware/catchAsyncError');
 const Filiere = require('../models/Filiere');
 
 // Get all filieres

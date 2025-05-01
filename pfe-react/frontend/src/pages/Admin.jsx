@@ -143,7 +143,7 @@ const Admin = () => {
             valueGetter: (params) => params.row?.filiere?.nom ?? 'N/A'
         },
         { field: 'niveau', headerName: 'Niveau', width: 130 },
-        { field: 'nbgroupes', headerName: 'Nombre de groupes', width: 180 },
+        { field: 'nombre_de_groupes', headerName: 'Nombre de groupes', width: 180 },
     ];
 
     const filiereColumns = [
@@ -365,7 +365,7 @@ const Admin = () => {
                                         nom: s.nom,
                                         filiere: s.filiere, // Keep the whole filiere object
                                         niveau: s.niveau,
-                                        nbgroupes: s.nombre_de_groupes,
+                                        nombre_de_groupes: s.nombre_de_groupes,
                                     }))}
                                     columns={sectionsColumns}
                                     pageSize={5}
