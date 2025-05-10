@@ -5,14 +5,14 @@ const jwt = require('jsonwebtoken');
 
 // Register a new user
 exports.registerUser = CatchAsyncError(async (req, res, next) => {
-    const { nom, prenom, dateNaissance, numeroTel, email, password, role } = req.body;
+    const { nom, prenom, date_naissance, numero_tel, email, password, role } = req.body;
 
     // Créer l'utilisateur avec le rôle fourni
     const user = await User.create({
         nom,
         prenom,
-        dateNaissance,
-        numeroTel,
+        date_naissance,
+        numero_tel,
         email,
         password,
         role // 'admin' ou 'user' selon req.body
@@ -28,8 +28,8 @@ exports.registerUser = CatchAsyncError(async (req, res, next) => {
             nom: user.nom,
             prenom: user.prenom,
             email: user.email,
-            numeroTel: user.numeroTel,
-            dateNaissance: user.dateNaissance,
+            numero_tel: user.numero_tel,
+            date_naissance: user.date_naissance,
             role: user.role, // bien renvoyer le rôle ici
             createdAt: user.createdAt
         }
@@ -87,8 +87,8 @@ exports.loginUser = CatchAsyncError(async (req, res, next) => {
                 nom: user.nom,
                 prenom: user.prenom,
                 email: user.email,
-                numeroTel: user.numeroTel,
-                dateNaissance: user.dateNaissance,
+                numero_tel: user.numero_tel,
+                date_naissance: user.date_naissance,
                 role: user.role,
                 createdAt: user.createdAt
             }

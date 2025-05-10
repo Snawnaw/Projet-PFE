@@ -6,9 +6,9 @@ function AjouterSalle() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         numero: '',
+        nom: '',
         type: '',
-        capacite: '',
-        departement: ''
+        capacite: ''
     });
 
     const handleChange = (e) => {
@@ -21,9 +21,15 @@ function AjouterSalle() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/salles', formData);
+            const token = localStorage.getItem('token'); // Or wherever the token is stored
+            await axios.post('http://localhost:5000/api/v1/salle/SalleCreate', formData, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             alert('Salle ajoutée avec succès');
-            navigate('/salles'); // Redirect to salles list
+            // navigate('/salles'); // Redirect to salles list
         } catch (error) {
             console.error('Erreur:', error);
             alert('Erreur lors de l\'ajout de la salle');
@@ -33,7 +39,7 @@ function AjouterSalle() {
     return (
         <div className="AjouterSalle">
             <h1>Ajouter une salle</h1>
-            <form onSubmit={handleSubmit}>
+            <form>
                 <div className="form-group">
                     <input 
                         type="text" 
@@ -41,6 +47,17 @@ function AjouterSalle() {
                         name="numero" 
                         placeholder="Numéro de salle" 
                         value={formData.numero}
+                        onChange={handleChange}
+                        required 
+                    />
+                </div>
+                <div className="form-group">
+                    <input 
+                        type="text" 
+                        className="form-control" 
+                        name="nom" 
+                        placeholder="Nom de la salle" 
+                        value={formData.nom}
                         onChange={handleChange}
                         required 
                     />
@@ -71,21 +88,8 @@ function AjouterSalle() {
                         required 
                     />
                 </div>
-                <div className="form-group">
-                    <select 
-                        className="form-control" 
-                        name="departement" 
-                        value={formData.departement}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Département</option>
-                        <option value="Informatique">Informatique</option>
-                        <option value="Mathématiques">Mathématiques</option>
-                    </select>
-                </div>
                 <div className="text-right">
-                    <button type="submit" className="btn btn-primary">Ajouter</button>
+                    <button type="submit" className="btn btn-primary" onClick={handleSubmit}>Ajouter</button>
                     <button type="reset" className="btn btn-danger">Annuler</button>
                     <button type="button" className="btn btn-primary" onClick={() => navigate('/salles')}>Retour</button>
                 </div>

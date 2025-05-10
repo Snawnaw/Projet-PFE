@@ -1,12 +1,16 @@
 const Enseignant = require('../models/Enseignant');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { create } = require('../models/Filiere');
 
 // Get all teachers
 exports.getAllEnseignants = async (req, res) => {
     try {
         const enseignants = await Enseignant.find();
-        res.status(200).json(enseignants);
+        res.status(200).json({
+            success: true,
+            enseignants
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -25,28 +29,61 @@ exports.getEnseignantById = async (req, res) => {
     }
 };
 
+exports.getEnseignantsByFiliere = async (req, res) => {
+    try {
+        const { filiereID } = req.params;
+        const enseignants = await Enseignant.find({ filiere: filiereID }); // Filtrer par filière
+        res.status(200).json({
+            success: true,
+            enseignants,
+        });
+    } catch (error) {
+        console.error('Error fetching enseignants:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 // Create new teacher
 exports.createEnseignant = async (req, res) => {
     try {
         const { 
             nom, 
             prenom, 
-            dateNaissance, 
-            numeroTel, 
+            date_naissance, // Correspondance avec le frontend
+            numero_tel,     // Correspondance avec le frontend
             email, 
             password, 
-            role 
+            role,
+            module, // Optional: if you want to set the module field
+            createdAt // Optional: if you want to set the createdAt field
         } = req.body;
 
+
         // Check if teacher already exists
+        const existingEnseignant = await Enseignant.findOne({ nom, prenom });
+        if (existingEnseignant) {
+            return res.status(400).json({ message: "Cet enseignant existe déjà" });
+        }
+
         const existingEmail = await Enseignant.findOne({ email });
         if (existingEmail) {
             return res.status(400).json({ message: "Cet email existe déjà" });
         }
 
-        const existingPhone = await Enseignant.findOne({ numeroTel });
+        if (!req.body.numero_tel) {
+            return res.status(400).json({ message: 'Le champ numero de telephone est requis.' });
+          }
+
+        if (!date_naissance) {
+            return res.status(400).json({ message: 'Veuillez choisir une date de naissance.' });
+        }
+
+        const existingPhone = await Enseignant.findOne({ numero_tel });
         if (existingPhone) {
-            return res.status(400).json({ message: "Ce numéro de téléphone existe déjà" });
+            return res.status(400).json({ message: 'Ce numéro de téléphone existe déjà.' });
         }
 
         // Hash password
@@ -55,16 +92,19 @@ exports.createEnseignant = async (req, res) => {
         const enseignant = new Enseignant({
             nom,
             prenom,
-            dateNaissance,
-            numeroTel,
+            date_naissance,
+            numero_tel,
             email,
             password,
-            role
+            role,
+            module,
+            createdAt: new Date() // Set createdAt to current date
         });
 
-        const savedEnseignant = await enseignant.save();
-        res.status(201).json(savedEnseignant);
+        await enseignant.save();
+        res.status(201).json({ message: "Enseignant créé avec succès" });
     } catch (error) {
+        console.error('Erreur lors de la création de l\'enseignant :', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -75,10 +115,13 @@ exports.updateEnseignant = async (req, res) => {
         const { 
             nom, 
             prenom, 
-            dateNaissance, 
-            numeroTel, 
-            email, 
-            role 
+            date_naissance, 
+            numero_tel, 
+            email,
+            password, // Optional: if you want to update the password 
+            role,
+            module, // Optional: if you want to update the module field
+            createdAt // Optional: if you want to update the createdAt field
     } = req.body;
 
         // Check if new email already exists
@@ -93,9 +136,9 @@ exports.updateEnseignant = async (req, res) => {
         }
 
         // Check if new phone number already exists
-        if (numeroTel) {
+        if (numero_tel) {
             const existingPhone = await Enseignant.findOne({ 
-                numeroTel, 
+                numero_tel, 
                 _id: { $ne: req.params.id } 
             });
             if (existingPhone) {
@@ -105,7 +148,7 @@ exports.updateEnseignant = async (req, res) => {
 
         const updatedEnseignant = await Enseignant.findByIdAndUpdate(
             req.params.id,
-            { nom, prenom, dateNaissance, numeroTel, email, role },
+            { nom, prenom, date_naissance, numero_tel, email, role, module, password, createdAt },
             { new: true, runValidators: true }
         );
         
@@ -161,10 +204,12 @@ exports.login = async (req, res) => {
                 id: enseignant._id,
                 nom: enseignant.nom,
                 prenom: enseignant.prenom,
-                dateNaissance: enseignant.dateNaissance,
-                numeroTel: enseignant.numeroTel,
+                date_naissance: enseignant.date_naissance,
+                numero_tel: enseignant.numero_tel,
                 email: enseignant.email,
-                role: enseignant.role
+                role: enseignant.role,
+                module: enseignant.module,
+                createdAt: enseignant.createdAt
             }
         });
     } catch (error) {

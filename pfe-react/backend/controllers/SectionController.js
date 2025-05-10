@@ -4,7 +4,8 @@ const catchAsyncError = require('../middleware/catchAsyncError');
 // Get all sections
 exports.getAllSections = catchAsyncError(async (req, res) => {
     try {
-        const sections = await Section.find();
+        const { filiereID } = req.params;
+        const sections = await Section.find().populate('filiere');
         res.status(200).json({
             success: true,
             sections
@@ -17,10 +18,20 @@ exports.getAllSections = catchAsyncError(async (req, res) => {
     }
 });
 
+exports.getSectionsByFiliere = async (req, res) => {
+    try {
+        const { filiereId } = req.params;
+        const sections = await Section.find({ filiere: filiereId });
+        res.status(200).json({ sections });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la récupération des sections" });
+    }
+};
+
 // Create new section
 exports.createSection = async (req, res) => {
     try {
-        const { nom, filiere, niveau, nombre_de_groupes } = req.body;
+        const { nom, filiere, niveau, nombre_etudiants, nombre_groupes } = req.body;
         
         // Check if section already exists
         const existingSection = await Section.findOne({ nom });
@@ -35,7 +46,8 @@ exports.createSection = async (req, res) => {
             nom,
             filiere,
             niveau,
-            nombre_de_groupes
+            nombre_etudiants,
+            nombre_groupes
         });
 
         res.status(201).json({

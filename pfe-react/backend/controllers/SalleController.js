@@ -1,4 +1,4 @@
-const CatchAsyncError = require('../middleware/CatchAsyncError');
+const CatchAsyncError = require('../middleware/catchAsyncError');
 const Salle = require('../models/Salle');
 
 // Get all salles
@@ -21,7 +21,12 @@ exports.getAllSalles = CatchAsyncError(async (req, res) => {
 
 // Create salle
 exports.createSalle = CatchAsyncError(async (req, res) => {
-    const { numero, nom, capacite, type, departement } = req.body;
+    const { 
+        numero, 
+        nom, 
+        capacite, 
+        type 
+    } = req.body;
 
     const isSalleExist = await Salle.findOne({ numero });
     if (isSalleExist) {
@@ -31,12 +36,18 @@ exports.createSalle = CatchAsyncError(async (req, res) => {
         });
     }
 
+    if (!numero || !nom || !capacite || !type) {
+        return res.status(400).json({
+            success: false,
+            message: 'Tous les champs sont obligatoires'
+        });
+    }
+
     const salle = await Salle.create({
         numero,
         nom,
         capacite,
-        type,
-        departement
+        type
     });
 
     res.status(201).json({
@@ -48,7 +59,7 @@ exports.createSalle = CatchAsyncError(async (req, res) => {
 
 // Update salle
 exports.updateSalle = CatchAsyncError(async (req, res) => {
-    const { numero, nom, capacite, type, departement } = req.body;
+    const { numero, nom, capacite, type } = req.body;
 
     const salle = await Salle.findById(req.params.id);
     if (!salle) {
@@ -73,7 +84,6 @@ exports.updateSalle = CatchAsyncError(async (req, res) => {
     salle.nom = nom;
     salle.capacite = capacite;
     salle.type = type;
-    salle.departement = departement;
 
     await salle.save();
 

@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { createFiliere, getAllFilieres, updateFiliere, deleteFiliere } = require('../controllers/FiliereController');
 
 const { 
     getAllFilieres, 

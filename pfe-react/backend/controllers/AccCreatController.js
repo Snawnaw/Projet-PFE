@@ -1,10 +1,10 @@
 const user = await User.create({
     nom,
     prenom,
-    dateNaissance,
+    date_naissance,
     email,
     password,
-    numeroTelephone,
+    numero_tel,
 });
 
 //check if name is entered
@@ -18,7 +18,7 @@ if (!prenom) {
 }
 
 //check if date of birth is entered
-if (!dateNaissance) {
+if (!date_naissance) {
     return res.status(400).json({ message: "La date de naissance est obligatoire" });
 }
 
@@ -33,7 +33,7 @@ if (!password) {
 }
 
 //check if phone number is entered
-if (!numeroTelephone) {
+if (!numero_tel) {
     return res.status(400).json({ message: "Le numero de telephone est obligatoire" });
 }
 

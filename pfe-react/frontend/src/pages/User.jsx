@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
-import GénérateurExamen from './GénérateurExamen';  // adjust the path as needed
 import {
     Button,
     Typography,
@@ -59,6 +58,13 @@ const User = () => {
         setOpen(false);
     };
 
+    {useEffect(() => {
+        if (currentView === 'génerer examen') {
+            navigate('/GénérateurExamen');
+        }
+    }, [currentView, navigate])
+    }
+
     const renderMainContent = () => {
         switch (currentView) {
             case 'génerer examen':
@@ -88,7 +94,6 @@ const User = () => {
                         <GénérateurExamen />;
                     </Box>
                 );
-                                
             case 'filieres':
                 return (
                     <Box>

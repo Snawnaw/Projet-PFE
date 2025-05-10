@@ -24,6 +24,7 @@
 [0413/121214.431:ERROR:crashpad_client_win.cc(811)] not connected
 [0417/014033.464:ERROR:crashpad_client_win.cc(811)] not connected
 [0417/014033.692:ERROR:crashpad_client_win.cc(811)] not connected
+<<<<<<< HEAD
 [0420/142822.593:ERROR:crashpad_client_win.cc(811)] not connected
 [0420/142822.886:ERROR:crashpad_client_win.cc(811)] not connected
 [0420/144029.353:ERROR:crashpad_client_win.cc(811)] not connected
@@ -32,3 +33,12 @@
 [0423/105510.439:ERROR:crashpad_client_win.cc(811)] not connected
 [0425/171106.759:ERROR:crashpad_client_win.cc(811)] not connected
 [0425/171107.089:ERROR:crashpad_client_win.cc(811)] not connected
+[0502/115736.649:ERROR:crashpad_client_win.cc(811)] not connected
+[0502/115736.822:ERROR:crashpad_client_win.cc(811)] not connected
+=======
+[0420/134234.398:ERROR:crashpad_client_win.cc(811)] not connected
+[0420/134234.632:ERROR:crashpad_client_win.cc(811)] not connected
+>>>>>>> ed3ad8ff5e58f43343bce64c7f628b8fda2a77be
+[0507/103031.095:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected
+[0509/180822.400:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected
+[0510/024151.386:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected

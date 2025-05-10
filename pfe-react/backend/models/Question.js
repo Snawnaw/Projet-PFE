@@ -1,30 +1,46 @@
+// models/Question.js
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const questionSchema = new Schema({
-
-    id: {
-        type: String,
-        unique: true,
-        MaxLenght: [3, "L'id de la question ne doit pas depasser 3 caracteres"],
-    },
-
-    enoncé: {
+    enonce: {
         type: String,
         required: [true, "Veuillez saisir l'enoncé de la question"],
-        MaxLenght: [200, "L'enoncé de la question ne doit pas dépasser 200 caracteres"],
+        maxlength: [500, "L'enoncé de la question ne doit pas dépasser 500 caractères"],
     },
-
     difficulte: {
         type: String,
-        enum: ["facile", "moyen", "difficile"],
-        required: [true, "Veuillez saisir la difficulte de la question"],
+        enum: ["Facile", "Moyen", "Difficile"],
+        required: [true, "Veuillez saisir la difficulté de la question"],
     },
-
     type: {
         type: String,
-        enum: ["QCM", "QCU"],
+        enum: ["QCM", "QCU", "TEXT"],
         required: [true, "Veuillez saisir le type de la question"],
     },
-
-
-
+    module: {
+        type: Schema.Types.ObjectId,
+        ref: 'Module',
+        required: true
+    },
+    options: [{
+        text: String,
+        isCorrect: Boolean
+    }],
+    correctAnswer: {
+        type: String,
+        required: function() {
+            return this.type === 'TEXT';
+        }
+    },
+    createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
+
+module.exports = mongoose.model('Question', questionSchema);

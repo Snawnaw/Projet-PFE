@@ -1,3 +1,4 @@
+const { cpSync } = require('fs');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -9,7 +10,8 @@ const SectionSchema = new Schema({
     },
 
     filiere: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: "Filiere",
         required: [true, "Veuillez saisir la filiere de la section"],
     },
 
@@ -18,10 +20,15 @@ const SectionSchema = new Schema({
         required: [true, "Veuillez saisir le niveau de la section"],
     },
 
-    nombre_de_groupes: {
+    nombre_etudiants: {
+        type: Number,
+        required: [true, "Veuillez saisir le nombre d'étudiants de la section"],
+    },
+
+    nombre_groupes: {
         type: Number,
         required: [true, "Veuillez saisir le nombre de groupes de la section"],
     },
 });
 
-module.exports = mongoose.model("Section", SectionSchema);
+module.exports = mongoose.model('Section', SectionSchema);

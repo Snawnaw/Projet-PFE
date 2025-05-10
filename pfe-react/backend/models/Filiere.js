@@ -19,10 +19,7 @@ const FiliereSchema = new Schema({
     cycle: {
         type: String,
         required: [true, "Veuillez saisir le cycle d'etude"],
-        /// a tester si ca marche (conflit avec creation)
-        // enum: ["Licence", "Master"],
         enum: ["Licence", "Master"],
-        //// a tester si ca marche (conflit avec creation)
     },
 });
 

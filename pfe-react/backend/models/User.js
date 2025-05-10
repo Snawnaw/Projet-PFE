@@ -13,11 +13,11 @@ const userSchema = new mongoose.Schema({
         required: [true, "Veuillez saisir votre prénom"],
         maxLength: [30, "Le prénom ne doit pas dépasser 30 caractères"],
     },
-    dateNaissance: {
+    date_naissance: {
         type: Date,
         required: [true, "Veuillez saisir votre date de naissance"],
     },
-    numeroTel: {
+    numero_tel: {
         type: String,
         required: [true, "Veuillez saisir votre numéro de téléphone"],
         unique: true,
@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: {
-            values: ['user', 'admin', 'enseignant'],
+            values: ['admin', 'enseignant'],
             message: 'Veuillez choisir un rôle valide : user, admin ou professeur'
         },
         default: 'user'

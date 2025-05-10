@@ -1,36 +1,133 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import API from '../services/api'; // Make sure this import path is correct
 
 const AjouterEnseignant = () => {
     const [formData, setFormData] = useState({
         nom: '',
         prenom: '',
-        dateNaissance: '',
-        numeroTel: '',
+        date_naissance: '',
+        numero_tel: '',
         email: '',
         wilaya: '',
         commune: '',
         codePostal: '',
-        grade: '',
+        role: 'enseignant', // Default role
+        module: '', // Assuming you want to add a module field
         password: '',
         password2: ''
     });
+
     const [wilayas, setWilayas] = useState([]);
     const [communes, setCommunes] = useState([]);
     const [isAddressOpen, setIsAddressOpen] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    const fetchModules = async () => {
+        try {
+            const response = await API.get('http://localhost:5000/api/v1/filiere/AllModules');
+            return response.data.modules; // Assuming the API returns an array of modules
+        } catch (error) {
+            console.error('Erreur lors de la récupération des modules :', error);
+            setError('Erreur lors de la récupération des modules');
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+    
+        if (!formData.numero_tel || !formData.date_naissance) {
+            setError('Veuillez remplir tous les champs requis.');
+            setLoading(false);
+            return;
+        }
+    
+        if (formData.password !== formData.password2) {
+            setError("Les mots de passe ne correspondent pas.");
+            setLoading(false);
+            return;
+        }
+
+        if (formData.module === '') {
+            setError("Veuillez sélectionner un module.");
+            setLoading(false);
+            return;
+        }
+    
+        try {    
+            const response = await API.post('/enseignant/EnseignantCreate', {
+                nom: formData.nom,
+                prenom: formData.prenom,
+                date_naissance: formData.date_naissance,
+                numero_tel: formData.numero_tel,
+                email: formData.email,
+                adresse: {
+                    wilaya: formData.wilaya,
+                    commune: formData.commune,
+                    code_postal: formData.codePostal,
+                },
+                password: formData.password,
+                role: formData.role,
+                module: formData.module // Assuming you want to add a module field
+            });
+    
+            console.log('Réponse du serveur :', response.data);
+            setSuccess(true);
+            
+            // Clear form after successful submission
+            handleReset();
+            
+        } catch (error) {
+            console.error('Erreur :', error);
+            setError(error.response?.data?.message || error.message || 'Une erreur est survenue');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleReset = () => {
+        //reset form
+        setFormData({
+            nom: '',
+            prenom: '',
+            date_naissance: '',
+            numero_tel: '',
+            email: '',
+            wilaya: '',
+            commune: '',
+            codePostal: '',
+            role: 'enseignant',
+            module: '', // Assuming you want to add a module field
+            password: '',
+            password2: ''
+        });
+    };
 
     useEffect(() => {
+        // Load wilayas
         fetch('/src/pages/CommunesAlgerie.JSON')
             .then(res => res.json())
             .then(data => {
                 const uniqueWilayas = [...new Set(data.map(item => item.wilaya_name))];
-                const uniqueId = [...new Set(data.map(item => item.wilaya_id))];
                 setWilayas(uniqueWilayas);
             })
             .catch(err => {
                 console.error("Erreur lors du chargement des communes :", err);
+                setError("Erreur lors du chargement des wilayas");
             });
-    }, []);
+    }, [navigate]);
+
+    const handleModuleChange = (e) => {
+        setFormData({
+            ...formData,
+            module: e.target.value
+        });
+    };
 
     const handleWilayaChange = (e) => {
         const selectedWilaya = e.target.value;
@@ -42,14 +139,17 @@ const AjouterEnseignant = () => {
 
         // Filtrer les communes correspondant à la wilaya sélectionnée
         fetch('/src/pages/CommunesAlgerie.JSON')
-    .then(res => res.json())
-    .then(data => {
-        const filteredCommunes = data
-            .filter(item => item.wilaya_name === selectedWilaya)
-            .map(item => item.commune_name);
-        setCommunes(filteredCommunes);
-    })
-    .catch(err => console.error('Erreur lors du filtrage des communes :', err));
+            .then(res => res.json())
+            .then(data => {
+                const filteredCommunes = data
+                    .filter(item => item.wilaya_name === selectedWilaya)
+                    .map(item => item.commune_name);
+                setCommunes(filteredCommunes);
+            })
+            .catch(err => {
+                console.error('Erreur lors du filtrage des communes :', err);
+                setError("Erreur lors du chargement des communes");
+            });
     };
 
     const handleChange = (e) => {
@@ -59,21 +159,14 @@ const AjouterEnseignant = () => {
         });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (formData.password !== formData.password2) {
-            alert("Les mots de passe ne correspondent pas");
-            return;
-        }
-        console.log(formData);
-    };
-
     const toggleAddress = () => {
         setIsAddressOpen(!isAddressOpen);
     };
 
     return (
         <div className="container mt-5">
+            {error && <div className="alert alert-danger">{error}</div>}
+            {success && <div className="alert alert-success">Enseignant ajouté avec succès !</div>}
             <div className="row justify-content-center">
                 <div className="col-md-8">
                     <div className="card">
@@ -105,23 +198,23 @@ const AjouterEnseignant = () => {
                                     />
                                 </div>
                                 <div className="form-group mb-3">
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        name="dateNaissance"
-                                        placeholder="Date de naissance"
-                                        value={formData.dateNaissance}
-                                        onChange={handleChange}
-                                        required
-                                    />
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    name="date_naissance"
+                                    placeholder="Date de naissance"
+                                    value={formData.date_naissance || ''} 
+                                    onChange={handleChange}
+                                    required
+                                />
                                 </div>
                                 <div className="form-group mb-3">
                                     <input 
                                         type="tel" 
                                         className="form-control" 
-                                        name="telephone" 
+                                        name="numero_tel" 
                                         placeholder="Telephone" 
-                                        value={formData.telephone} 
+                                        value={formData.numero_tel}
                                         onChange={handleChange}
                                         required 
                                     />
@@ -177,7 +270,7 @@ const AjouterEnseignant = () => {
                                         <div className="form-group mb-3">
                                             <label className="form-label">Code Postal</label>
                                             <input 
-                                                type="number" 
+                                                type="text" 
                                                 className="form-control" 
                                                 name="codePostal" 
                                                 placeholder="Code Postal"
@@ -187,21 +280,6 @@ const AjouterEnseignant = () => {
                                             />
                                         </div>
                                     </div>
-                                </div>
-                                <div className="form-group mb-3">
-                                    <select 
-                                        className="form-control" 
-                                        name="grade"
-                                        value={formData.grade}
-                                        onChange={handleChange}
-                                        required
-                                    >
-                                        <option value="">Sélectionner un grade</option>
-                                        <option value="Professeur">Professeur</option>
-                                        <option value="Maitre de conférence A">Maitre de conférence A</option>
-                                        <option value="Maitre de conférence B">Maitre de conférence B</option>
-                                        <option value="Maitre assistant">Maitre assistant</option>
-                                    </select>
                                 </div>
                                 <div className="form-group mb-3">
                                     <input 
@@ -236,10 +314,53 @@ const AjouterEnseignant = () => {
                                         required 
                                     />
                                 </div>
+                                <div className="form-group mb-3">
+                                    <select 
+                                        className="form-control" 
+                                        name="role"
+                                        value={formData.role}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="enseignant">Enseignant</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                                
+                                {/*<div className="form-group mb-3">
+                                    <select 
+                                        className="form-control" 
+                                        name="module"
+                                        value={formData.module}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="">Choisissez le module</option>
+                                    </select>
+                                </div>*/}
+                                
                                 <div className="text-center">
-                                    <button type="submit" className="btn btn-primary">Ajouter enseignant</button>
-                                    <button type="reset" className="btn btn-danger">Annuler</button>
-                                    <Link to="/Admin" className="btn btn-secondary">Retour</Link>
+                                    <button 
+                                        type="submit" 
+                                        className="btn btn-primary me-2" 
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Chargement...' : 'Ajouter enseignant'}
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-danger me-2" 
+                                        onClick={handleReset}
+                                        disabled={loading}
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-secondary"
+                                        onClick={() => navigate('/Admin')}
+                                        disabled={loading}
+                                    >
+                                        Retour
+                                    </button>
                                 </div>
                             </form>
                         </div>

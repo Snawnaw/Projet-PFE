@@ -36,7 +36,8 @@ const SignIn = () => {
                 
                 if (response.data.user.role === 'admin') {
                     navigate('/admin');
-                } else {
+                }
+                else {
                     navigate('/user');
                 }
             }
@@ -82,7 +83,7 @@ const SignIn = () => {
                             )}
                         </FormGroup>
 
-                        <button type="submit" className="btn btn-primary w-100">Se connecter</button>
+                        <button type="submit" className="btn btn-primary w-100" onClick={handleSubmit}>Se connecter</button>
                         <p>Vous n'avez pas un compte ? <a href="SignUp">Créer un compte</a></p>
                     </Form>
                 )}

@@ -112,6 +112,7 @@ const AjouterFiliere = () => {
                 <div className="buttons-group">
                     <Button type="submit" variant="primary">Ajouter</Button>
                     <Button type="button" variant="secondary" onClick={handleReset}>Annuler</Button>
+                    <Button type="button" variant="link" onClick={() => window.history.back()}>Retour</Button>
                 </div>
             </form>
         </div>

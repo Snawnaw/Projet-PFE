@@ -24,12 +24,7 @@ const SalleSchema = new Schema({
         type: String,
         enum: ["cours", "td", "tp", "amphi"],
         required: [true, "Veuillez saisir le type de la salle"],
-    },
-
-    departement: {
-        type: String,
-        required: [true, "Veuillez saisir le departement de la salle"],
-    },
+    }
 });
 
 module.exports = mongoose.model("Salle", SalleSchema);

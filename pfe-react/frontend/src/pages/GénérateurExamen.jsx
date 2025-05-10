@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const GénérateurExamen = () => {
     const [selectedFiliere, setSelectedFiliere] = useState('');
@@ -6,6 +6,13 @@ const GénérateurExamen = () => {
     const [examType, setExamType] = useState('');
     const [examDate, setExamDate] = useState('');
     const [duration, setDuration] = useState(60);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+
+    const [filieres, setFilieres] = useState([]);
+    const [sections, setSections] = useState([]);
+    const [modules, setModules] = useState([]);
+    
 
     const modulesByFiliere = {
         'GI': [
@@ -30,7 +37,17 @@ const GénérateurExamen = () => {
 
     return (
         <div className="container">
-            <h1 className="text-center mb-3">Gestion des Examens et QCM</h1>
+            {/* Quick Actions Card 
+            <div className="card mb-3">
+                <div className="card-body">
+                    <h3>Actions Rapides</h3>
+                    <div className="btn-group">
+                        <button className="btn btn-primary me-2">Créer un Nouvel Examen</button>
+                        <button className="btn btn-success me-2">Générer un QCM</button>
+                        <button className="btn btn-primary">Banque de Questions</button>
+                    </div>
+                </div>
+            </div>*/}
 
                         <div className="card mb-3">
                             <div className="card-body">
@@ -122,6 +139,15 @@ const GénérateurExamen = () => {
                                             onChange={(e) => setDuration(e.target.value)}
                                             placeholder="60"
                                         />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Format d'examen</label>
+                                        <select className="form-select mb-3" aria-label="Sélectionner le type d'examen">
+                                            <option selected>Sélectionner le format de l'examen</option>
+                                            <option value="WEB">WEB</option>
+                                            <option value="PDF à imprimer">PDF à imprimer</option>
+                                        </select>
                                     </div>
 
                                     <div className="mb-3">

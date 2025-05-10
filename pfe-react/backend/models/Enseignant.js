@@ -5,25 +5,20 @@ const jwt = require('jsonwebtoken');
 const enseignantSchema = new mongoose.Schema({
     nom: {
         type: String,
-        required: [true, "Veuillez entrer le nom"],
-        trim: true,
-        maxLength: [50, "Le nom ne peut pas dépasser 50 caractères"]
+        required: [true, 'Veuillez saisir le nom']
     },
     prenom: {
         type: String,
-        required: [true, "Veuillez entrer le prénom"],
-        trim: true,
-        maxLength: [50, "Le prénom ne peut pas dépasser 50 caractères"]
+        required: [true, 'Veuillez saisir le prénom']
     },
-    dateNaissance: {
+    date_naissance: {
         type: Date,
-        required: [true, "Veuillez saisir la date de naissance"]
+        required: [true, 'Veuillez saisir la date de naissance']
     },
-    numeroTel: {
+    numero_tel: {
         type: String,
-        required: [true, "Veuillez saisir le numéro de téléphone"],
-        unique: true,
-        match: [/^0[5-7][0-9]{8}$/, 'Veuillez saisir un numéro valide']
+        required: [true, 'Veuillez saisir le numéro de téléphone'],
+        unique: true
     },
     email: {
         type: String,
@@ -40,6 +35,16 @@ const enseignantSchema = new mongoose.Schema({
     role: {
         type: String,
         default: 'enseignant'
+    },
+    filiere: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Filiere',
+        required: [true, "Veuillez entrer la filière"]
+    },
+    module: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Module',
+        required: [true, "Veuillez entrer le module"]
     },
     createdAt: {
         type: Date,
