@@ -44,8 +44,9 @@ const filiere = require('./routes/Filiere.routes');
 const Module = require('./routes/Module.routes');
 const salle = require('./routes/Salle.routes');
 const enseignant = require('./routes/Enseignant.routes');
-const questionRoutes = require('./routes/QuestRep.routes'); // Assuming you have a Question.routes.js file
-//const exam = require('./routes/Exam.routes'); // Assuming you have an Exam.routes.js file
+const questionRoutes = require('./routes/QuestRep.routes'); 
+const examRoutes = require('./routes/Exam.routes');
+
 
 // Mount routes
 app.use('/api/v1/auth', auth);
@@ -55,7 +56,7 @@ app.use('/api/v1/module', Module);
 app.use('/api/v1/salle', salle);
 app.use('/api/v1/enseignant', enseignant);
 app.use('/api/v1/question', questionRoutes);
-//app.use('/api/v1/exam', exam); // Mount the exam routes
+app.use('/api/v1/exam', examRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

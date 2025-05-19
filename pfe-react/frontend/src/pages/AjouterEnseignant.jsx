@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../services/api'; // Make sure this import path is correct
+import { ToastContainer, toast, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AjouterEnseignant = () => {
     const [formData, setFormData] = useState({
@@ -26,7 +28,7 @@ const AjouterEnseignant = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const fetchModules = async () => {
+    {/*const fetchModules = async () => {
         try {
             const response = await API.get('http://localhost:5000/api/v1/filiere/AllModules');
             return response.data.modules; // Assuming the API returns an array of modules
@@ -34,7 +36,7 @@ const AjouterEnseignant = () => {
             console.error('Erreur lors de la récupération des modules :', error);
             setError('Erreur lors de la récupération des modules');
         }
-    };
+    };*/}
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -78,13 +80,35 @@ const AjouterEnseignant = () => {
     
             console.log('Réponse du serveur :', response.data);
             setSuccess(true);
+            toast.success('Enseignant ajoutée avec succès !', {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Slide,
+            });
             
             // Clear form after successful submission
             handleReset();
             
         } catch (error) {
             console.error('Erreur :', error);
-            setError(error.response?.data?.message || error.message || 'Une erreur est survenue');
+            setError(error.message || "Une erreur est survenue lors de l'ajout de l'enseignant");
+            toast.error(error.message || "Une erreur est survenue lors de l'ajout de l'enseignant", {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Slide,
+            });
         } finally {
             setLoading(false);
         }
@@ -165,6 +189,7 @@ const AjouterEnseignant = () => {
 
     return (
         <div className="container mt-5">
+            <ToastContainer />
             {error && <div className="alert alert-danger">{error}</div>}
             {success && <div className="alert alert-success">Enseignant ajouté avec succès !</div>}
             <div className="row justify-content-center">

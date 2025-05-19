@@ -1,10 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const { isAuthenticatedUser, authorizedRoles } = require('../middleware/Auth');
+const ExamPDFController = require('../controllers/ExamPDFController');
+const ExamWebController = require('../controllers/ExamWebController');
 
-const {
-    createExam
-} = require('../controllers/ExamController');
+// Common routes
+router.get('/', ExamPDFController.getAllExams);
+router.post('/', ExamPDFController.createExam);
+router.get('/:id', ExamPDFController.getExamById);
+router.put('/:id', ExamPDFController.updateExam);
+router.delete('/:id', ExamPDFController.deleteExam);
 
-router.post('ExamCreate', isAuthenticatedUser, authorizedRoles('admin'), createExam); // Only admin can create
+// PDF specific routes
+router.get('/:id/answer-key', ExamPDFController.AnswerExamKey);
 
+// Web exam routes
+router.post('/generate-web-exam', ExamWebController.generateWebExam);
+router.get('/:id/generate-link', ExamWebController.generateExamLink);
+router.get('/:id/web-answer-key', ExamWebController.generateWebExamAnswerKey);
+router.get('/public/:shareableId', ExamWebController.getPublicExam);
+router.post('/submit/:shareableId', ExamWebController.submitExam);
+
+module.exports = router;

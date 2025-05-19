@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Accordion, Form, Button, Row, Col } from 'react-bootstrap';
+import { Accordion, Form, Button, Row, Col, Toast } from 'react-bootstrap';
 import '../styles/pages/QuestionForm.css';
 import API from '../services/api';
+import { ToastContainer, toast, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function QuestionForm({ userRole, userModule }) {
   const [modules, setModules] = useState([]);
   const [isLoadingModules, setIsLoadingModules] = useState(true);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
 
   // State for the form and questions
@@ -15,7 +18,7 @@ function QuestionForm({ userRole, userModule }) {
     questionType: 'CHECKBOX',
     options: [{ option: 'Option 1' }, { option: 'Option 2' }],
     open: true,
-    difficulty: 'Facile',
+    difficulte: 'Facile',
     module: userRole?.toLowerCase() === 'admin' ? '' : userModule,
     correctAnswer: ''
   }]);
@@ -70,7 +73,7 @@ function QuestionForm({ userRole, userModule }) {
       questionType: 'CHECKBOX',
       options: [{ option: 'Option 1' }, { option: 'Option 2' }],
       open: true,
-      difficulty: 'Facile',
+      difficulte: 'Facile',
       module: userRole?.toLowerCase() === 'admin' ? '' : userModule,
       correctAnswer: ''
     };
@@ -162,10 +165,10 @@ function QuestionForm({ userRole, userModule }) {
     }
   };
   
-  // Function to update difficulty
-  const updateDifficulty = (difficulty, questionIndex) => {
+  // Function to update difficulte
+  const updatedifficulte = (difficulte, questionIndex) => {
     let updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].difficulty = difficulty;
+    updatedQuestions[questionIndex].difficulte = difficulte;
     setQuestions(updatedQuestions);
   };
   
@@ -247,7 +250,7 @@ function QuestionForm({ userRole, userModule }) {
         // Prepare data for API
         const questionsToSave = questions.map(q => ({
             enonce: q.question,
-            difficulte: q.difficulty,
+            difficulte: q.difficulte,
             type: q.questionType === 'CHECKBOX' ? 'QCM' : 'TEXT',
             module: q.module,
             options: q.questionType !== 'TEXT' ? 
@@ -263,14 +266,34 @@ function QuestionForm({ userRole, userModule }) {
         });
 
         if (response.data.success) {
-            alert('Questions sauvegardées avec succès!');
-            navigate('/admin');
+            setSuccess(true);
+            toast.success('Question ajoutée avec succès !', {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Slide,
+            });
         } else {
-            throw new Error(response.data.message || 'Failed to save questions');
+            throw new Error(response.data.message);
         }
       } catch (error) {
           console.error('Error saving questions:', error);
-          alert(`Erreur lors de la sauvegarde: ${error.message}`);
+          toast.error(error.message || "Une erreur est survenue lors de l'ajout de la question", {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Slide,
+            });
       }
   };
   
@@ -373,8 +396,8 @@ function QuestionForm({ userRole, userModule }) {
                     <Form.Group>
                       <Form.Label>Difficulté</Form.Label>
                       <Form.Select
-                        value={question.difficulty}
-                        onChange={(e) => updateDifficulty(e.target.value, i)}
+                        value={question.difficulte}
+                        onChange={(e) => updatedifficulte(e.target.value, i)}
                       >
                         <option value="Facile">Facile</option>
                         <option value="Moyenne">Moyenne</option>
@@ -486,6 +509,7 @@ function QuestionForm({ userRole, userModule }) {
   
   return (
     <div className="question-form-container">
+      <ToastContainer></ToastContainer>
       <div className="form-header mb-4">
         <h2 className="form-title">Créer une question</h2>
       </div>

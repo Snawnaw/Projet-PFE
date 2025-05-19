@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import ClassIcon from '@mui/icons-material/Class';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
-import { admin, auth } from '../services/api';
+import { auth } from '../services/api';
 import { DataGrid } from '@mui/x-data-grid';
 import GénérateurExamen from './GénérateurExamen';
 import {
@@ -24,40 +24,189 @@ import {
     Alert,
     List,
     Box,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
+    Paper,
     Chip,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useAdminData } from '../hooks/useAdminFunctions';
-import AdminProfile from '../components/AdminProfile';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContentText from '@mui/material/DialogContentText';
+
+// AdminProfile component definition moved inside Admin.jsx
+const AdminProfile = () => {
+    const [adminData, setAdminData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchAdminData = async () => {
+            try {
+                setLoading(true);
+                const response = await API.get('/auth/me');
+                setAdminData(response.data.user);
+            } catch (err) {
+                setError('Failed to load admin profile');
+                console.error('Error fetching admin data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAdminData();
+    }, []);
+
+    if (loading) return (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+            <CircularProgress />
+        </Box>
+    );
+    
+    if (error) return (
+        <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>
+    );
+    
+    if (!adminData) return (
+        <Alert severity="info" sx={{ my: 2 }}>No admin data available</Alert>
+    );
+
+    return (
+        <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+                {/* ...existing AdminProfile JSX code... */}
+            </Paper>
+        </Box>
+    );
+};
 
 const Admin = () => {
-    const {
-        sectionsData,
-        sallesData,
-        filieresData,
-        modulesData,
-        adminData,
-        teacherData,
-        questionsData,
-        loading,
-        error,
-        loadingQuestions,
-        loadData,
-        handleLogout,
-        fetchQuestions
-    } = useAdminData();
-
+    const navigate = useNavigate();
+    const [sectionsData, setSectionsData] = useState([]);
+    const [sallesData, setSallesData] = useState([]);
+    const [filieresData, setFilieresData] = useState([]);
+    const [modulesData, setModulesData] = useState([]);
+    const [adminData, setAdminData] = useState([]);
+    const [teacherData, setTeacherData] = useState([]);
+    const [questionsData, setQuestionsData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [loadingQuestions, setLoadingQuestions] = useState(false);
     const [open, setOpen] = useState(false);
     const [currentView, setCurrentView] = useState('sections');
     const [filiere, setFiliere] = useState('');
     const [section, setSection] = useState('');
     const [module, setModule] = useState('');
     const [enseignant, setEnseignant] = useState('');
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [deleteType, setDeleteType] = useState('');
+
+    const loadData = async (view) => {
+        setLoading(true);
+        setError('');
+        
+        try {
+            switch (view) {
+                case 'profile':
+                    if (!adminData) {
+                        const response = await API.get('');
+                        setAdminData(response.data.admin);
+                    }
+                    break;
+                    
+                case 'sections':
+                    if (sectionsData.length === 0) {
+                        const response = await API.get('/section/AllSections');
+                        setSectionsData(response.data.sections);
+                    }
+                    break;
+                    
+                case 'enseignants':
+                    if (teacherData.length === 0) {
+                        const response = await API.get('/enseignant/AllEnseignant');
+                        setTeacherData(response.data.enseignants);
+                    }
+                    break;
+                    
+                case 'salles':
+                    if (sallesData.length === 0) {
+                        const response = await API.get('/salle/AllSalle');
+                        setSallesData(response.data.salles);
+                    }
+                    break;
+                    
+                case 'filieres':
+                    if (filieresData.length === 0) {
+                        const response = await API.get('/filiere/AllFiliere');
+                        setFilieresData(response.data.filieres);
+                    }
+                    break;
+
+                case 'modules':
+                    if (modulesData.length === 0) {
+                        const response = await API.get('/module/AllModules');
+                        setModulesData(response.data.modules);
+                    }
+                    break;
+            }
+        } catch (err) {
+            setError(`Erreur lors du chargement des données: ${err.response?.data?.message || err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await auth.logout();
+            navigate('/signin');
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
+
+    const fetchQuestions = async (moduleId) => {
+        setLoadingQuestions(true);
+        try {
+            const response = await API.get(moduleId 
+                ? `/question/module/${moduleId}`
+                : '/question');
+            
+            console.log('Questions API Response:', response); // Add this line
+            
+            const questions = Array.isArray(response.data?.questions) 
+                ? response.data.questions.map(q => ({
+                    ...q,
+                    module: q.module || { _id: null, nom: 'N/A' }
+                }))
+                : [];
+            
+            console.log('Processed Questions:', questions); // Add this line
+            setQuestionsData(questions);
+        } catch (error) {
+            console.error('Error fetching questions:', error);
+            setError('Error loading questions');
+            setQuestionsData([]);
+        } finally {
+            setLoadingQuestions(false);
+        }
+    };
+
+    useEffect(() => {
+        if (currentView === 'banque de questions') {
+            fetchQuestions();
+        }
+    }, [currentView]);
+
+    useEffect(() => {
+        if (currentView === 'banque de questions' && modulesData.length === 0) {
+            loadData('modules').then(() => fetchQuestions());
+        } else if (currentView === 'banque de questions') {
+            fetchQuestions();
+        }
+    }, [currentView]);
 
     // Keep only the view-specific logic in Admin component
     useEffect(() => {
@@ -77,6 +226,95 @@ const Admin = () => {
         checkAuth();
     }, [currentView]);
 
+    const handleUpdate = (row, type) => {
+        switch(type) {
+            case 'filiere':
+                navigate(`/ModifierFiliere/${row._id}`);
+                break;
+            case 'section':
+                navigate(`/ModifierSection/${row._id}`);
+                break;
+            case 'module':
+                navigate(`/ModifierModule/${row._id}`);
+                break;
+            case 'salle':
+                navigate(`/ModifierSalle/${row._id}`);
+                break;
+            case 'enseignant':
+                navigate(`/ModifierEnseignant/${row._id}`);
+                break;
+            case 'question':
+                navigate(`/ModifierQuestion/${row._id}`);
+                break;
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            let endpoint = '';
+            switch(deleteType) {
+                case 'filiere':
+                    endpoint = `/filiere/${itemToDelete}`;
+                    break;
+                case 'section':
+                    endpoint = `/section/${itemToDelete}`;
+                    break;
+                case 'module':
+                    endpoint = `/module/${itemToDelete}`;
+                    break;
+                case 'salle':
+                    endpoint = `/salle/${itemToDelete}`;
+                    break;
+                case 'enseignant':
+                    endpoint = `/enseignant/${itemToDelete}`;
+                    break;
+                case 'question':
+                    endpoint = `/question/${itemToDelete}`;
+                    break;
+            }
+
+            await API.delete(endpoint);
+            
+            // Refresh data after deletion
+            loadData(currentView);
+            
+            setDeleteDialogOpen(false);
+            setItemToDelete(null);
+        } catch (error) {
+            setError(`Erreur lors de la suppression: ${error.message}`);
+        }
+    };
+
+    const openDeleteDialog = (id, type) => {
+        setItemToDelete(id);
+        setDeleteType(type);
+        setDeleteDialogOpen(true);
+    };
+
+    const getActionColumns = (type) => [
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 200,
+            renderCell: (params) => (
+                <Box>
+                    <IconButton 
+                        color="primary" 
+                        onClick={() => handleUpdate(params.row, type)}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton 
+                        color="error" 
+                        onClick={() => openDeleteDialog(params.row._id, type)}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </Box>
+            )
+        }
+    ];
+
     const sectionsColumns = [
         { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
@@ -88,6 +326,7 @@ const Admin = () => {
         { field: 'niveau', headerName: 'Niveau', width: 130 },
         { field: 'nombre_etudiants', headerName: 'Nombre d\'étudiants', width: 180 },
         { field: 'nombre_groupes', headerName: 'Nombre de groupes', width: 180 }, // Ensure field name matches backend
+        ...getActionColumns('section')
     ];
 
     const filiereColumns = [
@@ -95,6 +334,7 @@ const Admin = () => {
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'code', headerName: 'Code', width: 130 },
         { field: 'cycle', headerName: 'Cycle', width: 200 },
+        ...getActionColumns('filiere')
     ];
 
     const moduleColumns = [
@@ -104,6 +344,7 @@ const Admin = () => {
         { field: 'section', headerName: 'Section', width: 130 },
         { field: 'enseignant', headerName: 'Enseignant', width: 180 },
         { field: 'type', headerName: 'Type', width: 180 },
+        ...getActionColumns('module')
     ]
 
     // Add this utility function at the top of your file
@@ -138,7 +379,8 @@ const Admin = () => {
             width: 150,
             type: 'date',
             valueFormatter: formatDate
-        }
+        },
+        ...getActionColumns('enseignant')
     ];
 
     const sallesColumns = [
@@ -147,6 +389,7 @@ const Admin = () => {
         { field: 'numero', headerName: 'Numéro', width: 130 },
         { field: 'type', headerName: 'Type', width: 130 },
         { field: 'capacite', headerName: 'Capacité', width: 130 },
+        ...getActionColumns('salle')
     ];
 
     const questionColumns = [
@@ -181,29 +424,15 @@ const Admin = () => {
             )
         },
         { 
-            field: 'moduleDisplay',
+            field: 'module',
             headerName: 'Module',
             width: 180,
             valueGetter: (params) => {
-                if (!params || !params.row) return 'N/A';
-                
-                const module = params.row.module;
-                
-                // Case 1: Already populated module object
-                if (module?.nom) return module.nom;
-                
-                // Case 2: Module ID reference
-                if (typeof module === 'string') {
-                    const foundModule = modulesData.find(m => m._id === module);
-                    return foundModule?.nom || 'N/A';
-                }
-                console.log('Available modules:', modulesData);
-                
-                // Case 3: Module is null/undefined
-                return 'N/A';
+                // Safely access the module name
+                return params?.row?.module?.nom || 'N/A';
             },
-            valueFormatter: (params) => params.value || 'N/A' // Final fallback
-        }
+        },
+        ...getActionColumns('question')
     ];
 
     const toggleDrawer = () => {
@@ -489,7 +718,10 @@ const Admin = () => {
 
                                 <Box sx={{ flex: 1, height: 600, width: '100%' }}>
                                     <DataGrid
-                                        rows={questionsData}
+                                        rows={questionsData.map(q => ({
+                                            ...q,
+                                            id: q._id // Make sure each row has an id property
+                                        }))}
                                         columns={questionColumns}
                                         pageSize={10}
                                         rowsPerPageOptions={[10, 25, 50]}
@@ -508,6 +740,24 @@ const Admin = () => {
                     </>
                 )}
             </Box>
+
+            <Dialog
+                open={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+            >
+                <DialogTitle>Confirmer la suppression</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)}>Annuler</Button>
+                    <Button onClick={handleDelete} color="error">
+                        Supprimer
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

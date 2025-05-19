@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
+import { ToastContainer, toast, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AjouterModule = () => {
     const [nomModule, setNomModule] = useState('');
@@ -133,8 +135,30 @@ const AjouterModule = () => {
 
             handleReset();
             setSuccess(true);
+                        toast.success('Module ajouté avec succès !', {
+                            position: "top-center",
+                            autoClose: 2000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "light",
+                            transition: Slide,
+                        });
         } catch (error) {
             setError(error.message || 'Une erreur est survenue lors de l\'ajout du module');
+            toast.error(error.message || "Une erreur est survenue lors de l'ajout du module", {
+                            position: "top-center",
+                            autoClose: 2000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "light",
+                            transition: Slide,
+                        });
         }
     };
 
@@ -150,101 +174,113 @@ const AjouterModule = () => {
     };
 
     return (
-        <div className="ajouter-module-container">
-            {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">Module ajouté avec succès!</div>}
+        <div className="container mt-5">
+            <ToastContainer />
+            <div className="row justify-content-center">
+                <div className="col-md-8">
+                    <div className="card">
+                        <div className="card-header bg-primary text-white">
+                            <h3 className="text-center">Ajouter un module</h3>
+                        </div>
+                        <div className="card-body">
+                            {error && <div className="alert alert-danger">{error}</div>}
+                            {success && <div className="alert alert-success">Module ajouté avec succès!</div>}
 
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Nom du Module</label>
-                    <input 
-                        type="text" 
-                        className="form-control" 
-                        value={nomModule}
-                        onChange={(e) => setNomModule(e.target.value)}
-                        maxLength={50}
-                        required
-                    />
-                </div>
+                            <form onSubmit={handleSubmit}>
+                                <div className="form-group mb-3">
+                                    <label className="form-label">Nom du Module</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-control" 
+                                        value={nomModule}
+                                        onChange={(e) => setNomModule(e.target.value)}
+                                        maxLength={50}
+                                        required
+                                    />
+                                </div>
 
-                <div className="form-group">
-                    <label>Code du Module</label>
-                    <input 
-                        type="text" 
-                        className="form-control" 
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        maxLength={5}
-                        required
-                    />
-                </div>
+                                <div className="form-group mb-3">
+                                    <label className="form-label">Code du Module</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-control" 
+                                        value={code}
+                                        onChange={(e) => setCode(e.target.value)}
+                                        maxLength={5}
+                                        required
+                                    />
+                                </div>
 
-                <div className="form-group">
-                    <label>Filière</label>
-                    <select 
-                        className="form-control" 
-                        value={filiere} 
-                        onChange={handleFiliereChange}
-                        required
-                    >
-                        <option value="">Sélectionnez une filière</option>
-                        {filieres && filieres.map(f => (
-                            <option key={f._id} value={f._id}>{f.nom}</option>
-                        ))}
-                    </select>
-                </div>
+                                <div className="form-group mb-3">
+                                    <label className="form-label">Filière</label>
+                                    <select 
+                                        className="form-control" 
+                                        value={filiere} 
+                                        onChange={handleFiliereChange}
+                                        required
+                                    >
+                                        <option value="">Sélectionnez une filière</option>
+                                        {filieres && filieres.map(f => (
+                                            <option key={f._id} value={f._id}>{f.nom}</option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                <div className="form-group">
-                    <label>Section</label>
-                    <select 
-                        className="form-control" 
-                        value={section} 
-                        onChange={(e) => setSection(e.target.value)}
-                        required
-                    >
-                        <option value="">Sélectionnez une section</option>
-                        {sections && sections.map(s => (
-                            <option  key={s._id} value={s._id}>{s.nom}</option>
-                        ))}
-                    </select>
-                </div>
+                                <div className="form-group mb-3">
+                                    <label className="form-label">Section</label>
+                                    <select 
+                                        className="form-control" 
+                                        value={section} 
+                                        onChange={(e) => setSection(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Sélectionnez une section</option>
+                                        {sections && sections.map(s => (
+                                            <option key={s._id} value={s._id}>{s.nom}</option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                <div className="form-group">
-                    <label>Enseignant</label>
-                    <select
-                        className="form-control"
-                        value={enseignant}
-                        onChange={(e) => setEnseignant(e.target.value)}
-                        required
-                    >
-                        <option value="">Sélectionnez un enseignant</option>
-                        {enseignants && enseignants.map((e) => (
-                            <option key={e._id} value={e._id}>{e.nom}</option>
-                        ))}
-                    </select>
-                </div>
+                                <div className="form-group mb-3">
+                                    <label className="form-label">Enseignant</label>
+                                    <select
+                                        className="form-control"
+                                        value={enseignant}
+                                        onChange={(e) => setEnseignant(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Sélectionnez un enseignant</option>
+                                        {enseignants && enseignants.map((e) => (
+                                            <option key={e._id} value={e._id}>{e.nom}</option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                <div className="form-group">
-                    <label>Type</label>
-                    <select 
-                        className="form-control" 
-                        value={type} 
-                        onChange={(e) => setType(e.target.value)}
-                        required
-                    >
-                        <option value="">Sélectionnez un type</option>
-                        <option value="semestriel">Semestriel</option>
-                        <option value="trimestriel">Trimestriel</option>
-                        <option value="annuel">Annuel</option>
-                    </select>
-                </div>
+                                <div className="form-group mb-3">
+                                    <label className="form-label">Type</label>
+                                    <select 
+                                        className="form-control" 
+                                        value={type} 
+                                        onChange={(e) => setType(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Sélectionnez un type</option>
+                                        <option value="semestriel">Semestriel</option>
+                                        <option value="trimestriel">Trimestriel</option>
+                                        <option value="annuel">Annuel</option>
+                                    </select>
+                                </div>
 
-                <div className="buttons-group">
-                    <Button type="submit" variant="primary">Ajouter</Button>
-                    <Button type="button" variant="secondary" onClick={handleReset}>Annuler</Button>
-                    <Button type="button" variant="link" onClick={() => window.history.back()}>Retour</Button>
+                                <div className="text-center">
+                                    <button type="submit" className="btn btn-primary me-2">Ajouter</button>
+                                    <button type="button" className="btn btn-danger me-2" onClick={handleReset}>Annuler</button>
+                                    <button type="button" className="btn btn-secondary" onClick={() => window.history.back()}>Retourner</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-            </form>
+            </div>
         </div>
     );
 };

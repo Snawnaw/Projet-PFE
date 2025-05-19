@@ -19,6 +19,7 @@ const Home = () => {
                 <Link to="/CreerQuestion" className="btn btn-primary">Créer une question</Link>
                 <Link to="/Admin" className="btn btn-primary">Admin</Link>
                 <Link to="/User" className="btn btn-primary">User</Link>
+                <Link to="/Examens" className="btn btn-primary">Examens</Link>
             </div>
         </div>
     );

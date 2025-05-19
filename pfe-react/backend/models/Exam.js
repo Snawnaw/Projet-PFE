@@ -1,53 +1,28 @@
 const mongoose = require('mongoose');
+const { nanoid } = require('nanoid');
+const { arch } = require('os');
 const Schema = mongoose.Schema;
 
-const ExamSchema = new Schema({
-    filiere: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Filiere',
-        required: true,
-    },
-
-    module: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Module',
-        required: true,
-    },
-
-    typeExam: {
-        type: String,
-        required: true,
-        enum: ['Examen Final ', 'Controle Continu', 'TP'],
-    },
-
-    difficulte: {
-        type: String,
-        required: true,
-        enum: ['Facile', 'Moyen', 'Difficile'],
-    },
-
-    nombreQuestions: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 100,
-    },
-
-    date: {
-        type: Date,
-        required: true,
-    },
-
-    durée: {
-        type: Number,
-        required: true,
-        min: 1,
-    },
-
-    section: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Section',
-        required: true,
-    },
-
+const ExamSchema = new mongoose.Schema({
+    module: { type: mongoose.Schema.Types.ObjectId, ref: 'Module', required: true },
+    filiere: { type: mongoose.Schema.Types.ObjectId, ref: 'Filiere', required: true },
+    section: { type: mongoose.Schema.Types.ObjectId, ref: 'Section', required: true },
+    enseignant: { type: mongoose.Schema.Types.ObjectId, ref: 'Enseignant', required: true },
+    examType: { type: String, required: true },
+    difficulte: { type: String, required: true },
+    examDate: { type: Date, required: true },
+    duree: { type: Number, required: true },
+    format: { type: String, required: true },
+    questions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }],
+    shareableId: { type: String, unique: true }
 });
+
+// Add pre-save middleware to handle shareableId
+ExamSchema.pre('save', async function(next) {
+    if (this.format === 'WEB' && !this.shareableId) {
+        this.shareableId = nanoid(10);
+    }
+    next();
+});
+
+module.exports = mongoose.model('Exam', ExamSchema);
