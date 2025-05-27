@@ -196,7 +196,7 @@ const AjouterEnseignant = () => {
                 <div className="col-md-8">
                     <div className="card">
                         <div className="card-header bg-primary text-white">
-                            <h3 className="text-center">Ajouter un enseignant</h3>
+                            <h3 className="text-center">Ajouter un utilisateur</h3>
                         </div>
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>

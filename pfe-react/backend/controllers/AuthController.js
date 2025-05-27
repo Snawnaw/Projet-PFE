@@ -15,8 +15,23 @@ exports.registerUser = CatchAsyncError(async (req, res, next) => {
         numero_tel,
         email,
         password,
-        role // 'admin' ou 'user' selon req.body
+        role // 'admin' ou 'enseignant' selon req.body
     });
+
+    if (user.role === 'enseignant') {
+        const Enseignant = require('../models/Enseignant');
+        const enseignant = new Enseignant({
+            nom,
+            prenom,
+            date_naissance,
+            numero_tel,
+            email: user.email,
+            password: user.password, // already hashed
+            role: 'enseignant',
+            createdAt: new Date()
+        });
+        await enseignant.save();
+    }
 
     const token = user.getJWTToken();
 
@@ -115,3 +130,28 @@ exports.getUserProfile = CatchAsyncError(async (req, res, next) => {
         user
     });
 });
+
+exports.updateUserProfile = CatchAsyncError(async (req, res, next) => {
+    const { nom, prenom, date_naissance, numero_tel, email } = req.body;
+
+    // Vérification de l'utilisateur connecté
+    const user = await User.findById(req.user.id);
+    if (!user) {
+        return res.status(404).json({ success: false, message: "Utilisateur non trouvé" });
+    }
+
+    // Mise à jour des champs
+    user.nom = nom ?? user.nom;
+    user.prenom = prenom ?? user.prenom;
+    user.date_naissance = date_naissance ?? user.date_naissance;
+    user.numero_tel = numero_tel ?? user.numero_tel;
+    user.email = email ?? user.email;
+
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        user
+    });
+}
+);

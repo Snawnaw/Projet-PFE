@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataGrid } from '@mui/x-data-grid';
+import GénérateurExamen from './GénérateurExamen';
 import {
     Button,
     Typography,
@@ -14,42 +14,92 @@ import {
     AppBar,
     Toolbar,
     Card,
-    CardContent,
     TextField,
-    Divider
+    CircularProgress,
+    Snackbar
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
 import ClassIcon from '@mui/icons-material/Class';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
-import CategoryIcon from '@mui/icons-material/Category';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { DataGrid } from '@mui/x-data-grid';
 
+// --- Custom hook for user data ---
+function useUserData() {
+    const [loading, setLoading] = useState(true);
+    const [questions, setQuestions] = useState([]);
+    const [exams, setExams] = useState([]);
+    const [profile, setProfile] = useState(null);
+    const [error, setError] = useState('');
+    // Fetch all user data on mount
+    useEffect(() => {
+        loadData();
+    }, []);
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            // Replace URLs with your backend endpoints
+            const [qRes, eRes, pRes] = await Promise.all([
+                fetch('/api/user/questions'),
+                fetch('/api/user/exams'),
+                fetch('/api/user/profile')
+            ]);
+            setQuestions(await qRes.json());
+            setExams(await eRes.json());
+            setProfile(await pRes.json());
+        } catch (err) {
+            setError('Erreur lors du chargement des données');
+        }
+        setLoading(false);
+    };
+    // Handlers for actions
+    const addQuestion = async (question) => {
+        try {
+            await fetch('/api/user/questions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(question)
+            });
+            loadData();
+        } catch {
+            setError('Erreur lors de l\'ajout de la question');
+        }
+    };
+    const updateProfile = async (data) => {
+        try {
+            await fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            loadData();
+        } catch {
+            setError('Erreur lors de la mise à jour du profil');
+        }
+    };
+    // ...other handlers (edit/delete question, generate exam, etc.)...
+    return {
+        loading, questions, exams, profile, error, setError,
+        addQuestion, updateProfile, reload: loadData
+    };
+}
+
+// --- Main User Component ---
 const User = () => {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
-    const [currentView, setCurrentView] = useState('génerer examen'); // page par défaut
+    const [currentView, setCurrentView] = useState('génerer examen');
+    const {
+        loading, questions, exams, profile, error, setError,
+        addQuestion, updateProfile, reload
+    } = useUserData();
 
-    const sectionsData = [
-        { id: 1, nom: 'Section A', filiere: 'Informatique', niveau: '2ème année' },
-        { id: 2, nom: 'Section B', filiere: 'Génie Civil', niveau: '1ère année' },
-    ];
-
-    const sectionsColumns = [
-        { field: 'id', headerName: 'ID', width: 90 },
-        { field: 'nom', headerName: 'Nom', width: 130 },
-        { field: 'filiere', headerName: 'Filière', width: 130 },
-        { field: 'niveau', headerName: 'Niveau', width: 130 },
-    ];
-
-    const toggleDrawer = () => {
-        setOpen(!open);
-    };
+    const toggleDrawer = () => setOpen(!open);
 
     const menuItems = [
         { text: 'Mon Profil', icon: <PersonIcon />, view: 'profile' },
-        { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
-        { text: 'Filières', icon: <CategoryIcon />, view: 'filieres' },
+        { text: 'Générer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
         { text: 'Banque de Questions', icon: <ClassIcon />, view: 'banque' },
     ];
 
@@ -58,14 +108,29 @@ const User = () => {
         setOpen(false);
     };
 
-    {useEffect(() => {
-        if (currentView === 'génerer examen') {
-            navigate('/GénérateurExamen');
-        }
-    }, [currentView, navigate])
-    }
+    const handleLogout = () => {
+        localStorage.removeItem('token'); // or sessionStorage, depending on your implementation
+        navigate('/login');
+    };
 
+    // --- DataGrid columns ---
+    const questionColumns = [
+        { field: 'id', headerName: 'ID', width: 70 },
+        { field: 'titre', headerName: 'Titre', width: 200 },
+        { field: 'module', headerName: 'Module', width: 150 },
+        { field: 'section', headerName: 'Section', width: 120 },
+        // ...add more columns as needed...
+    ];
+    const examColumns = [
+        { field: 'id', headerName: 'ID', width: 70 },
+        { field: 'titre', headerName: 'Titre', width: 200 },
+        { field: 'date', headerName: 'Date', width: 120 },
+        // ...add more columns as needed...
+    ];
+
+    // --- Render main content based on view ---
     const renderMainContent = () => {
+        if (loading) return <Box display="flex" justifyContent="center" mt={5}><CircularProgress /></Box>;
         switch (currentView) {
             case 'génerer examen':
                 return (
@@ -74,63 +139,37 @@ const User = () => {
                             Générateur d'Examen
                         </Typography>
                         <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-                            <Button 
-                                variant="contained" 
-                                onClick={() => navigate('/GénérerExamen')} 
+                            <Button
+                                variant="contained"
                                 color="success"
                                 sx={{ borderRadius: 2 }}
+                                onClick={() => {/* open add question dialog/modal here */}}
                             >
                                 + Question
                             </Button>
-                            <Button 
-                                variant="contained" 
-                                onClick={() => navigate('/GénérerExamen')}
+                            <Button
+                                variant="contained"
                                 color="info"
                                 sx={{ borderRadius: 2 }}
+                                onClick={() => {/* open generate exam dialog/modal here */}}
                             >
                                 Générer un Examen
                             </Button>
                         </Box>
-                        <GénérateurExamen />;
-                    </Box>
-                );
-            case 'filieres':
-                return (
-                    <Box>
-                        <Typography variant="h5" gutterBottom>
-                            Filières et Sections
-                        </Typography>
-                        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-                            <Button onClick={() => navigate('/GénérerExamen')} variant="contained" color="success" sx={{ borderRadius: 2 }}>
-                            + Question
-                            </Button>
-                            <Button variant="contained" color="info" sx={{ borderRadius: 2 }}>
-                                Créer Examen
-                            </Button>
-                        </Box>
-
                         <Card elevation={3} sx={{ p: 2, mb: 3 }}>
-                            <Typography variant="h6" gutterBottom>Filtrer par Filière / Section</Typography>
-                            <Box display="flex" gap={2}>
-                                <TextField label="Filière" variant="outlined" />
-                                <TextField label="Section" variant="outlined" />
-                                <Button variant="outlined">Appliquer</Button>
-                            </Box>
-                        </Card>
-
-                        <Card elevation={3}>
-                            <CardContent>
-                                <Typography variant="h6" gutterBottom>
-                                    Précision des Filières / Sections
-                                </Typography>
+                            <Typography variant="h6" gutterBottom>Mes Examens</Typography>
+                            <div style={{ height: 350, width: '100%' }}>
                                 <DataGrid
-                                    rows={sectionsData}
-                                    columns={sectionsColumns}
-                                    autoHeight
+                                    rows={exams}
+                                    columns={examColumns}
                                     pageSize={5}
+                                    rowsPerPageOptions={[5]}
+                                    disableSelectionOnClick
                                 />
-                            </CardContent>
+                            </div>
                         </Card>
+                        {/* Optionally, show GénérateurExamen or other components */}
+                        {/* <GénérateurExamen /> */}
                     </Box>
                 );
             case 'banque':
@@ -138,56 +177,74 @@ const User = () => {
                     <Box>
                         <Typography variant="h5" gutterBottom>Banque de Questions</Typography>
                         <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-                            <Button variant="contained" color="success" sx={{ borderRadius: 2 }}>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                sx={{ borderRadius: 2 }}
+                                onClick={() => {/* open add question dialog/modal here */}}
+                            >
                                 + Question
                             </Button>
-                            <Button variant="contained" color="info" sx={{ borderRadius: 2 }}>
-                                Créer Examen
-                            </Button>
                         </Box>
-                    
                         <Card elevation={3} sx={{ p: 2, mb: 3 }}>
-                            <Typography variant="h6" gutterBottom>Filtrer par Filière / Section</Typography>
-                            <Typography variant="body2" gutterBottom>
-                            Ajoutez, modifiez ou filtrez les questions à travers une interface simple.
-                        </Typography>
-                            <Box display="flex" gap={2}>
-                                <TextField label="Filière" variant="outlined" />
-                                <TextField label="Section" variant="outlined" />
-                                <Button variant="outlined">Appliquer</Button>
-                            </Box>
+                            <Typography variant="h6" gutterBottom>Questions</Typography>
+                            <div style={{ height: 400, width: '100%' }}>
+                                <DataGrid
+                                    rows={questions}
+                                    columns={questionColumns}
+                                    pageSize={7}
+                                    rowsPerPageOptions={[7]}
+                                    disableSelectionOnClick
+                                />
+                            </div>
                         </Card>
-                        {/* Liste des questions à venir */}
-                        <Typography variant="body2" color="text.secondary">
-                            📌 Aucune question disponible pour le moment. Ajoutez-en à l’aide du bouton en haut.
-                        </Typography>
                     </Box>
                 );
             case 'profile':
-                return( 
-                    <Box sx={{width:600, mx: 'auto',mt:2, p: 2, mb: 3 }}>
-                        <card elevation={2} >
+                return (
+                    <Box sx={{ width: 600, mx: 'auto', mt: 2, p: 2, mb: 3 }}>
+                        <Card elevation={2} sx={{ p: 2 }}>
                             <Typography variant="h6" gutterBottom>Informations personnelles</Typography>
-                            <TextField fullWidth label="Nom complet" margin="normal" defaultValue="John Doe" />
-                            <TextField fullWidth label="Email" margin="normal" defaultValue="john.doe@example.com" />
-                            <TextField fullWidth label="Date de naissance" margin="normal" defaultValue="1990-01-01" type="date" InputLabelProps={{ shrink: true }} />
-                            <Button variant="contained" fullWidth sx={{ my: 2 }}>Mettre à jour</Button>
-                        </card>
-                        <Box  sx={{ maxWidth: 600, mx: 'auto', mt: 2 }}>
-                            <Typography variant="h6" gutterBottom>Sécurité</Typography>
-                            <TextField fullWidth label="Mot de passe actuel" margin="normal" type="password" />
-                            <TextField fullWidth label="Nouveau mot de passe" margin="normal" type="password" />
-                            <TextField fullWidth label="Confirmer le mot de passe" margin="normal" type="password" />
-                            <Typography variant="body2" color="error">
-                                - Au moins 8 caractères<br />
-                                - Majuscule, minuscule, chiffre<br />
-                                - Les mots de passe doivent correspondre
-                            </Typography>
-                            <Button variant="contained" color="primary" fullWidth sx={{ my: 2 }}>Changer mot de passe</Button>
-                            <Button variant="contained" color="error" fullWidth>Supprimer le compte</Button>
-                        </Box>
+                            <form onSubmit={e => {
+                                e.preventDefault();
+                                const data = {
+                                    nom: e.target.nom.value,
+                                    email: e.target.email.value,
+                                    dateNaissance: e.target.dateNaissance.value
+                                };
+                                updateProfile(data);
+                            }}>
+                                <TextField
+                                    fullWidth
+                                    label="Nom complet"
+                                    margin="normal"
+                                    name="nom"
+                                    defaultValue={profile?.nom || ''}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Email"
+                                    margin="normal"
+                                    name="email"
+                                    defaultValue={profile?.email || ''}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Date de naissance"
+                                    margin="normal"
+                                    name="dateNaissance"
+                                    defaultValue={profile?.dateNaissance || ''}
+                                    type="date"
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                                <Button type="submit" variant="contained" fullWidth sx={{ my: 2 }}>Mettre à jour</Button>
+                            </form>
+                        </Card>
+                        {/* Security section (password change) can be implemented similarly */}
                     </Box>
-            );
+                );
+            default:
+                return null;
         }
     };
 
@@ -204,9 +261,16 @@ const User = () => {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap>
+                    <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
                         Dashboard Enseignant
                     </Typography>
+                    <Button
+                        color="inherit"
+                        startIcon={<LogoutIcon />}
+                        onClick={handleLogout}
+                    >
+                        Déconnexion
+                    </Button>
                 </Toolbar>
             </AppBar>
 
@@ -256,6 +320,12 @@ const User = () => {
                 }}
             >
                 {renderMainContent()}
+                <Snackbar
+                    open={!!error}
+                    autoHideDuration={4000}
+                    onClose={() => setError('')}
+                    message={error}
+                />
             </Box>
         </Box>
     );

@@ -78,7 +78,9 @@ const AdminProfile = () => {
                                 Date de naissance
                             </Typography>
                             <Typography variant="body1">
-                                {new Date(adminData.date_naissance).toLocaleDateString('fr-FR')}
+                                {adminData.date_naissance
+                                    ? new Date(adminData.date_naissance).toLocaleDateString('fr-FR')
+                                    : 'N/A'}
                             </Typography>
                         </Box>
                         
@@ -98,7 +100,7 @@ const AdminProfile = () => {
                                 Téléphone
                             </Typography>
                             <Typography variant="body1">
-                                {adminData.numero_tel}
+                                {adminData.numero_tel || 'N/A'}
                             </Typography>
                         </Box>
 

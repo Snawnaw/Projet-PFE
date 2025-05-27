@@ -44,10 +44,10 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: {
-            values: ['admin', 'enseignant'],
-            message: 'Veuillez choisir un rôle valide : user, admin ou professeur'
+            values: ['admin', 'enseignant', 'etudiant'],
+            message: 'Veuillez choisir un rôle valide : admin ou enseignant'
         },
-        default: 'user'
+        default: 'enseignant',
     },
     createdAt: {
         type: Date,

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import AjouterEnseignant from './pages/AjouterEnseignant';
 import GénérateurExamen from './pages/GénérateurExamen';
@@ -18,6 +18,11 @@ import User from './pages/User';
 import ExamWeb from "./pages/ExamWeb";
 import Examens from './pages/Examens';
 import React from 'react';
+
+function PrivateRoute({ children }) {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" />;
+}
 
 function App() {
   return (

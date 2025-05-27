@@ -481,14 +481,14 @@ function QuestionForm({ userRole, userModule }) {
                 {/* Question Footer */}
                 <div className="question-footer d-flex justify-content-between mt-4">
                   <div>
-                    <Button
+                    {/*<Button
                       variant="outline-secondary"
                       size="sm"
                       className="me-2"
                       onClick={() => copyQuestion(i)}
                     >
                       <i className="bi bi-files"></i> Dupliquer
-                    </Button>
+                    </Button>*/}
                     <Button
                       variant="outline-danger"
                       size="sm"
@@ -511,7 +511,7 @@ function QuestionForm({ userRole, userModule }) {
     <div className="question-form-container">
       <ToastContainer></ToastContainer>
       <div className="form-header mb-4">
-        <h2 className="form-title">Créer une question</h2>
+        <h2 className="form-title">Modifier la question</h2>
       </div>
       
       <div className="questions-container">
@@ -519,17 +519,17 @@ function QuestionForm({ userRole, userModule }) {
       </div>
       
       <div className="form-actions d-flex justify-content-between mt-4">
-        <Button 
+        {/*<Button 
           variant="primary" 
           onClick={addQuestionTemplate}
         >
           <i className="bi bi-plus-circle"></i> (+) Question
-        </Button>
+        </Button>*/}
         <Button 
           variant="success" 
           onClick={saveForm}
         >
-          <i className="bi bi-save"></i> Sauvgarder Question(s)
+          <i className="bi bi-save"></i> Valider
         </Button>
       </div>
     </div>

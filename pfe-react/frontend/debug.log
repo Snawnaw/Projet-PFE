@@ -46,3 +46,6 @@
 [0511/113217.605:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected
 [0511/175045.554:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected
 [0514/011229.775:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected
+[0520/032611.857:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected
+[0522/215941.880:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected
+[0523/092003.502:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:811] not connected

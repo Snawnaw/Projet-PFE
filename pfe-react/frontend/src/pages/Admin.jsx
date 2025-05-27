@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../services/api';
 import { DataGrid } from '@mui/x-data-grid';
 import GénérateurExamen from './GénérateurExamen';
+import Examens from './Examens';
 import {
     CircularProgress,
     ListItemIcon,
@@ -26,6 +27,8 @@ import {
     Box,
     Paper,
     Chip,
+    Grid,
+    TextField,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,6 +43,9 @@ const AdminProfile = () => {
     const [adminData, setAdminData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [editData, setEditData] = useState(null);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchAdminData = async () => {
@@ -58,6 +64,36 @@ const AdminProfile = () => {
         fetchAdminData();
     }, []);
 
+    const handleEditOpen = () => {
+        setEditData({ ...adminData });
+        setEditOpen(true);
+    };
+
+    const handleEditChange = (e) => {
+        setEditData({ ...editData, [e.target.name]: e.target.value });
+    };
+
+    const handleEditSave = async () => {
+        setSaving(true);
+        try {
+            // Correction de l'URL pour la mise à jour du profil admin
+            // Utilisez l'endpoint réel de votre backend, par exemple :
+            // const response = await API.put('/admin/update', editData);
+            // ou '/auth/update-me' selon votre API
+            const response = await API.put('/auth/update-me', editData);
+            setAdminData(response.data.user || editData);
+            setEditOpen(false);
+            setError(null);
+        } catch (err) {
+            setError(
+                err.response?.data?.message ||
+                err.message ||
+                "Erreur lors de la mise à jour"
+            );
+        }
+        setSaving(false);
+    };
+
     if (loading) return (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
             <CircularProgress />
@@ -73,10 +109,109 @@ const AdminProfile = () => {
     );
 
     return (
-        <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
-            <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-                {/* ...existing AdminProfile JSX code... */}
+        <Box sx={{ maxWidth: 600, mx: 'auto', p: 2 }}>
+            <Paper elevation={4} sx={{ 
+                p: 4, 
+                borderRadius: 4, 
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.07)'
+            }}>
+                <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
+                    <Typography variant="h4" fontWeight={700} gutterBottom color="primary">
+                        {adminData.nom} {adminData.prenom}
+                    </Typography>
+                    <Chip 
+                        label={adminData.role?.toUpperCase() || 'ADMIN'} 
+                        color="primary" 
+                        sx={{ fontWeight: 'bold', fontSize: 16, mb: 1, px: 2 }}
+                    />
+                </Box>
+                <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="subtitle2" color="textSecondary">Date de naissance</Typography>
+                        <Typography variant="body1" gutterBottom>
+                            {adminData.date_naissance
+                                ? new Date(adminData.date_naissance).toLocaleDateString('fr-FR')
+                                : 'N/A'}
+                        </Typography>
+                        <Typography variant="subtitle2" color="textSecondary">Email</Typography>
+                        <Typography variant="body1" gutterBottom>
+                            {adminData.email}
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="subtitle2" color="textSecondary">Téléphone</Typography>
+                        <Typography variant="body1" gutterBottom>
+                            {adminData.numero_tel || 'N/A'}
+                        </Typography>
+                        <Typography variant="subtitle2" color="textSecondary">Date de création du compte</Typography>
+                        <Typography variant="body1">
+                            {adminData.createdAt ? new Date(adminData.createdAt).toLocaleDateString('fr-FR') : 'N/A'}
+                        </Typography>
+                    </Grid>
+                </Grid>
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                    <Button 
+                        variant="outlined" 
+                        size="small" 
+                        onClick={handleEditOpen}
+                    >
+                        Modifier
+                    </Button>
+                </Box>
             </Paper>
+
+            <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
+                <DialogTitle>Modifier mon profil</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        margin="dense"
+                        label="Nom"
+                        name="nom"
+                        value={editData?.nom || ''}
+                        onChange={handleEditChange}
+                        fullWidth
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Prénom"
+                        name="prenom"
+                        value={editData?.prenom || ''}
+                        onChange={handleEditChange}
+                        fullWidth
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Email"
+                        name="email"
+                        value={editData?.email || ''}
+                        onChange={handleEditChange}
+                        fullWidth
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Téléphone"
+                        name="numero_tel"
+                        value={editData?.numero_tel || ''}
+                        onChange={handleEditChange}
+                        fullWidth
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Date de naissance"
+                        name="date_naissance"
+                        type="date"
+                        value={editData?.date_naissance ? editData.date_naissance.slice(0,10) : ''}
+                        onChange={handleEditChange}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditOpen(false)}>Annuler</Button>
+                    <Button onClick={handleEditSave} disabled={saving}>Enregistrer</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
@@ -448,6 +583,7 @@ const Admin = () => {
         { text: 'Salles', icon: <MeetingRoomIcon />, view: 'salles' },
         { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
         { text: 'Banque de Questions', icon: <SchoolIcon />, view: 'banque de questions' },
+        { text: 'Examens', icon: <SchoolIcon />, view: 'examens' },
     ];
 
     const handleMenuClick = (view) => {
@@ -494,7 +630,7 @@ const Admin = () => {
                 <List>
                     {menuItems.map((item) => (
                         <ListItem 
-                            button 
+                            component="button"
                             key={item.text}
                             onClick={() => handleMenuClick(item.view)}
                         >
@@ -735,6 +871,12 @@ const Admin = () => {
                                     />
                                 </Box>
                             </Box>
+                        )}
+
+                        {currentView === 'examens' && (
+                            <>
+                                <Examens />
+                            </>
                         )}
 
                     </>
