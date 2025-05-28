@@ -237,6 +237,7 @@ const Admin = () => {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [deleteType, setDeleteType] = useState('');
+    const [etudiantsData, setEtudiantsData] = useState([]); // Add this line
 
     const loadData = async (view) => {
         setLoading(true);
@@ -262,6 +263,13 @@ const Admin = () => {
                     if (teacherData.length === 0) {
                         const response = await API.get('/enseignant/AllEnseignant');
                         setTeacherData(response.data.enseignants);
+                    }
+                    break;
+
+                case 'etudiants':
+                    if (etudiantsData.length === 0) {
+                        const response = await API.get('/etudiant/AllEtudiant'); // <-- remove /api/v1
+                        setEtudiantsData(response.data.etudiants);
                     }
                     break;
                     
@@ -381,6 +389,9 @@ const Admin = () => {
             case 'question':
                 navigate(`/ModifierQuestion/${row._id}`);
                 break;
+            case 'etudiant':
+                navigate(`/ModifierEtudiant/${row._id}`);
+                break;
         }
     };
 
@@ -405,6 +416,9 @@ const Admin = () => {
                     break;
                 case 'question':
                     endpoint = `/question/${itemToDelete}`;
+                    break;
+                case 'etudiant':
+                    endpoint = `/etudiant/${itemToDelete}`;
                     break;
             }
 
@@ -518,6 +532,31 @@ const Admin = () => {
         ...getActionColumns('enseignant')
     ];
 
+    const etudiantsColumns = [
+        { field: '_id', headerName: 'ID', width: 220 },
+        { field: 'nom', headerName: 'Nom', width: 130 },
+        { field: 'prenom', headerName: 'Prénom', width: 130 },
+        { 
+            field: 'date_naissance',
+            headerName: 'Date de naissance',
+            width: 150,
+            type: 'date',
+            valueFormatter: formatDate
+        },
+        { field: 'email', headerName: 'Email', width: 200 },
+        { field: 'numero_tel', headerName: 'Téléphone', width: 130 },
+        { field: 'filiere', headerName: 'Filière', width: 130 },
+        { field: 'section', headerName: 'Section', width: 130 },
+        {
+            field: 'createdAt',
+            headerName: 'Date de création',
+            width: 150,
+            type: 'date',
+            valueFormatter: formatDate
+        },
+        ...getActionColumns('etudiant')
+    ];
+
     const sallesColumns = [
         { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
@@ -584,6 +623,7 @@ const Admin = () => {
         { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
         { text: 'Banque de Questions', icon: <SchoolIcon />, view: 'banque de questions' },
         { text: 'Examens', icon: <SchoolIcon />, view: 'examens' },
+        { text: 'Étudiants', icon: <PersonIcon />, view: 'etudiants' }, // Add this line
     ];
 
     const handleMenuClick = (view) => {
@@ -743,9 +783,9 @@ const Admin = () => {
                                         id: module._id,
                                         _id: module._id,
                                         nom: module.nom,
-                                        filiere: module.filiere.nom,
-                                        section: module.section.nom,
-                                        enseignant: module.enseignant.nom,
+                                        filiere: module.filiere?.nom || 'N/A',      // <-- use ?.nom
+                                        section: module.section?.nom || 'N/A',      // <-- use ?.nom
+                                        enseignant: module.enseignant?.nom || 'N/A',// <-- use ?.nom
                                         type: module.type,
                                     }))}
                                     columns={moduleColumns}
@@ -800,13 +840,14 @@ const Admin = () => {
                                         rows={teacherData.map(t => ({
                                             id: t._id || Math.random(),
                                             _id: t._id,
-                                            nom: t.nom ,
-                                            prenom: t.prenom ,
-                                            date_naissance: t.date_naissance ||'',
-                                            numero_tel: t.numero_tel ,
-                                            email: t.email,
-                                            ole: t.role || '',
+                                            nom: t.nom || 'N/A',
+                                            prenom: t.prenom || 'N/A',
+                                            date_naissance: t.date_naissance || '',
+                                            numero_tel: t.numero_tel || '',
+                                            email: t.email || '',
+                                            role: t.role || '',
                                             createdAt: t.createdAt || '',
+                                            modules: Array.isArray(t.modules) ? t.modules.map(m => m?.nom || 'N/A').join(', ') : 'N/A'
                                         }))}
                                         columns={teachersColumns}
                                         pageSize={5}
@@ -876,6 +917,38 @@ const Admin = () => {
                         {currentView === 'examens' && (
                             <>
                                 <Examens />
+                            </>
+                        )}
+
+                        {currentView === 'etudiants' && (
+                            <>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => navigate('/AjouterEtudiant')}
+                                    sx={{ mb: 2 }}
+                                >
+                                    Ajouter Étudiant
+                                </Button>
+                                <DataGrid
+                                    rows={etudiantsData.map(e => ({
+                                        id: e._id,
+                                        _id: e._id,
+                                        nom: e.nom,
+                                        prenom: e.prenom,
+                                        date_naissance: e.date_naissance,
+                                        numero_tel: e.numero_tel,
+                                        email: e.email,
+                                        filiere: e.filiere?.nom || 'N/A',
+                                        section: e.section?.nom || 'N/A',
+                                        role: e.role,
+                                        createdAt: e.createdAt,
+                                    }))}
+                                    columns={etudiantsColumns}
+                                    pageSize={5}
+                                    rowsPerPageOptions={[5]}
+                                    autoHeight
+                                    disableSelectionOnClick
+                                />
                             </>
                         )}
 

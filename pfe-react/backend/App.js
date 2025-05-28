@@ -44,6 +44,7 @@ const filiere = require('./routes/Filiere.routes');
 const Module = require('./routes/Module.routes');
 const salle = require('./routes/Salle.routes');
 const enseignant = require('./routes/Enseignant.routes');
+const etudiant = require('./routes/Etudiant.routes');
 const questionRoutes = require('./routes/QuestRep.routes'); 
 const examRoutes = require('./routes/Exam.routes');
 
@@ -55,6 +56,7 @@ app.use('/api/v1/filiere', filiere);
 app.use('/api/v1/module', Module);
 app.use('/api/v1/salle', salle);
 app.use('/api/v1/enseignant', enseignant);
+app.use('/api/v1/etudiant', etudiant);
 app.use('/api/v1/question', questionRoutes);
 app.use('/api/v1/exam', examRoutes);
 

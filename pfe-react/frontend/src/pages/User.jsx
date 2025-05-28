@@ -110,7 +110,7 @@ const User = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('token'); // or sessionStorage, depending on your implementation
-        navigate('/login');
+        navigate('/SignIn'); // Redirect to login page
     };
 
     // --- DataGrid columns ---

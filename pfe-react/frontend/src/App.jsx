@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import AjouterEnseignant from './pages/AjouterEnseignant';
+import AjouterEtudiant from './pages/AjouterEtudiant';
 import GénérateurExamen from './pages/GénérateurExamen';
 import AjouterSection from './pages/AjouterSection';
 import AjouterFiliere from './pages/AjouterFiliere';
@@ -8,9 +9,12 @@ import AjouterModule from './pages/AjouterModule';
 import AjouterSalle from './pages/AjouterSalle';
 import CreerQuestion from './pages/CreerQuestion';
 import BanqueDeQuestions from './pages/BanqueDeQuestions';
+import SubmissionTable from './pages/SubmissionTable';
+import SubmissionView from './pages/SubmissionView';
 import Sections from './pages/Sections';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
+import Etudiant from './pages/Etudiant';
 import Admin from './pages/Admin';
 import './styles/global/App.css';
 import Home from './pages/Home';
@@ -55,6 +59,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/AjouterEnseignant" element={<AjouterEnseignant />} />
+            <Route path="/AjouterEtudiant" element={<AjouterEtudiant />} />
             <Route path="/AjouterFiliere" element={<AjouterFiliere />} />
             <Route path="/AjouterSalle" element={<AjouterSalle />} />
             <Route path="/AjouterSection" element={<AjouterSection />} />
@@ -65,10 +70,12 @@ function App() {
             <Route path="/Home" element={<Home />} />
             <Route path="/Admin" element={<Admin />} />
             <Route path="/Sections" element={<Sections />} />
+            <Route path="/Etudiant" element={<Etudiant />} />
             <Route path="User" element={<User />} />
             <Route path="/CreerQuestion" element={<CreerQuestion />} />
             <Route path="/BanqueDeQuestions" element={<BanqueDeQuestions />} />
             <Route path="/generate-exam" element={<GénérateurExamen />} />
+            <Route path="/submissions/:submissionId" element={<SubmissionView />} />
             <Route path="/exam/:shareableId" element={<ExamWeb />} />
             <Route path="/Examens" element={<Examens />} />
           </Routes>

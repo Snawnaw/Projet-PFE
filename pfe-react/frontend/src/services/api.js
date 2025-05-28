@@ -3,7 +3,7 @@ import axios from 'axios';
 // Create an axios instance with default config
 const API = axios.create({
   baseURL: 'http://localhost:5000/api/v1',
-  withCredentials: true,
+  withCredentials: true, // <-- Add this line
 });
 
 // Add token to requests if available

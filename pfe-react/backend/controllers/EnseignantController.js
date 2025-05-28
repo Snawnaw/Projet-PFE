@@ -1,4 +1,5 @@
 const Enseignant = require('../models/Enseignant');
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { create } = require('../models/Filiere');
@@ -6,7 +7,7 @@ const { create } = require('../models/Filiere');
 // Get all teachers
 exports.getAllEnseignants = async (req, res) => {
     try {
-        const enseignants = await Enseignant.find();
+        const enseignants = await Enseignant.find().populate('modules'); // <-- populate modules
         res.status(200).json({
             success: true,
             enseignants
@@ -52,33 +53,24 @@ exports.createEnseignant = async (req, res) => {
         const { 
             nom, 
             prenom, 
-            date_naissance, // Correspondance avec le frontend
-            numero_tel,     // Correspondance avec le frontend
+            date_naissance,
+            numero_tel,
             email, 
             password, 
-            role = 'enseignant'
-            //module, // Optional: if you want to set the module field
-            //createdAt // Optional: if you want to set the createdAt field
+            role = 'enseignant',
+            filiere,
+            modules
         } = req.body;
 
+        // Validation: check required fields
+        if (!nom || !prenom || !date_naissance || !numero_tel || !email || !password || !filiere) {
+            return res.status(400).json({ message: "Tous les champs obligatoires doivent être remplis." });
+        }
 
-        // Check if teacher already exists
-        const existingEnseignant = await Enseignant.findOne({ nom, prenom });
+        // Check if enseignant already exists
+        const existingEnseignant = await Enseignant.findOne({ email });
         if (existingEnseignant) {
-            return res.status(400).json({ message: "Cet enseignant existe déjà" });
-        }
-
-        const existingEmail = await Enseignant.findOne({ email });
-        if (existingEmail) {
             return res.status(400).json({ message: "Cet email existe déjà" });
-        }
-
-        if (!req.body.numero_tel) {
-            return res.status(400).json({ message: 'Le champ numero de telephone est requis.' });
-          }
-
-        if (!date_naissance) {
-            return res.status(400).json({ message: 'Veuillez choisir une date de naissance.' });
         }
 
         const existingPhone = await Enseignant.findOne({ numero_tel });
@@ -86,7 +78,7 @@ exports.createEnseignant = async (req, res) => {
             return res.status(400).json({ message: 'Ce numéro de téléphone existe déjà.' });
         }
 
-        // Hash password
+        // Hash password for Enseignant only
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const enseignant = new Enseignant({
@@ -97,24 +89,30 @@ exports.createEnseignant = async (req, res) => {
             email,
             password: hashedPassword,
             role,
-            //module,
-            createdAt: new Date() // Set createdAt to current date
-        });
-
-        const user = new User({
-            nom: nom + ' ' + prenom,
-            email,
-            password: hashedPassword,
-            dateNaissance: date_naissance,
-            role: 'enseignant'
+            filiere,
+            modules: modules || [],
+            createdAt: new Date()
         });
 
         await enseignant.save();
-        await user.save();
+
+        // Pass plain password to User, let Mongoose hash it
+        await User.create({
+            nom,
+            prenom,
+            date_naissance,
+            numero_tel,
+            email,
+            password, // <-- plain password, NOT hashedPassword
+            role: 'enseignant'
+        });
 
         res.status(201).json({ message: "Enseignant créé avec succès" });
     } catch (error) {
         console.error('Erreur lors de la création de l\'enseignant :', error);
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message, errors: error.errors });
+        }
         res.status(500).json({ message: error.message });
     }
 };

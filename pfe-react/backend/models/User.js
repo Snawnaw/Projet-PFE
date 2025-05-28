@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, "Veuillez saisir votre mot de passe"],
-        minLength: [9, "Le mot de passe doit contenir au moins 9 caractères"],
+        minLength: [8, "Le mot de passe doit contenir au moins 8 caractères"],
         select: false,
     },
     role: {
@@ -56,12 +56,10 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) {
-        return next();
-    }
-
+userSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
     this.password = await bcrypt.hash(this.password, 10);
+    next();
 });
 
 // JWT Token method
@@ -69,6 +67,46 @@ userSchema.methods.getJWTToken = function () {
     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE || '7d'
     });
+};
+
+const createEnseignant = async (req, res) => {
+    const { nom, prenom, email, password, ...otherFields } = req.body;
+
+
+    // Create Enseignant
+    const enseignant = await Enseignant.create({
+        nom, prenom, email, password, ...otherFields
+    });
+
+    // Create User for login
+    await User.create({
+        nom,
+        prenom,
+        email,
+        password, // plain password, let pre-save hook hash it
+        role: 'enseignant'
+    });
+
+    res.status(201).json({ message: 'Enseignant créé avec succès', enseignant });
+};
+
+const createEtudiant = async (req, res) => {
+    const { nom, prenom, email, password, ...otherFields } = req.body;
+
+
+    const etudiant = await Etudiant.create({
+        nom, prenom, email, password, ...otherFields
+    });
+
+    await User.create({
+        nom,
+        prenom,
+        email,
+        password, // plain password, let pre-save hook hash it
+        role: 'etudiant'
+    });
+
+    res.status(201).json({ etudiant });
 };
 
 module.exports = mongoose.model("User", userSchema);

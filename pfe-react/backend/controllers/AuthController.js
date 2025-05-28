@@ -62,22 +62,17 @@ exports.loginUser = CatchAsyncError(async (req, res, next) => {
         });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email: email }).select("+password");
+
+    // Add debug log
+    console.log('Login attempt:', { email, password, userFound: !!user, userPassword: user?.password });
 
     if (!user) {
-        return res.status(401).json({ 
-            success: false,
-            message: "Email ou mot de passe incorrect" 
-        });
+        return res.status(401).json({ message: 'Identifiants invalides' });
     }
-
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
-    
-    if (!isPasswordMatched) {
-        return res.status(401).json({ 
-            success: false,
-            message: "Email ou mot de passe incorrect" 
-        });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        return res.status(401).json({ message: 'Identifiants invalides' });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {

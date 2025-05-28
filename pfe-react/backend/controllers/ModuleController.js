@@ -69,3 +69,13 @@ exports.createModule = CatchAsyncError(async (req, res, next) => {
         });
     }
 });
+
+exports.getModulesByFiliere = async (req, res) => {
+    try {
+        const filiereId = req.params.filiereId;
+        const modules = await Module.find({ filiere: filiereId });
+        res.status(200).json({ modules });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

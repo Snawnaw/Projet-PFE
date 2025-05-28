@@ -2,6 +2,7 @@ const Etudiant = require('../models/Etudiant');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { create } = require('../models/Section');
+const mongoose = require('mongoose');
 
 // Get all teachers
 exports.getAllEtudiants = async (req, res) => {
@@ -49,18 +50,29 @@ exports.getEtudiantsBySection = async (req, res) => {
 // Create new teacher
 exports.createEtudiant = async (req, res) => {
     try {
+        console.log('Received body:', req.body); // Add this line for debugging
         const { 
             nom, 
             prenom, 
-            date_naissance, // Correspondance avec le frontend
-            numero_tel,     // Correspondance avec le frontend
+            date_naissance,
+            numero_tel,
             email, 
             password, 
-            role = 'etudiant'
-            //module, // Optional: if you want to set the module field
-            //createdAt // Optional: if you want to set the createdAt field
+            role = 'etudiant',
+            filiere,
+            section
         } = req.body;
 
+        // Validate required fields
+        if (!nom || !prenom || !date_naissance || !numero_tel || !email || !password || !filiere || !section) {
+            return res.status(400).json({ message: "Tous les champs sont requis." });
+        }
+        if (!mongoose.Types.ObjectId.isValid(filiere)) {
+            return res.status(400).json({ message: "Filière invalide ou manquante." });
+        }
+        if (!mongoose.Types.ObjectId.isValid(section)) {
+            return res.status(400).json({ message: "Section invalide ou manquante." });
+        }
 
         // Check if teacher already exists
         const existingEtudiant = await Etudiant.findOne({ nom, prenom });
@@ -97,23 +109,29 @@ exports.createEtudiant = async (req, res) => {
             email,
             password: hashedPassword,
             role,
-            //module,
+            filiere,
+            section,
             createdAt: new Date() // Set createdAt to current date
         });
 
-        const user = new User({
-            nom: nom + ' ' + prenom,
-            email,
-            password: hashedPassword,
-            dateNaissance: date_naissance,
-            role: 'etudiant'
-        });
-
         await etudiant.save();
-        await user.save();
+
+        await User.create({
+                    nom,
+                    prenom,
+                    date_naissance,
+                    numero_tel,
+                    email,
+                    password: hashedPassword,
+                    role: 'etudiant',
+        });
 
         res.status(201).json({ message: "Etudiant créé avec succès" });
     } catch (error) {
+        // Log validation errors in detail
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message, errors: error.errors });
+        }
         console.error('Erreur lors de la création de l\'etudiant :', error);
         res.status(500).json({ message: error.message });
     }
@@ -128,11 +146,11 @@ exports.updateEtudiant = async (req, res) => {
             date_naissance, 
             numero_tel, 
             email,
-            password, // Optional: if you want to update the password 
+            password,
             role,
-            //module, // Optional: if you want to update the module field
-            //createdAt // Optional: if you want to update the createdAt field
-    } = req.body;
+            filiere,
+            section
+        } = req.body;
 
         // Check if new email already exists
         if (email) {
@@ -156,9 +174,14 @@ exports.updateEtudiant = async (req, res) => {
             }
         }
 
+        const updateFields = { nom, prenom, date_naissance, numero_tel, email, role };
+        if (filiere) updateFields.filiere = filiere;
+        if (section) updateFields.section = section;
+        if (password) updateFields.password = await bcrypt.hash(password, 10);
+
         const updatedEtudiant = await Etudiant.findByIdAndUpdate(
             req.params.id,
-            { nom, prenom, date_naissance, numero_tel, email, role, module, password, createdAt },
+            updateFields,
             { new: true, runValidators: true }
         );
         
@@ -167,6 +190,9 @@ exports.updateEtudiant = async (req, res) => {
         }
         res.status(200).json(updatedEtudiant);
     } catch (error) {
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message, errors: error.errors });
+        }
         res.status(500).json({ message: error.message });
     }
 };

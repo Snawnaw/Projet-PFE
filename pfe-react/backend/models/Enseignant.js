@@ -41,11 +41,10 @@ const enseignantSchema = new mongoose.Schema({
         ref: 'Filiere',
         required: [true, "Veuillez entrer la filière"]
     },
-    module: {
+    modules: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Module',
-        required: [true, "Veuillez entrer le module"]
-    },
+        ref: 'Module'
+    }],
     createdAt: {
         type: Date,
         default: Date.now

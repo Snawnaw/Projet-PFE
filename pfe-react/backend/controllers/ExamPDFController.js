@@ -29,9 +29,19 @@ getAllExams: CatchAsyncError(async (req, res) => {
     }
 }),
 
-createExam : CatchAsyncError(async (req, res) => {
+createExam: CatchAsyncError(async (req, res) => {
     try {
+        console.log('Received exam data:', req.body); // Debug log
+        
         const { module, filiere, section, enseignant, examType, difficulte, examDate, duree, format, questions } = req.body;
+
+        // Validate required fields
+        if (!module || !filiere || !section || !enseignant || !examType || !difficulte || !examDate || !duree || !format) {
+            return res.status(400).json({
+                success: false,
+                message: 'All required fields must be provided'
+            });
+        }
 
         // Check if the exam already exists
         const existingExam = await Exam.findOne({ module, examDate });
@@ -40,6 +50,17 @@ createExam : CatchAsyncError(async (req, res) => {
                 success: false,
                 message: 'Exam already exists for this module and date'
             });
+        }
+
+        // Validate questions exist if provided
+        if (questions && questions.length > 0) {
+            const existingQuestions = await Question.countDocuments({ _id: { $in: questions } });
+            if (existingQuestions !== questions.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'One or more questions do not exist'
+                });
+            }
         }
 
         const exam = await Exam.create({
@@ -52,29 +73,27 @@ createExam : CatchAsyncError(async (req, res) => {
             examDate,
             duree,
             format,
-            questions
+            questions: questions || [] // Ensure questions is always an array
         });
+
+        // Populate the exam data before returning
+        const populatedExam = await Exam.findById(exam._id)
+            .populate('module', 'nom')
+            .populate('filiere', 'nom')
+            .populate('section', 'nom')
+            .populate('enseignant', 'nom prenom')
+            .populate('questions');
 
         res.status(201).json({
             success: true,
-            exam: {
-                _id: exam._id,
-                module: exam.module,
-                filiere: exam.filiere,
-                section: exam.section,
-                enseignant: exam.enseignant,
-                examType: exam.examType,
-                difficulte: exam.difficulte,
-                examDate: exam.examDate,
-                duree: exam.duree,
-                format: exam.format
-            }
+            exam: populatedExam
         });
     } catch (error) {
+        console.error('Detailed error:', error);
         res.status(500).json({
             success: false,
             message: 'Error creating the exam',
-            error: error.message
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
         });
     }
 }),

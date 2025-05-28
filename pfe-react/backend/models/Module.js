@@ -30,7 +30,6 @@ const ModuleSchema = new Schema({
     enseignant: {
         type: Schema.Types.ObjectId,
         ref: 'Enseignant',
-        required: [true, "Veuillez saisir l'enseignant du module"],
     },
 
     type: {

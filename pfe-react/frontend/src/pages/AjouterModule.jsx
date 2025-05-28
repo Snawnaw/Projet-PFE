@@ -95,7 +95,7 @@ const AjouterModule = () => {
         setSuccess(false);
 
         // Validation
-        if (!nomModule || !code || !filiere || !section || !enseignant || !type) {
+        if (!nomModule || !code || !filiere || !section || !type) { // <-- retirez !enseignant
             setError('Veuillez remplir tous les champs');
             return;
         }
@@ -122,7 +122,7 @@ const AjouterModule = () => {
                     code,
                     filiere,
                     section,
-                    enseignant,
+                    ...(enseignant && { enseignant }), // n'inclure que si non vide
                     type
                 })
             });
@@ -247,9 +247,8 @@ const AjouterModule = () => {
                                         className="form-control"
                                         value={enseignant}
                                         onChange={(e) => setEnseignant(e.target.value)}
-                                        required
                                     >
-                                        <option value="">Sélectionnez un enseignant</option>
+                                        <option value="">Sélectionnez un enseignant (optionnel)</option>
                                         {enseignants && enseignants.map((e) => (
                                             <option key={e._id} value={e._id}>{e.nom}</option>
                                         ))}

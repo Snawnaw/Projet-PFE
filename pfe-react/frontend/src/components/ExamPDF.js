@@ -1,7 +1,12 @@
 export const ExamPDF = (exam, questions) => {
   try {
-    // Debug: log questions to verify structure
-    console.log("ExamPDF questions:", questions);
+    if (!exam || !questions) {
+      console.error("Missing exam or questions data");
+      return false;
+    }
+
+    // Ensure questions is always an array
+    const safeQuestions = Array.isArray(questions) ? questions : [];
     
     const printContent = `
       <!DOCTYPE html>
@@ -18,15 +23,15 @@ export const ExamPDF = (exam, questions) => {
       <body>
         <header>
           <h1>${exam.module?.nom || 'Exam'}</h1>
-          <p>${exam.examType.toUpperCase()} • ${new Date(exam.examDate).toLocaleDateString()} • Duration: ${exam.duree} mins</p>
+          <p>${exam.examType?.toUpperCase() || ''} • ${exam.examDate ? new Date(exam.examDate).toLocaleDateString() : ''} • Duration: ${exam.duree || 0} mins</p>
         </header>
 
-        ${questions.map((q, i) => `
+        ${safeQuestions.map((q, i) => `
           <div class="question">
-            <h3>${i+1}. ${q.enonce || q.text || ''}</h3>
+            <h3>${i+1}. ${q.enonce || q.text || 'Question'}</h3>
             <div class="options">
-              ${q.options.map((opt, j) => 
-                `<p>${String.fromCharCode(97 + j)}. ${opt.text}</p>`
+              ${(q.options || []).map((opt, j) => 
+                `<p>${String.fromCharCode(97 + j)}. ${opt.text || ''}</p>`
               ).join('')}
             </div>
           </div>

@@ -99,32 +99,36 @@ const GénérateurExamen = () => {
 
     // NEW: Fetch questions based on selected module, difficulte and number
     const fetchQuestions = async () => {
-    if (!selectedModule) {
-        setError('Veuillez sélectionner un module');
-        return false;
-    }
-
-    try {
-        const response = await fetch(
-            `http://localhost:5000/api/v1/question/module/${selectedModule}?limit=${nbQuestions}&difficulte=${difficulte}`,
-            { credentials: 'include' }
-        );
-
-        if (!response.ok) throw new Error('Échec de la récupération des questions');
-
-        const data = await response.json();
-
-        if (data.questions.length === 0) {
-            throw new Error('Aucune question disponible pour les critères sélectionnés');
+        if (!selectedModule) {
+            setError('Veuillez sélectionner un module');
+            return false;
         }
 
-        setQuestions(data.questions); // Update the questions state
-        return true;
-    } catch (error) {
-        setError(error.message);
-        return false;
-    }
-};
+        try {
+            const response = await fetch(
+                `http://localhost:5000/api/v1/question/module/${selectedModule}?limit=${nbQuestions}&difficulte=${difficulte}`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) throw new Error('Échec de la récupération des questions');
+
+            const data = await response.json();
+
+            if (!data.questions || data.questions.length === 0) {
+                setQuestions([]); // <-- important pour désactiver le bouton
+                setError('Aucune question disponible pour les critères sélectionnés');
+                return false;
+            }
+
+            setQuestions(data.questions); // Update the questions state
+            setError(null);
+            return true;
+        } catch (error) {
+            setQuestions([]); // <-- important pour désactiver le bouton
+            setError(error.message);
+            return false;
+        }
+    };
 
     // NEW: Generate exam link
     const generateExamLink = async (examId) => {
@@ -147,8 +151,8 @@ const GénérateurExamen = () => {
 
     // UPDATED: Handle form submission
     const handleSubmitWeb = async (e) => {
-    e.preventDefault();
-    setError(null);
+        if (e && e.preventDefault) e.preventDefault();
+        setError(null);
 
     try {
         // First fetch questions based on criteria
@@ -257,26 +261,23 @@ const handleGenerateWebAnswerKey = async () => {
     }
 };
 
+    // Suppression de fetchQuestions et de la validation sur questions.length
+
     const handleSubmitPDF = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
         // First fetch questions based on criteria
         const questionsFetched = await fetchQuestions();
-        if (!questionsFetched) return;
+        if (!questionsFetched) {
+            setLoading(false);
+            setError('No questions found for the selected criteria');
+            return;
+        }
 
-        // Ensure we have the full question objects with options
-        // ExamPDF expects an array of question objects with all details (including options/answers)
-        const questionsWithOptions = await Promise.all(
-            questions.map(async (q) => {
-                const res = await axios.get(`/api/v1/question/${q._id}`);
-                // Make sure the returned object matches the structure expected by ExamPDF
-                return res.data.question;
-            })
-        );
-
+        // Prepare exam payload
         const examPayload = {
             module: selectedModule,
             filiere: selectedFiliere,
@@ -290,21 +291,47 @@ const handleGenerateWebAnswerKey = async () => {
             questions: questions.map(q => q._id)
         };
 
-        const response = await axios.post('/api/v1/exam', examPayload, {
-            withCredentials: true
+        console.log('Sending exam payload:', examPayload); // Debug log
+
+        // Use the correct endpoint
+        const response = await fetch('http://localhost:5000/api/v1/exam', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(examPayload)
         });
 
-        await fetchExams();
+        const data = await response.json();
 
-        // Pass the full question objects to ExamPDF
-        const pdfGenerated = ExamPDF(response.data.exam, questionsWithOptions);
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to create exam');
+        }
+
+        console.log('Exam created successfully:', data); // Debug log
+        
+        // Fetch the exam with populated questions
+        const examResponse = await fetch(`http://localhost:5000/api/v1/exam/${data.exam._id}`, {
+            credentials: 'include'
+        });
+        const examData = await examResponse.json();
+
+        if (!examResponse.ok) {
+            throw new Error('Failed to fetch exam details');
+        }
+
+        // Generate the PDF with the exam data and questions
+        const pdfGenerated = ExamPDF(examData.exam, examData.exam.questions || questions);
+        
         if (pdfGenerated) {
             toast.success('PDF exam generated successfully!');
+            setSuccess(true);
+        } else {
+            throw new Error('Failed to generate PDF');
         }
     } catch (error) {
         console.error('Exam creation error:', error);
-        setError(error.response?.data?.message || 'Failed to create PDF exam');
-        toast.error('Failed to create PDF exam');
+        setError(error.message);
+        toast.error(error.message);
     } finally {
         setLoading(false);
     }
@@ -455,7 +482,7 @@ const handleGenerateWebAnswerKey = async () => {
                                     />
                                 </div>
 
-                                {/* UPDATED: Exam format selection */}
+                                {/* UPDATED: Exam format selection 
                                 <div className="form-group mb-3">
                                     <label className="form-label">Format d'examen</label>
                                     <select 
@@ -468,23 +495,29 @@ const handleGenerateWebAnswerKey = async () => {
                                         <option value="WEB">WEB</option>
                                         <option value="PDF">PDF à imprimer</option>
                                     </select>
-                                </div>
+                                </div>*/}
 
                                 <div className="text-center">
-                                    <button type="button" className="btn btn-primary me-2" onClick={handleSubmitWeb}>
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary me-2"
+                                        onClick={() => {
+                                            setExamFormat('WEB');
+                                            handleSubmitWeb();
+                                        }}
+                                    >
                                         Générer Nouvel Examen Web
                                     </button>
-                                    <button type="button" className="btn btn-secondary me-2" onClick={handleSubmitPDF}>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary me-2"
+                                        onClick={() => {
+                                            setExamFormat('PDF');
+                                            handleSubmitPDF();
+                                        }}
+                                    >
                                         Générer Nouvel Examen PDF
                                     </button>
-                                    {/*<button type="button" className="btn btn-info me-2" onClick={handleGenerateWebAnswerKey} 
-                                            disabled={!selectedExam}>
-                                        Corrigé Examen Web
-                                    </button>
-                                    <button type="button" className="btn btn-info me-2" onClick={handleGeneratePDFAnswerKey}
-                                            disabled={!selectedExam}>
-                                        Corrigé Examen PDF
-                                    </button>*/}
                                     <button type="reset" className="btn btn-danger me-2">
                                         Réinitialiser
                                     </button>
@@ -518,64 +551,13 @@ const handleGenerateWebAnswerKey = async () => {
                                         <small className="text-muted">Partagez ce lien avec vos étudiants pour qu'ils puissent passer l'examen</small>
                                     </div>
                                 )}
-                                {/*<div className="form-group mb-3">
-                                    <label className="form-label">Select Existing Exam</label>
-                                    <select 
-                                        className="form-control"
-                                        value={selectedExam}
-                                        onChange={(e) => setSelectedExam(e.target.value)}
-                                    >
-                                        <option value="">Select an exam</option>
-                                        {exams && exams.length > 0 ? (
-                                            exams.map((exam) => (
-                                                <option key={exam._id} value={exam._id}>
-                                                    {exam.module?.nom || 'No module'} - {exam.examType} - {new Date(exam.examDate).toLocaleDateString()}
-                                                </option>
-                                            ))
-                                        ) : (
-                                            <option disabled>No exams available</option>
-                                        )}
-                                    </select>
-                                </div>*/}
                             </form>
+
+                            {/* Supprimer la condition d'affichage du message d'avertissement lié à questions.length */}
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* Exams Table (unchanged) 
-            <div className="card mb-3">
-                <div className="card-body">
-                    <h3>Examens Planifiés</h3>
-                    <div className="table-responsive">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>Titre</th>
-                                    <th>Filière</th>
-                                    <th>Module</th>
-                                    <th>Date</th>
-                                    <th>Type</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Examen Final - Java</td>
-                                    <td>Génie Informatique</td>
-                                    <td>Programmation Java</td>
-                                    <td>2024-01-20</td>
-                                    <td>Final</td>
-                                    <td>
-                                        <button className="btn btn-primary btn-sm me-2">Éditer</button>
-                                        <button className="btn btn-danger btn-sm">Supprimer</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>*/}
         </div>
     );
 };

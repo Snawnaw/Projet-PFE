@@ -14,54 +14,80 @@ const AjouterEnseignant = () => {
         wilaya: '',
         commune: '',
         codePostal: '',
-        role: 'enseignant', // Default role
-        module: '', // Assuming you want to add a module field
+        role: 'enseignant',
+        modules: [], // <-- use modules as an array, not module
         password: '',
         password2: ''
     });
 
     const [wilayas, setWilayas] = useState([]);
     const [communes, setCommunes] = useState([]);
+    const [modules, setModules] = useState([]);
+    const [filieres, setFilieres] = useState([]);
     const [isAddressOpen, setIsAddressOpen] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword2, setShowPassword2] = useState(false);
     const navigate = useNavigate();
 
-    {/*const fetchModules = async () => {
+    const fetchModules = async () => {
         try {
-            const response = await API.get('http://localhost:5000/api/v1/filiere/AllModules');
-            return response.data.modules; // Assuming the API returns an array of modules
+            // Use the correct endpoint
+            const response = await API.get('/module/AllModules');
+            return response.data.modules || [];
         } catch (error) {
             console.error('Erreur lors de la récupération des modules :', error);
             setError('Erreur lors de la récupération des modules');
+            return [];
         }
-    };*/}
+    };
+
+    const fetchModulesByFiliere = async (filiereId) => {
+        try {
+            if (!filiereId) {
+                setModules([]);
+                return;
+            }
+            const response = await API.get(`/module/ModulesByFiliere/${filiereId}`);
+            setModules(response.data.modules || []);
+        } catch (error) {
+            setModules([]);
+            setError('Erreur lors de la récupération des modules pour la filière sélectionnée');
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-    
+
         if (!formData.numero_tel || !formData.date_naissance) {
             setError('Veuillez remplir tous les champs requis.');
             setLoading(false);
             return;
         }
-    
+
         if (formData.password !== formData.password2) {
             setError("Les mots de passe ne correspondent pas.");
             setLoading(false);
             return;
         }
 
-        if (formData.module === '') {
-            setError("Veuillez sélectionner un module.");
+        if (!formData.filiere) { // <-- Ensure filiere is selected
+            setError("Veuillez sélectionner une filière.");
             setLoading(false);
             return;
         }
-    
-        try {    
+
+        if (formData.role === "enseignant" && (!formData.modules || formData.modules.length === 0)) {
+            setError("Veuillez sélectionner au moins un module.");
+            setLoading(false);
+            return;
+        }
+
+        try {
             const response = await API.post('/enseignant/EnseignantCreate', {
                 nom: formData.nom,
                 prenom: formData.prenom,
@@ -73,9 +99,10 @@ const AjouterEnseignant = () => {
                     commune: formData.commune,
                     code_postal: formData.codePostal,
                 },
+                filiere: formData.filiere, // <-- Make sure this is sent and not empty
                 password: formData.password,
                 role: formData.role,
-                module: formData.module // Assuming you want to add a module field
+                ...(formData.role === "enseignant" ? { modules: formData.modules } : {})
             });
     
             console.log('Réponse du serveur :', response.data);
@@ -96,9 +123,10 @@ const AjouterEnseignant = () => {
             handleReset();
             
         } catch (error) {
-            console.error('Erreur :', error);
-            setError(error.message || "Une erreur est survenue lors de l'ajout de l'enseignant");
-            toast.error(error.message || "Une erreur est survenue lors de l'ajout de l'enseignant", {
+            // Show backend validation error if available
+            const backendMsg = error?.response?.data?.message;
+            setError(backendMsg || error.message || "Une erreur est survenue lors de l'ajout de l'enseignant");
+            toast.error(backendMsg || error.message || "Une erreur est survenue lors de l'ajout de l'enseignant", {
                 position: "top-center",
                 autoClose: 2000,
                 hideProgressBar: false,
@@ -126,7 +154,7 @@ const AjouterEnseignant = () => {
             commune: '',
             codePostal: '',
             role: 'enseignant',
-            module: '', // Assuming you want to add a module field
+            modules: [], // <-- use modules as an array, not module
             password: '',
             password2: ''
         });
@@ -144,12 +172,37 @@ const AjouterEnseignant = () => {
                 console.error("Erreur lors du chargement des communes :", err);
                 setError("Erreur lors du chargement des wilayas");
             });
+        
+        // Load modules
+        fetchModules()
+            .then(fetchedModules => {
+                setModules(fetchedModules || []);
+            });
+
+        // Load filieres
+        API.get('/filiere/AllFiliere')
+            .then(res => setFilieres(res.data.filieres || []))
+            .catch(() => setFilieres([]));
     }, [navigate]);
 
+    // When filiere changes, fetch modules for that filiere
+    useEffect(() => {
+        if (formData.filiere) {
+            fetchModulesByFiliere(formData.filiere);
+        } else {
+            setModules([]);
+        }
+    }, [formData.filiere]);
+
     const handleModuleChange = (e) => {
+        const { options } = e.target;
+        const value = Array.from(options)
+            .filter(option => option.selected)
+            .map(option => option.value);
+        
         setFormData({
             ...formData,
-            module: e.target.value
+            modules: value
         });
     };
 
@@ -177,10 +230,26 @@ const AjouterEnseignant = () => {
     };
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        // If role changes to admin, clear modules
+        if (name === "role" && value === "admin") {
+            setFormData({
+                ...formData,
+                [name]: value,
+                modules: []
+            });
+        } else if (name === "filiere") {
+            setFormData({
+                ...formData,
+                filiere: value,
+                modules: [] // reset modules when filiere changes
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: value
+            });
+        }
     };
 
     const toggleAddress = () => {
@@ -319,7 +388,7 @@ const AjouterEnseignant = () => {
                                 </div>
                                 <div className="form-group mb-3">
                                     <input 
-                                        type="password" 
+                                        type={showPassword ? "text" : "password"}
                                         className="form-control" 
                                         name="password" 
                                         placeholder="Mot de passe" 
@@ -327,10 +396,20 @@ const AjouterEnseignant = () => {
                                         onChange={handleChange}
                                         required 
                                     />
+                                    <div style={{ marginTop: "0.5rem" }}>
+                                        <input
+                                            type="checkbox"
+                                            id="showPassword"
+                                            checked={showPassword}
+                                            onChange={() => setShowPassword(!showPassword)}
+                                            style={{ marginRight: "0.5rem" }}
+                                        />
+                                        <label htmlFor="showPassword">Afficher le mot de passe</label>
+                                    </div>
                                 </div>
                                 <div className="form-group mb-3">
                                     <input 
-                                        type="password" 
+                                        type={showPassword2 ? "text" : "password"}
                                         className="form-control" 
                                         name="password2" 
                                         placeholder="Confirmer le mot de passe" 
@@ -338,6 +417,16 @@ const AjouterEnseignant = () => {
                                         onChange={handleChange}
                                         required 
                                     />
+                                    <div style={{ marginTop: "0.5rem" }}>
+                                        <input
+                                            type="checkbox"
+                                            id="showPassword2"
+                                            checked={showPassword2}
+                                            onChange={() => setShowPassword2(!showPassword2)}
+                                            style={{ marginRight: "0.5rem" }}
+                                        />
+                                        <label htmlFor="showPassword2">Afficher le mot de passe</label>
+                                    </div>
                                 </div>
                                 <div className="form-group mb-3">
                                     <select 
@@ -350,17 +439,41 @@ const AjouterEnseignant = () => {
                                         <option value="admin">Admin</option>
                                     </select>
                                 </div>
-                                
-                                {/*<div className="form-group mb-3">
-                                    <select 
-                                        className="form-control" 
-                                        name="module"
-                                        value={formData.module}
+
+                                <div className="form-group mb-3">
+                                    <label className="form-label">Filière</label>
+                                    <select
+                                        className="form-control"
+                                        name="filiere"
+                                        value={formData.filiere || ''}
                                         onChange={handleChange}
+                                        required
                                     >
-                                        <option value="">Choisissez le module</option>
+                                        <option value="">Sélectionner une filière</option>
+                                        {filieres.map(f => (
+                                            <option key={f._id} value={f._id}>{f.nom}</option>
+                                        ))}
                                     </select>
-                                </div>*/}
+                                </div>
+                                
+                                {/* Show modules select only if role is enseignant */}
+                                {formData.role === "enseignant" && (
+                                    <div className="form-group mb-3">
+                                        <label className="form-label">Modules</label>
+                                        <select
+                                            className="form-control"
+                                            name="modules"
+                                            multiple
+                                            value={formData.modules}
+                                            onChange={handleModuleChange}
+                                        >
+                                            {(Array.isArray(modules) ? modules : []).map(m => (
+                                                <option key={m._id} value={m._id}>{m.nom}</option>
+                                            ))}
+                                        </select>
+                                        <small className="form-text text-muted">Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs modules.</small>
+                                    </div>
+                                )}
                                 
                                 <div className="text-center">
                                     <button 
