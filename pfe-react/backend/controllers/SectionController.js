@@ -117,4 +117,10 @@ exports.deleteSection = async (req, res) => {
     }
 };
 
+// Pour les sections de l'enseignant
+exports.getSectionsByEnseignant = async (req, res) => {
+    const sections = await Section.find({ enseignant: req.params.enseignantId });
+    res.json({ sections });
+};
+
 module.exports = exports;

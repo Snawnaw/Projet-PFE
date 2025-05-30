@@ -123,3 +123,9 @@ exports.deleteFiliere = CatchAsyncError(async (req, res) => {
         message: 'Filiere deleted successfully'
     });
 });
+
+// Pour les filières de l'enseignant
+exports.getFilieresByEnseignant = async (req, res) => {
+    const filieres = await Filiere.find({ enseignant: req.params.enseignantId });
+    res.json({ filieres });
+};

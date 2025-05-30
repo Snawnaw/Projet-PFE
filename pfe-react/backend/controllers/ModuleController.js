@@ -79,3 +79,9 @@ exports.getModulesByFiliere = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// Exemple pour les modules
+exports.getModulesByEnseignant = async (req, res) => {
+    const modules = await Module.find({ enseignant: req.params.enseignantId });
+    res.json({ modules });
+};

@@ -6,6 +6,7 @@ const {
     getAllModules,
     createModule,
     getModulesByFiliere,
+    getModulesByEnseignant
     /*updateModule,
     deleteModule,*/
 } = require('../controllers/ModuleController');
@@ -14,6 +15,7 @@ const {
 router.get('/AllModules', isAuthenticatedUser, getAllModules);
 router.post('/ModuleCreate', isAuthenticatedUser, authorizedRoles('admin'), createModule); // Only admin can create
 router.get('/ModulesByFiliere/:filiereId', isAuthenticatedUser, getModulesByFiliere);
+router.get('/modules/byEnseignant/:enseignantId', isAuthenticatedUser, getModulesByEnseignant);
 /*router.put('/ModuleEdit', isAuthenticatedUser, authorizedRoles('admin'), updateModule); // Only admin can update
 router.delete('/ModuleDelete', isAuthenticatedUser, authorizedRoles('admin'), deleteModule); // Only admin can delete*/
 

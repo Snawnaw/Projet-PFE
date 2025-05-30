@@ -251,4 +251,22 @@ exports.login = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+
+    // Exemple pour les modules
+    exports.getModulesByEnseignant = async (req, res) => {
+        const modules = await Module.find({ enseignant: req.params.enseignantId });
+        res.json({ modules });
+    };
+
+    // Exemple pour les filières
+    exports.getFilieresByEnseignant = async (req, res) => {
+        const filieres = await Filiere.find({ enseignants: req.params.enseignantId });
+        res.json({ filieres });
+    };
+
+    // Exemple pour les sections
+    exports.getSectionsByEnseignant = async (req, res) => {
+        const sections = await Section.find({ enseignants: req.params.enseignantId });
+        res.json({ sections });
+    };
 };

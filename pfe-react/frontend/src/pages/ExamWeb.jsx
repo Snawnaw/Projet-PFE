@@ -49,6 +49,7 @@ const ExamWeb = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [fullQuestions, setFullQuestions] = useState([]);
+  const [result, setResult] = useState(null);
   const timerRef = useRef();
 
   useEffect(() => {
@@ -127,11 +128,11 @@ const ExamWeb = () => {
     setSubmitError(null);
     try {
       const studentId = localStorage.getItem('studentId');
-      await axios.post(`/submission/submit/${shareableId}`, {
+      const res = await axios.post(`/submission/submit/${shareableId}`, {
         studentId,
         answers
       });
-      navigate('/submission-success');
+      setResult(res.data); // Save result and answer key
     } catch (err) {
       setSubmitError('Failed to submit exam. Please try again.');
     } finally {
@@ -154,6 +155,32 @@ const ExamWeb = () => {
           <Typography color="error" variant="h6">{error}</Typography>
           <Button variant="contained" sx={{ mt: 2 }} onClick={() => window.location.href = '/'}>Retour</Button>
         </QuestionCard>
+      </Container>
+    </BgBox>
+  );
+  if (result) return (
+    <BgBox>
+      <Container maxWidth="sm">
+        <Paper elevation={3} sx={{ borderRadius: 3, mb: 4, p: 3, background: '#fff', textAlign: 'center' }}>
+          <Typography variant="h4" sx={{ color: '#6c2eb7', fontWeight: 700, mb: 1 }}>
+            Résultat de l'examen
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Score: {result.score} / {result.totalQuestions}
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Corrigé :
+          </Typography>
+          {result.answerKey && result.answerKey.map((q, i) => (
+            <Box key={i} sx={{ mb: 2, textAlign: 'left' }}>
+              <Typography variant="subtitle1">{i+1}. {q.enonce}</Typography>
+              <Typography variant="body2" color="success.main">
+                Réponse correcte: {q.correct.join(', ')}
+              </Typography>
+            </Box>
+          ))}
+          <Button variant="contained" sx={{ mt: 2 }} onClick={() => window.location.href = '/'}>Retour</Button>
+        </Paper>
       </Container>
     </BgBox>
   );

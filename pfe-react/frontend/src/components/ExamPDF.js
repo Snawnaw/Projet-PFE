@@ -1,5 +1,7 @@
+console.log('exam complet:', exam);
 export const ExamPDF = (exam, questions) => {
   try {
+    console.log('exam.filiere:', exam.filiere);
     if (!exam || !questions) {
       console.error("Missing exam or questions data");
       return false;
@@ -16,6 +18,9 @@ export const ExamPDF = (exam, questions) => {
         <style>
           body { font-family: Arial; margin: 2cm; }
           header { text-align: center; margin-bottom: 1cm; }
+          .info-table { margin: 0 auto 1cm auto; border-collapse: collapse; }
+          .info-table td { padding: 4px 12px; }
+          .student-fields { margin-bottom: 1cm; }
           .question { page-break-inside: avoid; margin-bottom: 0.5cm; }
           .options { margin-left: 1cm; }
         </style>
@@ -23,9 +28,32 @@ export const ExamPDF = (exam, questions) => {
       <body>
         <header>
           <h1>${exam.module?.nom || 'Exam'}</h1>
-          <p>${exam.examType?.toUpperCase() || ''} • ${exam.examDate ? new Date(exam.examDate).toLocaleDateString() : ''} • Duration: ${exam.duree || 0} mins</p>
+          <table class="info-table">
+            <tr>
+              <td><strong>Filière :</strong></td>
+              <td>${exam.filiere?.nom || ''}</td>
+              <td><strong>Section :</strong></td>
+              <td>${exam.section?.nom || ''}</td>
+            </tr>
+            <tr>
+              <td><strong>Enseignant :</strong></td>
+              <td>${exam.enseignant?.nom ? exam.enseignant.nom + ' ' + (exam.enseignant.prenom || '') : ''}</td>
+              <td><strong>Date :</strong></td>
+              <td>${exam.examDate ? new Date(exam.examDate).toLocaleDateString() : ''}</td>
+            </tr>
+            <tr>
+              <td><strong>Type :</strong></td>
+              <td>${exam.examType?.toUpperCase() || ''}</td>
+              <td><strong>Durée :</strong></td>
+              <td>${exam.duree || 0} mins</td>
+            </tr>
+          </table>
         </header>
 
+        <div class="student-fields">
+          <strong>Nom et prénom :</strong> ...................... <br/>
+        </div>
+        
         ${safeQuestions.map((q, i) => `
           <div class="question">
             <h3>${i+1}. ${q.enonce || q.text || 'Question'}</h3>
@@ -39,7 +67,7 @@ export const ExamPDF = (exam, questions) => {
       </body>
       </html>
     `;
-
+    
     const printWindow = window.open('', '_blank');
     printWindow.document.write(printContent);
     printWindow.document.close();

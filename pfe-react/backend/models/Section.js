@@ -20,6 +20,12 @@ const SectionSchema = new Schema({
         required: [true, "Veuillez saisir le niveau de la section"],
     },
 
+    enseignant: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Enseignant',
+        required: [true, "Veuillez saisir l'enseignant de la section"],
+    },
+
     nombre_etudiants: {
         type: Number,
         required: [true, "Veuillez saisir le nombre d'étudiants de la section"],
@@ -29,6 +35,7 @@ const SectionSchema = new Schema({
         type: Number,
         required: [true, "Veuillez saisir le nombre de groupes de la section"],
     },
+    enseignant: { type: mongoose.Schema.Types.ObjectId, ref: 'Enseignant' }
 });
 
 module.exports = mongoose.model('Section', SectionSchema);

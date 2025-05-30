@@ -482,21 +482,6 @@ const handleGenerateWebAnswerKey = async () => {
                                     />
                                 </div>
 
-                                {/* UPDATED: Exam format selection 
-                                <div className="form-group mb-3">
-                                    <label className="form-label">Format d'examen</label>
-                                    <select 
-                                        className="form-control" 
-                                        value={examFormat}
-                                        onChange={(e) => setExamFormat(e.target.value)}
-                                        required
-                                    >
-                                        <option value="">Sélectionner le format</option>
-                                        <option value="WEB">WEB</option>
-                                        <option value="PDF">PDF à imprimer</option>
-                                    </select>
-                                </div>*/}
-
                                 <div className="text-center">
                                     <button
                                         type="button"

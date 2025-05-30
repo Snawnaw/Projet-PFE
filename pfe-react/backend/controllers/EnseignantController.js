@@ -1,5 +1,8 @@
 const Enseignant = require('../models/Enseignant');
 const User = require('../models/User');
+const Filiere = require('../models/Filiere');
+const Section = require('../models/Section');
+const Module = require('../models/Module');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { create } = require('../models/Filiere');
@@ -25,6 +28,18 @@ exports.getEnseignantById = async (req, res) => {
             return res.status(404).json({ message: "Teacher not found" });
         }
         res.status(200).json(enseignant);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getEnseignantByEmail = async (req, res) => {
+    try {
+        const enseignant = await Enseignant.findOne({ email: req.params.email });
+        if (!enseignant) {
+            return res.status(404).json({ message: "Enseignant non trouvé" });
+        }
+        res.status(200).json({ enseignant });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -126,14 +141,20 @@ exports.updateEnseignant = async (req, res) => {
             date_naissance, 
             numero_tel, 
             email,
-            password, // Optional: if you want to update the password 
+            password, // Optional
             role,
-            //module, // Optional: if you want to update the module field
-            //createdAt // Optional: if you want to update the createdAt field
-    } = req.body;
+            module,
+            createdAt
+        } = req.body;
 
-        // Check if new email already exists
-        if (email) {
+        // Fetch the current enseignant
+        const existingEnseignant = await Enseignant.findById(req.params.id);
+        if (!existingEnseignant) {
+            return res.status(404).json({ message: "Enseignant non trouvé" });
+        }
+
+        // Check if new email already exists (for another enseignant)
+        if (email && email !== existingEnseignant.email) {
             const existingEmail = await Enseignant.findOne({ 
                 email, 
                 _id: { $ne: req.params.id } 
@@ -143,8 +164,8 @@ exports.updateEnseignant = async (req, res) => {
             }
         }
 
-        // Check if new phone number already exists
-        if (numero_tel) {
+        // Check if new phone number already exists (for another enseignant)
+        if (numero_tel && numero_tel !== existingEnseignant.numero_tel) {
             const existingPhone = await Enseignant.findOne({ 
                 numero_tel, 
                 _id: { $ne: req.params.id } 
@@ -154,15 +175,23 @@ exports.updateEnseignant = async (req, res) => {
             }
         }
 
+        // Optionally hash password if changed
+        let updatedPassword = existingEnseignant.password;
+        if (password && password !== existingEnseignant.password) {
+            updatedPassword = await bcrypt.hash(password, 10);
+        }
+
         const updatedEnseignant = await Enseignant.findByIdAndUpdate(
             req.params.id,
-            { nom, prenom, date_naissance, numero_tel, email, role, module, password, createdAt },
+            { nom, prenom, date_naissance, numero_tel, email, role, module, password: updatedPassword, createdAt },
             { new: true, runValidators: true }
         );
+
+        await User.findOneAndUpdate(
+            { email: existingEnseignant.email }, // or { _id: req.params.id }
+            { nom, prenom, date_naissance, numero_tel, email }
+        );
         
-        if (!updatedEnseignant) {
-            return res.status(404).json({ message: "Enseignant non trouvé" });
-        }
         res.status(200).json(updatedEnseignant);
     } catch (error) {
         res.status(500).json({ message: error.message });

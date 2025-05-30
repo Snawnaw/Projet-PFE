@@ -45,8 +45,9 @@ const Etudiant = () => {
     const fetchExamens = async () => {
         setLoading(true);
         try {
-            // Fetch available exams for the student (replace endpoint as needed)
-            const res = await API.get('/exam');
+            const studentId = localStorage.getItem('studentId');
+            // Fetch only available exams for this student
+            const res = await API.get(`/exam/available/${studentId}`);
             setExamens(res.data.exams || []);
         } catch (err) {
             setError('Erreur lors du chargement des examens');
@@ -83,7 +84,7 @@ const Etudiant = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
-        navigate('/login');
+        navigate('/SignIn');
     };
 
     const handleTabChange = (event, newValue) => {

@@ -28,7 +28,7 @@ const ModuleSchema = new Schema({
     },
 
     enseignant: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Enseignant',
     },
 
@@ -37,7 +37,6 @@ const ModuleSchema = new Schema({
         required: [true, "Veuillez saisir le type du module"],
         enum: ["semestriel", "trimestriel", "annuel"],
     },
-
 });
 
 module.exports = mongoose.model('Module', ModuleSchema);

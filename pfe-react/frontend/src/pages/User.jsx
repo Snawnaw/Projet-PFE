@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import GénérateurExamen from './GénérateurExamen';
+import EnseignantProfile from '../components/Enseignants/EnseignantProfile';
+import GénérateurExamenEnseignant from '../pages/GénérateurExamenEnseignant';
 import {
     Button,
     Typography,
@@ -134,43 +135,7 @@ const User = () => {
         switch (currentView) {
             case 'génerer examen':
                 return (
-                    <Box>
-                        <Typography variant="h5" gutterBottom>
-                            Générateur d'Examen
-                        </Typography>
-                        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-                            <Button
-                                variant="contained"
-                                color="success"
-                                sx={{ borderRadius: 2 }}
-                                onClick={() => {/* open add question dialog/modal here */}}
-                            >
-                                + Question
-                            </Button>
-                            <Button
-                                variant="contained"
-                                color="info"
-                                sx={{ borderRadius: 2 }}
-                                onClick={() => {/* open generate exam dialog/modal here */}}
-                            >
-                                Générer un Examen
-                            </Button>
-                        </Box>
-                        <Card elevation={3} sx={{ p: 2, mb: 3 }}>
-                            <Typography variant="h6" gutterBottom>Mes Examens</Typography>
-                            <div style={{ height: 350, width: '100%' }}>
-                                <DataGrid
-                                    rows={exams}
-                                    columns={examColumns}
-                                    pageSize={5}
-                                    rowsPerPageOptions={[5]}
-                                    disableSelectionOnClick
-                                />
-                            </div>
-                        </Card>
-                        {/* Optionally, show GénérateurExamen or other components */}
-                        {/* <GénérateurExamen /> */}
-                    </Box>
+                    <GénérateurExamenEnseignant></GénérateurExamenEnseignant>
                 );
             case 'banque':
                 return (
@@ -201,48 +166,7 @@ const User = () => {
                     </Box>
                 );
             case 'profile':
-                return (
-                    <Box sx={{ width: 600, mx: 'auto', mt: 2, p: 2, mb: 3 }}>
-                        <Card elevation={2} sx={{ p: 2 }}>
-                            <Typography variant="h6" gutterBottom>Informations personnelles</Typography>
-                            <form onSubmit={e => {
-                                e.preventDefault();
-                                const data = {
-                                    nom: e.target.nom.value,
-                                    email: e.target.email.value,
-                                    dateNaissance: e.target.dateNaissance.value
-                                };
-                                updateProfile(data);
-                            }}>
-                                <TextField
-                                    fullWidth
-                                    label="Nom complet"
-                                    margin="normal"
-                                    name="nom"
-                                    defaultValue={profile?.nom || ''}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Email"
-                                    margin="normal"
-                                    name="email"
-                                    defaultValue={profile?.email || ''}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Date de naissance"
-                                    margin="normal"
-                                    name="dateNaissance"
-                                    defaultValue={profile?.dateNaissance || ''}
-                                    type="date"
-                                    InputLabelProps={{ shrink: true }}
-                                />
-                                <Button type="submit" variant="contained" fullWidth sx={{ my: 2 }}>Mettre à jour</Button>
-                            </form>
-                        </Card>
-                        {/* Security section (password change) can be implemented similarly */}
-                    </Box>
-                );
+                return <EnseignantProfile />;
             default:
                 return null;
         }

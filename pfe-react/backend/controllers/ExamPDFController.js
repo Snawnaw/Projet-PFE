@@ -104,6 +104,8 @@ getExamById : CatchAsyncError(async (req, res) => {
 
         const exam = await Exam.findById(examId)
             .populate('section')
+            .populate('filiere')
+            .populate('module')
             .populate('enseignant')
             .populate('questions');
 

@@ -3,6 +3,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import AjouterEnseignant from './pages/AjouterEnseignant';
 import AjouterEtudiant from './pages/AjouterEtudiant';
 import GénérateurExamen from './pages/GénérateurExamen';
+import GénérateurExamenEnseignant from './pages/GénérateurExamenEnseignant';
 import AjouterSection from './pages/AjouterSection';
 import AjouterFiliere from './pages/AjouterFiliere';
 import AjouterModule from './pages/AjouterModule';
@@ -65,6 +66,7 @@ function App() {
             <Route path="/AjouterSection" element={<AjouterSection />} />
             <Route path="/AjouterModule" element={<AjouterModule />} />
             <Route path="/GénérateurExamen" element={<GénérateurExamen />} />
+            <Route path="/GénérateurExamenEnseignant" element={<GénérateurExamenEnseignant />} />
             <Route path="/SignUp" element={<SignUp />} />
             <Route path="/SignIn" element={<SignIn />} />
             <Route path="/Home" element={<Home />} />

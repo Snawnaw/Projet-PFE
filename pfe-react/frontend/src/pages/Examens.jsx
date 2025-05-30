@@ -139,7 +139,7 @@ const Examens = () => {
         </div>
       </div>
       {/* Select and answer key buttons */}
-      {/*<div className="form-group mb-3">
+      <div className="form-group mb-3">
         <label className="form-label">Select Existing Exam</label>
         <select
           className="form-control"
@@ -158,25 +158,8 @@ const Examens = () => {
           )}
         </select>
       </div>
-      <div className="mb-3">
-        <button
-          type="button"
-          className="btn btn-info me-2"
-          onClick={handleGenerateWebAnswerKey}
-          disabled={!selectedExam}
-        >
-          Corrigé Examen Web
-        </button>
-        <button
-          type="button"
-          className="btn btn-info me-2"
-          onClick={handleGeneratePDFAnswerKey}
-          disabled={!selectedExam}
-        >
-          Corrigé Examen PDF
-        </button>
-      </div>
-       Exams Table */}
+      <SubmissionTable examId={selectedExam} />
+      {/* Exams Table */}
       <div className="table-responsive">
         <table className="table table-striped table-hover">
           <thead>
@@ -233,7 +216,6 @@ const Examens = () => {
             )}
           </tbody>
         </table>
-        <SubmissionTable examId={selectedExam} />
       </div>
     </div>
   );

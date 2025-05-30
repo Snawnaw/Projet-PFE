@@ -21,6 +21,8 @@ const FiliereSchema = new Schema({
         required: [true, "Veuillez saisir le cycle d'etude"],
         enum: ["Licence", "Master"],
     },
+    
+    enseignant: { type: mongoose.Schema.Types.ObjectId, ref: 'Enseignant' }
 });
 
 module.exports = mongoose.model('Filiere', FiliereSchema);
