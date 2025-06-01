@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import EnseignantProfile from '../components/Enseignants/EnseignantProfile';
 import GénérateurExamenEnseignant from '../pages/GénérateurExamenEnseignant';
+import BanqueDeQuestionsEnseignant from '../pages/BanqueDeQuestionsEnseignant';
 import {
     Button,
     Typography,
@@ -138,33 +139,7 @@ const User = () => {
                     <GénérateurExamenEnseignant></GénérateurExamenEnseignant>
                 );
             case 'banque':
-                return (
-                    <Box>
-                        <Typography variant="h5" gutterBottom>Banque de Questions</Typography>
-                        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-                            <Button
-                                variant="contained"
-                                color="success"
-                                sx={{ borderRadius: 2 }}
-                                onClick={() => {/* open add question dialog/modal here */}}
-                            >
-                                + Question
-                            </Button>
-                        </Box>
-                        <Card elevation={3} sx={{ p: 2, mb: 3 }}>
-                            <Typography variant="h6" gutterBottom>Questions</Typography>
-                            <div style={{ height: 400, width: '100%' }}>
-                                <DataGrid
-                                    rows={questions}
-                                    columns={questionColumns}
-                                    pageSize={7}
-                                    rowsPerPageOptions={[7]}
-                                    disableSelectionOnClick
-                                />
-                            </div>
-                        </Card>
-                    </Box>
-                );
+                return <BanqueDeQuestionsEnseignant></BanqueDeQuestionsEnseignant>
             case 'profile':
                 return <EnseignantProfile />;
             default:

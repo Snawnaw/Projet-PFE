@@ -1,4 +1,5 @@
 const Etudiant = require('../models/Etudiant');
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { create } = require('../models/Section');
@@ -30,6 +31,16 @@ exports.getEtudiantById = async (req, res) => {
     }
 };
 
+exports.getEtudiantByEmail = async (req, res) => {
+    try {
+        const etudiant = await Etudiant.findOne({ email: req.params.email });
+        if (!etudiant) return res.status(404).json({ message: "Etudiant non trouvé" });
+        res.json({ etudiant });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.getEtudiantsBySection = async (req, res) => {
     try {
         const { sectionID } = req.params;
@@ -47,7 +58,7 @@ exports.getEtudiantsBySection = async (req, res) => {
     }
 };
 
-// Create new teacher
+// Create new student
 exports.createEtudiant = async (req, res) => {
     try {
         console.log('Received body:', req.body); // Add this line for debugging
@@ -98,7 +109,6 @@ exports.createEtudiant = async (req, res) => {
             return res.status(400).json({ message: 'Ce numéro de téléphone existe déjà.' });
         }
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const etudiant = new Etudiant({
@@ -107,7 +117,7 @@ exports.createEtudiant = async (req, res) => {
             date_naissance,
             numero_tel,
             email,
-            password: hashedPassword,
+            password : hashedPassword,
             role,
             filiere,
             section,
@@ -122,7 +132,7 @@ exports.createEtudiant = async (req, res) => {
                     date_naissance,
                     numero_tel,
                     email,
-                    password: hashedPassword,
+                    password,
                     role: 'etudiant',
         });
 

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Schema = mongoose.Schema;
 
 const enseignantSchema = new mongoose.Schema({
     nom: {
@@ -41,10 +42,12 @@ const enseignantSchema = new mongoose.Schema({
         ref: 'Filiere',
         required: [true, "Veuillez entrer la filière"]
     },
-    modules: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Module'
+
+    modules: [{ 
+        type: Schema.Types.ObjectId, 
+        ref: 'Module' 
     }],
+
     createdAt: {
         type: Date,
         default: Date.now

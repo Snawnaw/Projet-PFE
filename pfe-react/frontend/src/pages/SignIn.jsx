@@ -37,11 +37,14 @@ const SignIn = () => {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
                 
-                if (response.data.user.role === 'admin') {
-                    navigate('/admin');
-                }
-                else {
-                    navigate('/user');
+                if (response.data.user.role === 'etudiant') {
+                    navigate('/Etudiant');
+                } else if (response.data.user.role === 'enseignant') {
+                    navigate('/User');
+                } else if (response.data.user.role === 'admin') {
+                    navigate('/Admin');
+                } else {
+                    navigate('/');
                 }
             }
         } catch (error) {
@@ -60,6 +63,7 @@ const SignIn = () => {
             if (user.role === 'etudiant') navigate('/Etudiant');
             else if (user.role === 'enseignant') navigate('/Enseignant');
             else if (user.role === 'admin') navigate('/Admin');
+            else navigate('/'); // Default fallback
         } catch (err) {
             setError('Identifiants invalides');
         }

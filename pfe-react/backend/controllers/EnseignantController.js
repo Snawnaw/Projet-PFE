@@ -35,10 +35,13 @@ exports.getEnseignantById = async (req, res) => {
 
 exports.getEnseignantByEmail = async (req, res) => {
     try {
-        const enseignant = await Enseignant.findOne({ email: req.params.email });
+        const enseignant = await Enseignant.findOne({ email: req.params.email })
+            .populate('modules'); // <-- IMPORTANT
+
         if (!enseignant) {
             return res.status(404).json({ message: "Enseignant non trouvé" });
         }
+
         res.status(200).json({ enseignant });
     } catch (error) {
         res.status(500).json({ message: error.message });

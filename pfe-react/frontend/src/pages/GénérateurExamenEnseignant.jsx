@@ -74,7 +74,7 @@ const GénérateurExamenEnseignant = () => {
             }
             setQuestions(data.questions);
             setError(null);
-            return true;
+            return data.questions; // <-- return the questions array
         } catch (error) {
             setQuestions([]);
             setError(error.message);
@@ -137,8 +137,8 @@ const GénérateurExamenEnseignant = () => {
         setError(null);
         setSuccess(false);
 
-        const questionsFetched = await fetchQuestions();
-        if (!questionsFetched) return;
+        const fetchedQuestions = await fetchQuestions();
+        if (!fetchedQuestions) return;
 
         const examPayload = {
             module: selectedModule,
@@ -150,7 +150,7 @@ const GénérateurExamenEnseignant = () => {
             examDate,
             duree: parseInt(duration),
             format: "PDF",
-            questions: questions.map(q => q._id)
+            questions: fetchedQuestions.map(q => q._id)
         };
 
         try {
@@ -169,7 +169,7 @@ const GénérateurExamenEnseignant = () => {
             });
             const examData = await examResponse.json();
             if (!examResponse.ok) throw new Error('Erreur lors de la récupération de l\'examen');
-            console.log('exam complet:', exam);
+            console.log('exam complet:', examData.exam);
             const pdfGenerated = ExamPDF(examData.exam, examData.exam.questions || questions);
             if (pdfGenerated) {
                 toast.success('PDF exam generated successfully!');

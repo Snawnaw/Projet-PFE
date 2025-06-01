@@ -1,4 +1,3 @@
-console.log('exam complet:', exam);
 export const ExamPDF = (exam, questions) => {
   try {
     console.log('exam.filiere:', exam.filiere);
@@ -14,7 +13,7 @@ export const ExamPDF = (exam, questions) => {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>${exam.module?.nom || 'Exam'}</title>
+        <title>${exam.examType?.toUpperCase() || ''} de ${exam.module?.nom || 'Exam'}</title>
         <style>
           body { font-family: Arial; margin: 2cm; }
           header { text-align: center; margin-bottom: 1cm; }
@@ -27,7 +26,7 @@ export const ExamPDF = (exam, questions) => {
       </head>
       <body>
         <header>
-          <h1>${exam.module?.nom || 'Exam'}</h1>
+          <h3>${exam.examType?.toUpperCase() || ''} de ${exam.module?.nom || 'Exam'}</h3>
           <table class="info-table">
             <tr>
               <td><strong>Filière :</strong></td>
@@ -36,16 +35,16 @@ export const ExamPDF = (exam, questions) => {
               <td>${exam.section?.nom || ''}</td>
             </tr>
             <tr>
+              <td><strong>Module :</strong></td>
+              <td>${exam.module?.nom || ''}</td>
+              <td><strong>Durée :</strong></td>
+              <td>${exam.duree || 0} mins</td>
+            </tr>
+            <tr>
               <td><strong>Enseignant :</strong></td>
               <td>${exam.enseignant?.nom ? exam.enseignant.nom + ' ' + (exam.enseignant.prenom || '') : ''}</td>
               <td><strong>Date :</strong></td>
               <td>${exam.examDate ? new Date(exam.examDate).toLocaleDateString() : ''}</td>
-            </tr>
-            <tr>
-              <td><strong>Type :</strong></td>
-              <td>${exam.examType?.toUpperCase() || ''}</td>
-              <td><strong>Durée :</strong></td>
-              <td>${exam.duree || 0} mins</td>
             </tr>
           </table>
         </header>
@@ -54,6 +53,9 @@ export const ExamPDF = (exam, questions) => {
           <strong>Nom et prénom :</strong> ...................... <br/>
         </div>
         
+        <div>
+          <strong>Choisissez la ou les bonne(s) réponse(s) : </strong>
+        </div>
         ${safeQuestions.map((q, i) => `
           <div class="question">
             <h3>${i+1}. ${q.enonce || q.text || 'Question'}</h3>

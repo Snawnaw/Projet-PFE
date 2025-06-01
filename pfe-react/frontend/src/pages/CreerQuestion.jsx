@@ -12,17 +12,18 @@ const CreerQuestion = () => {
         const fetchUserData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('/api/v1/auth/me', {
+                const response = await fetch('http://localhost:5000/api/v1/auth/me', {
                     credentials: 'include'
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('Failed to fetch user data');
                 }
-                
+
                 const data = await response.json();
-                setUserRole(data.role || 'admin');
-                setUserModule(data.module || '');
+                // Correction ici :
+                setUserRole(data.user?.role || 'admin');
+                setUserModule(data.user?.modules || []);
             } catch (error) {
                 console.error('Error fetching user data:', error);
                 setUserRole('admin');
@@ -31,7 +32,7 @@ const CreerQuestion = () => {
                 setLoading(false);
             }
         };
-    
+
         fetchUserData();
     }, []);
 
@@ -41,7 +42,7 @@ const CreerQuestion = () => {
 
     return (
         <div>
-            <QuestionForm userRole={userRole} userModule={userModule} />
+            <QuestionForm userRole={userRole} userModules={userModule} />
         </div>
     );
 }

@@ -1,309 +1,118 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-    AppBar, Toolbar, Typography, Button, Box, Tabs, Tab, Paper, CircularProgress, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow
+  AppBar, Toolbar, Typography, Button, Box, Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import API from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SendIcon from '@mui/icons-material/Send';
+import MenuIcon from '@mui/icons-material/Menu';
+import Examens from '../pages/Examens';
+import AnswerKey from '../pages/AnswerKey';
+import EtudiantProfile from '../components/Etudiant/EtudiantProfile';
+
+const drawerWidth = 240;
+
+const menuItems = [
+    { text: 'Profile', icon: <CheckCircleIcon />, view: 'profile' },
+    { text: 'Examens', icon: <MenuBookIcon />, view: 'examens' },
+    { text: 'Corrigés', icon: <SendIcon />, view: 'corriges' },
+    { text: 'Résultats', icon: <AssignmentTurnedInIcon />, view: 'resultats' },
+];
 
 const Etudiant = () => {
-    const [tab, setTab] = useState(0);
-    const [loading, setLoading] = useState(false);
-    const [examens, setExamens] = useState([]);
-    const [resultats, setResultats] = useState([]);
-    const [corriges, setCorriges] = useState([]);
-    const [submissions, setSubmissions] = useState([]);
-    const [error, setError] = useState('');
-    const [snackbar, setSnackbar] = useState('');
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentView, setCurrentView] = useState('examens');
 
-    useEffect(() => {
-        fetchExamens();
-        // fetchResultats();
-        // fetchCorriges();
-    }, []);
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/SignIn');
+  };
 
-    useEffect(() => {
-        if (tab === 3) {
-            fetchSubmissions();
-        }
-    }, [tab]);
+  const renderMainContent = () => {
+    switch (currentView) {
+        case 'profile':
+            return <EtudiantProfile />;
+        case 'examens':
+            return <Examens></Examens>;
+        case 'resultats':
+            return
+        case 'corriges':
+            return <AnswerKey />;
+        default:
+            return null;
+    }
+  };
 
-    const fetchSubmissions = async () => {
-        setLoading(true);
-        try {
-            const studentId = localStorage.getItem('studentId');
-            const res = await API.get(`/submission/student/${studentId}`);
-            setSubmissions(res.data.submissions || []);
-        } catch (err) {
-            setError('Erreur lors du chargement des soumissions');
-        } finally {
-            setLoading(false);
-        }
-    };
+  return (
+    <Box sx={{ display: 'flex', width: '100%' }}>
+      {/* App Bar */}
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <IconButton color="inherit" onClick={() => setSidebarOpen(!sidebarOpen)} edge="start" sx={{ mr: 2 }}>
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+            Dashboard Etudiant
+          </Typography>
+          <Button color="inherit" startIcon={<LogoutIcon />} onClick={handleLogout}>
+            Déconnexion
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-    const fetchExamens = async () => {
-        setLoading(true);
-        try {
-            const studentId = localStorage.getItem('studentId');
-            // Fetch only available exams for this student
-            const res = await API.get(`/exam/available/${studentId}`);
-            setExamens(res.data.exams || []);
-        } catch (err) {
-            setError('Erreur lors du chargement des examens');
-        } finally {
-            setLoading(false);
-        }
-    };
+      {/* Sidebar */}
+      <Drawer
+        variant="temporary"
+        anchor="left"
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            backgroundColor: '#f5f5f5',
+          },
+        }}
+      >
+        <Toolbar />
+        <List>
+          {menuItems.map((item) => (
+            <ListItem
+              button
+              key={item.text}
+              selected={currentView === item.view}
+              onClick={() => { setCurrentView(item.view); setSidebarOpen(false); }}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
 
-    const fetchResultats = async () => {
-        setLoading(true);
-        try {
-            // Fetch student's submitted exams and results (replace endpoint as needed)
-            const res = await API.get('/etudiant/resultats');
-            setResultats(res.data.resultats || []);
-        } catch (err) {
-            setError('Erreur lors du chargement des résultats');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchCorriges = async () => {
-        setLoading(true);
-        try {
-            // Fetch answer keys for completed exams (replace endpoint as needed)
-            const res = await API.get('/etudiant/corriges');
-            setCorriges(res.data.corriges || []);
-        } catch (err) {
-            setError('Erreur lors du chargement des corrigés');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/SignIn');
-    };
-
-    const handleTabChange = (event, newValue) => {
-        setTab(newValue);
-    };
-
-    // --- Render content for each tab ---
-    const renderExamens = () => (
-        <Box mt={3}>
-            <Typography variant="h6" gutterBottom>Examens disponibles</Typography>
-            {loading ? <CircularProgress /> : (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Module</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Format</TableCell>
-                                <TableCell>Action</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {examens.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={5} align="center">Aucun examen disponible</TableCell>
-                                </TableRow>
-                            )}
-                            {examens.map(exam => (
-                                <TableRow key={exam._id}>
-                                    <TableCell>{exam.module?.nom || ''}</TableCell>
-                                    <TableCell>{exam.examDate ? new Date(exam.examDate).toLocaleString('fr-FR') : ''}</TableCell>
-                                    <TableCell>{exam.examType}</TableCell>
-                                    <TableCell>{exam.format}</TableCell>
-                                    <TableCell>
-                                        {exam.format === 'WEB' && exam.shareableId ? (
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                size="small"
-                                                onClick={() => window.open(`/exam/${exam.shareableId}`, '_blank')}
-                                            >
-                                                Passer
-                                            </Button>
-                                        ) : (
-                                            <span>-</span>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-        </Box>
-    );
-
-    const renderResultats = () => (
-        <Box mt={3}>
-            <Typography variant="h6" gutterBottom>Mes Résultats</Typography>
-            {loading ? <CircularProgress /> : (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Module</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Score</TableCell>
-                                <TableCell>Note</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {resultats.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">Aucun résultat</TableCell>
-                                </TableRow>
-                            )}
-                            {resultats.map(res => (
-                                <TableRow key={res.examId}>
-                                    <TableCell>{res.moduleNom}</TableCell>
-                                    <TableCell>{res.examDate ? new Date(res.examDate).toLocaleString('fr-FR') : ''}</TableCell>
-                                    <TableCell>{res.score} / {res.totalQuestions}</TableCell>
-                                    <TableCell>{res.note || '-'}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-        </Box>
-    );
-
-    const renderCorriges = () => (
-        <Box mt={3}>
-            <Typography variant="h6" gutterBottom>Corrigés</Typography>
-            {loading ? <CircularProgress /> : (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Module</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Corrigé</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {corriges.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={3} align="center">Aucun corrigé disponible</TableCell>
-                                </TableRow>
-                            )}
-                            {corriges.map(corr => (
-                                <TableRow key={corr.examId}>
-                                    <TableCell>{corr.moduleNom}</TableCell>
-                                    <TableCell>{corr.examDate ? new Date(corr.examDate).toLocaleString('fr-FR') : ''}</TableCell>
-                                    <TableCell>
-                                        <Button
-                                            variant="outlined"
-                                            color="secondary"
-                                            size="small"
-                                            onClick={() => window.open(corr.corrigeUrl, '_blank')}
-                                        >
-                                            Voir Corrigé
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-        </Box>
-    );
-
-    const renderSubmissions = () => (
-        <Box mt={3}>
-            <Typography variant="h6" gutterBottom>Mes Soumissions</Typography>
-            {loading ? <CircularProgress /> : (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Examen</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Score</TableCell>
-                                <TableCell>Détails</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {submissions.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">Aucune soumission</TableCell>
-                                </TableRow>
-                            )}
-                            {submissions.map(sub => (
-                                <TableRow key={sub._id}>
-                                    <TableCell>{sub.examId?.module?.nom || ''}</TableCell>
-                                    <TableCell>{new Date(sub.submittedAt).toLocaleString('fr-FR')}</TableCell>
-                                    <TableCell>{sub.score}</TableCell>
-                                    <TableCell>
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            onClick={() => navigate(`/submissions/${sub._id}`)}
-                                        >
-                                            Voir
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-        </Box>
-    );
-
-    return (
-        <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
-                <Toolbar>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                        Espace Étudiant
-                    </Typography>
-                    <Button color="inherit" startIcon={<LogoutIcon />} onClick={handleLogout}>
-                        Déconnexion
-                    </Button>
-                </Toolbar>
-            </AppBar>
-            <Paper square>
-                <Tabs
-                    value={tab}
-                    onChange={handleTabChange}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    centered
-                >
-                    <Tab label="Examens" />
-                    <Tab label="Résultats" />
-                    <Tab label="Corrigés" />
-                    <Tab label="Soumissions" />
-                </Tabs>
-            </Paper>
-            <Box p={3}>
-                {tab === 0 && renderExamens()}
-                {tab === 1 && renderResultats()}
-                {tab === 2 && renderCorriges()}
-                {tab === 3 && renderSubmissions()}
-            </Box>
-            <Snackbar
-                open={!!error || !!snackbar}
-                autoHideDuration={4000}
-                onClose={() => { setError(''); setSnackbar(''); }}
-                message={error || snackbar}
-            />
-        </Box>
-    );
-
-
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          mt: 8,
+          backgroundColor: '#fafafa',
+          minHeight: '100vh',
+          width: '100%',
+        }}
+      >
+        {renderMainContent()}
+      </Box>
+    </Box>
+  );
 };
 
 export default Etudiant;

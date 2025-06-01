@@ -10,6 +10,7 @@ import AjouterModule from './pages/AjouterModule';
 import AjouterSalle from './pages/AjouterSalle';
 import CreerQuestion from './pages/CreerQuestion';
 import BanqueDeQuestions from './pages/BanqueDeQuestions';
+import BanqueDeQuestionsEnseignant from './pages/BanqueDeQuestionsEnseignant';
 import SubmissionTable from './pages/SubmissionTable';
 import SubmissionView from './pages/SubmissionView';
 import Sections from './pages/Sections';
@@ -76,6 +77,7 @@ function App() {
             <Route path="User" element={<User />} />
             <Route path="/CreerQuestion" element={<CreerQuestion />} />
             <Route path="/BanqueDeQuestions" element={<BanqueDeQuestions />} />
+            <Route path="/BanqueDeQuestionsEnseignant" element={<BanqueDeQuestionsEnseignant />} />
             <Route path="/generate-exam" element={<GénérateurExamen />} />
             <Route path="/submissions/:submissionId" element={<SubmissionView />} />
             <Route path="/exam/:shareableId" element={<ExamWeb />} />

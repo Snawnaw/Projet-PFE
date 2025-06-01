@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import API from '../../services/api.js';
+import API from "../../services/api";
 import {
     Box,
     Typography,
@@ -16,7 +16,7 @@ import {
     TextField
 } from '@mui/material';
 
-const EnseignantProfile = () => {
+const EtudiantProfile = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -31,15 +31,13 @@ const EnseignantProfile = () => {
                 // 1. Get user info
                 const response = await API.get('/auth/me');
                 const user = response.data.user;
-                // Only fetch enseignant if role is enseignant
-                if (user.role !== 'enseignant') {
-                    setError("Ce profil n'est accessible que pour les enseignants.");
-                    setLoading(false);
-                    return;
+                // Fetch etudiant info by email if role is etudiant
+                if (user.role === 'etudiant') {
+                    const etudiantRes = await API.get(`/etudiant/byEmail/${user.email}`);
+                    setData(etudiantRes.data.etudiant);
+                } else {
+                    setError("Ce profil n'est accessible que pour les étudiants.");
                 }
-                // 2. Get enseignant info by email
-                const enseignantRes = await API.get(`/enseignant/byEmail/${user.email}`);
-                setData(enseignantRes.data.enseignant);
             } catch (err) {
                 setError('Erreur lors du chargement du profil');
             } finally {
@@ -61,9 +59,9 @@ const EnseignantProfile = () => {
     const handleEditSave = async () => {
         setSaving(true);
         try {
-            // Use the correct endpoint for updating enseignant
-            const response = await API.put(`/enseignant/EnseignantEdit/${editData._id}`, editData);
-            setData(response.data.enseignant || editData);
+            // Use the correct endpoint for updating etudiant
+            const response = await API.put(`/etudiant/EtudiantEdit/${editData._id}`, editData);
+            setData(response.data.etudiant || editData);
             setEditOpen(false);
             setError(null);
         } catch (err) {
@@ -103,7 +101,7 @@ const EnseignantProfile = () => {
                         {data.nom} {data.prenom}
                     </Typography>
                     <Chip
-                        label={data.role?.toUpperCase() || 'ENSEIGNANT'}
+                        label={data.role?.toUpperCase() || 'ETUDIANT'}
                         color="primary"
                         sx={{ fontWeight: 'bold', fontSize: 16, mb: 1, px: 2 }}
                     />
@@ -198,4 +196,4 @@ const EnseignantProfile = () => {
     );
 };
 
-export default EnseignantProfile;
+export default EtudiantProfile;

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Accordion, Form, Button, Row, Col, Toast } from 'react-bootstrap';
+import { Accordion, Form, Button, Row, Col } from 'react-bootstrap';
 import '../styles/pages/QuestionForm.css';
 import API from '../services/api';
 import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function QuestionForm({ userRole, userModule }) {
+function QuestionForm({ userRole, userModules = [] }) {
   const [modules, setModules] = useState([]);
   const [isLoadingModules, setIsLoadingModules] = useState(true);
   const [success, setSuccess] = useState(false);
@@ -19,14 +19,14 @@ function QuestionForm({ userRole, userModule }) {
     options: [{ option: 'Option 1' }, { option: 'Option 2' }],
     open: true,
     difficulte: 'Facile',
-    module: userRole?.toLowerCase() === 'admin' ? '' : userModule,
+    module: '',
     correctAnswer: ''
   }]);
 
   // Log props for debugging
   useEffect(() => {
-    console.log("QuestionForm props:", { userRole, userModule });
-  }, [userRole, userModule]);
+    console.log("QuestionForm props:", { userRole, userModules });
+  }, [userRole, userModules]);
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -34,16 +34,7 @@ function QuestionForm({ userRole, userModule }) {
       try {
         const response = await API.get('/module/AllModules');
         if (response.data && response.data.modules) {
-          console.log("Modules fetched:", response.data);
           setModules(response.data.modules);
-          
-          // If user is enseignant, update all questions with their module
-          if (userRole?.toLowerCase() === 'enseignant' && userModule) {
-            setQuestions(prev => prev.map(q => ({
-              ...q,
-              module: userModule
-            })));
-          }
         }
       } catch (error) {
         console.error('Error fetching modules:', error);
@@ -52,19 +43,18 @@ function QuestionForm({ userRole, userModule }) {
         setIsLoadingModules(false);
       }
     };
-  
     fetchModules();
-  }, [userRole, userModule]);
-  
+  }, []);
+
   const [currentFocusedQuestionId, setCurrentFocusedQuestionId] = useState(null);
-  
+
   useEffect(() => {
     // Set the first question as focused by default
     if (questions.length > 0 && !currentFocusedQuestionId) {
       setCurrentFocusedQuestionId(questions[0]._id);
     }
   }, [questions, currentFocusedQuestionId]);
-  
+
   // Function to add a new question
   const addQuestionTemplate = () => {
     const newQuestion = {
@@ -74,26 +64,25 @@ function QuestionForm({ userRole, userModule }) {
       options: [{ option: 'Option 1' }, { option: 'Option 2' }],
       open: true,
       difficulte: 'Facile',
-      module: userRole?.toLowerCase() === 'admin' ? '' : userModule,
+      module: '',
       correctAnswer: ''
     };
-    
     closeAllExpandedQuestions();
     setQuestions([...questions, newQuestion]);
     setCurrentFocusedQuestionId(newQuestion._id);
   };
-  
+
   // Function to close all expanded questions
   const closeAllExpandedQuestions = () => {
-    let updatedQuestions = questions.map(q => ({...q, open: false}));
+    let updatedQuestions = questions.map(q => ({ ...q, open: false }));
     setQuestions(updatedQuestions);
   };
-  
+
   // Function to handle question expansion
   const handleExpand = (questionIndex) => {
     let updatedQuestions = [...questions];
     updatedQuestions.forEach((q, index) => {
-      if(index === questionIndex) {
+      if (index === questionIndex) {
         updatedQuestions[index].open = true;
         setCurrentFocusedQuestionId(q._id);
       } else {
@@ -102,79 +91,76 @@ function QuestionForm({ userRole, userModule }) {
     });
     setQuestions(updatedQuestions);
   };
-  
+
   // Function to update question text
   const updateQuestion = (questionText, questionIndex) => {
     let updatedQuestions = [...questions];
     updatedQuestions[questionIndex].question = questionText;
     setQuestions(updatedQuestions);
   };
-  
+
   // Function to update question type
   const updateQuestionType = (type, questionIndex) => {
     let updatedQuestions = [...questions];
     updatedQuestions[questionIndex].questionType = type;
     setQuestions(updatedQuestions);
   };
-  
+
   // Function to add option
   const addOption = (questionIndex) => {
     let updatedQuestions = [...questions];
-    if(updatedQuestions[questionIndex].options.length < 5) {
+    if (updatedQuestions[questionIndex].options.length < 5) {
       updatedQuestions[questionIndex].options.push({ option: `Option ${updatedQuestions[questionIndex].options.length + 1}` });
       setQuestions(updatedQuestions);
     }
   };
-  
+
   // Function to remove option
   const removeOption = (questionIndex, optionIndex) => {
     let updatedQuestions = [...questions];
-    if(updatedQuestions[questionIndex].options.length > 1) {
+    if (updatedQuestions[questionIndex].options.length > 1) {
       updatedQuestions[questionIndex].options.splice(optionIndex, 1);
       setQuestions(updatedQuestions);
     }
   };
-  
+
   // Function to update option value
   const handleOptionValue = (optionValue, questionIndex, optionIndex) => {
     let updatedQuestions = [...questions];
     updatedQuestions[questionIndex].options[optionIndex].option = optionValue;
     setQuestions(updatedQuestions);
   };
-  
+
   // Function to copy question
   const copyQuestion = (questionIndex) => {
     let copiedQuestion = JSON.parse(JSON.stringify(questions[questionIndex]));
     copiedQuestion._id = Date.now().toString();
     copiedQuestion.open = true;
-    
     closeAllExpandedQuestions();
-    
     let updatedQuestions = [...questions];
     updatedQuestions.splice(questionIndex + 1, 0, copiedQuestion);
     setQuestions(updatedQuestions);
     setCurrentFocusedQuestionId(copiedQuestion._id);
   };
-  
+
   // Function to delete question
   const deleteQuestion = (questionIndex) => {
-    if(questions.length > 1) {
+    if (questions.length > 1) {
       let updatedQuestions = [...questions];
       updatedQuestions.splice(questionIndex, 1);
       setQuestions(updatedQuestions);
     }
   };
-  
+
   // Function to update difficulte
   const updatedifficulte = (difficulte, questionIndex) => {
     let updatedQuestions = [...questions];
     updatedQuestions[questionIndex].difficulte = difficulte;
     setQuestions(updatedQuestions);
   };
-  
+
   // Improved module update function
   const updateModule = (moduleId, questionIndex) => {
-    console.log('Updating module:', moduleId, 'for question:', questionIndex);
     let updatedQuestions = [...questions];
     updatedQuestions[questionIndex].module = moduleId;
     setQuestions(updatedQuestions);
@@ -183,49 +169,73 @@ function QuestionForm({ userRole, userModule }) {
   // Render module selection based on user role
   const renderModuleSelection = (question, index) => {
     if (isLoadingModules) {
-        return <div>Chargement des modules...</div>;
+      return <div>Chargement des modules...</div>;
     }
-    
     if (error) {
-        return <div className="text-danger">{error}</div>;
+      return <div className="text-danger">{error}</div>;
     }
-    
+
+    // ADMIN: peut choisir n'importe quel module
     if (userRole?.toLowerCase() === 'admin') {
-        return (
-            <Form.Select
-                value={question.module || ''}
-                onChange={(e) => {
-                    if (!e.target.value) {
-                        alert('Veuillez sélectionner un module valide');
-                        return;
-                    }
-                    updateModule(e.target.value, index);
-                }}
-                required
-            >
-                <option value="">Sélectionner un module</option>
-                {modules && modules.length > 0 ? (
-                    modules.map((module) => (
-                        <option key={module._id} value={module._id}>
-                            {module.nom} ({module.code})
-                        </option>
-                    ))
-                ) : (
-                    <option disabled>Aucun module disponible</option>
-                )}
-            </Form.Select>
-        );
+      return (
+        <Form.Select
+          value={question.module || ''}
+          onChange={(e) => updateModule(e.target.value, index)}
+          required
+        >
+          <option value="">Sélectionner un module</option>
+          {modules && modules.length > 0 ? (
+            modules.map((module) => (
+              <option key={module._id} value={module._id}>
+                {module.nom} ({module.code})
+              </option>
+            ))
+          ) : (
+            <option disabled>Aucun module disponible</option>
+          )}
+        </Form.Select>
+      );
     }
-    
-    // For teachers - show their assigned module
-    const moduleInfo = modules.find(m => m._id === userModule);
-    return (
-        <Form.Control
+
+    // ENSEIGNANT: peut choisir parmi ses modules
+    if (userRole?.toLowerCase() === 'enseignant') {
+      if (!userModules || userModules.length === 0) {
+        return (
+          <Form.Control
             type="text"
-            value={moduleInfo ? `${moduleInfo.nom} (${moduleInfo.code})` : 'Module non disponible'}
+            value="Aucun module associé"
             readOnly
             className="bg-light"
-        />
+          />
+        );
+      }
+      return (
+        <Form.Select
+          value={question.module || ''}
+          onChange={(e) => updateModule(e.target.value, index)}
+          required
+        >
+          <option value="">Sélectionner un module</option>
+          {userModules.map((moduleId) => {
+            const module = modules.find(m => m._id === moduleId);
+            return (
+              <option key={moduleId} value={moduleId}>
+                {module?.nom || `Module (ID: ${moduleId})`}
+              </option>
+            );
+          })}
+        </Form.Select>
+      );
+    }
+
+    // Par défaut
+    return (
+      <Form.Control
+        type="text"
+        value="Module non disponible"
+        readOnly
+        className="bg-light"
+      />
     );
   };
 
@@ -235,74 +245,74 @@ function QuestionForm({ userRole, userModule }) {
     updatedQuestions[questionIndex].correctAnswer = correctAnswer;
     setQuestions(updatedQuestions);
   };
-  
+
   const saveForm = async () => {
     try {
-        // Validate all questions have modules
-        const questionsWithMissingModule = questions.filter(q => !q.module);
-        if (questionsWithMissingModule.length > 0) {
-            alert(`Les questions suivantes n'ont pas de module sélectionné:
-                ${questionsWithMissingModule.map((q, i) => `\n${i+1}. ${q.question || 'Sans titre'}`).join('')}
+      // Validate all questions have modules
+      const questionsWithMissingModule = questions.filter(q => !q.module);
+      if (questionsWithMissingModule.length > 0) {
+        alert(`Les questions suivantes n'ont pas de module sélectionné:
+                ${questionsWithMissingModule.map((q, i) => `\n${i + 1}. ${q.question || 'Sans titre'}`).join('')}
             `);
-            return;
-        }
-
-        // Prepare data for API
-        const questionsToSave = questions.map(q => ({
-            enonce: q.question,
-            difficulte: q.difficulte,
-            type: q.questionType === 'CHECKBOX' ? 'QCM' : 'TEXT',
-            module: q.module,
-            options: q.questionType !== 'TEXT' ? 
-                q.options.map(opt => ({
-                    text: opt.option,
-                    isCorrect: q.correctAnswer === opt.option
-                })) : undefined,
-            correctAnswer: q.questionType === 'TEXT' ? q.correctAnswer : undefined
-        }));
-
-        const response = await API.post('/question', {
-            questions: questionsToSave
-        });
-
-        if (response.data.success) {
-            setSuccess(true);
-            toast.success('Question ajoutée avec succès !', {
-                position: "top-center",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Slide,
-            });
-        } else {
-            throw new Error(response.data.message);
-        }
-      } catch (error) {
-          console.error('Error saving questions:', error);
-          toast.error(error.message || "Une erreur est survenue lors de l'ajout de la question", {
-                position: "top-center",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Slide,
-            });
+        return;
       }
+
+      // Prepare data for API
+      const questionsToSave = questions.map(q => ({
+        enonce: q.question,
+        difficulte: q.difficulte,
+        type: q.questionType === 'CHECKBOX' ? 'QCM' : 'TEXT',
+        module: q.module,
+        options: q.questionType !== 'TEXT' ?
+          q.options.map(opt => ({
+            text: opt.option,
+            isCorrect: q.correctAnswer === opt.option
+          })) : undefined,
+        correctAnswer: q.questionType === 'TEXT' ? q.correctAnswer : undefined
+      }));
+
+      const response = await API.post('/question', {
+        questions: questionsToSave
+      });
+
+      if (response.data.success) {
+        setSuccess(true);
+        toast.success('Question ajoutée avec succès !', {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Slide,
+        });
+      } else {
+        throw new Error(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error saving questions:', error);
+      toast.error(error.message || "Une erreur est survenue lors de l'ajout de la question", {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Slide,
+      });
+    }
   };
-  
+
   // Function to display questions
   const displayQuestions = () => {
     return questions.map((question, i) => (
       <div key={question._id} id={question._id} className="question-container mb-3">
-        <Accordion 
-          activeKey={question.open ? `panel${i}` : null} 
+        <Accordion
+          activeKey={question.open ? `panel${i}` : null}
           onSelect={() => handleExpand(i)}
           className={question.open ? "question-box-border" : ""}
         >
@@ -315,9 +325,9 @@ function QuestionForm({ userRole, userModule }) {
                       {(i + 1).toString() + ". " + (question.question || "Untitled Question")}
                     </h5>
                     <div className="question-actions">
-                      <Button 
-                        variant="outline-secondary" 
-                        size="sm" 
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
                         className="me-2"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -328,7 +338,7 @@ function QuestionForm({ userRole, userModule }) {
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="question-preview mt-2">
                     {question.questionType === 'RADIO' && (
                       <Form>
@@ -378,7 +388,7 @@ function QuestionForm({ userRole, userModule }) {
                     onChange={(e) => updateQuestion(e.target.value, i)}
                   />
                 </Form.Group>
-                
+
                 <Row className="mb-3">
                   <Col md={4}>
                     <Form.Group>
@@ -412,7 +422,7 @@ function QuestionForm({ userRole, userModule }) {
                     </Form.Group>
                   </Col>
                 </Row>
-                
+
                 {/* Options Section */}
                 {(question.questionType === 'RADIO' || question.questionType === 'CHECKBOX') && (
                   <div className="options-container mb-3">
@@ -451,10 +461,10 @@ function QuestionForm({ userRole, userModule }) {
                         )}
                       </div>
                     ))}
-                    
+
                     {question.options.length < 5 && (
-                      <Button 
-                        variant="outline-primary" 
+                      <Button
+                        variant="outline-primary"
                         size="sm"
                         onClick={() => addOption(i)}
                         className="mt-2"
@@ -464,7 +474,7 @@ function QuestionForm({ userRole, userModule }) {
                     )}
                   </div>
                 )}
-                
+
                 {/* Text Answer Section */}
                 {question.questionType === 'TEXT' && (
                   <Form.Group className="mb-3">
@@ -477,18 +487,18 @@ function QuestionForm({ userRole, userModule }) {
                     />
                   </Form.Group>
                 )}
-                
+
                 {/* Question Footer */}
                 <div className="question-footer d-flex justify-content-between mt-4">
                   <div>
-                    {/*<Button
+                    <Button
                       variant="outline-secondary"
                       size="sm"
                       className="me-2"
                       onClick={() => copyQuestion(i)}
                     >
                       <i className="bi bi-files"></i> Dupliquer
-                    </Button>*/}
+                    </Button>
                     <Button
                       variant="outline-danger"
                       size="sm"
@@ -506,27 +516,27 @@ function QuestionForm({ userRole, userModule }) {
       </div>
     ));
   };
-  
+
   return (
     <div className="question-form-container">
-      <ToastContainer></ToastContainer>
+      <ToastContainer />
       <div className="form-header mb-4">
-        <h2 className="form-title">Modifier la question</h2>
+        <h2 className="form-title">Ajouter la question</h2>
       </div>
-      
+
       <div className="questions-container">
         {displayQuestions()}
       </div>
-      
+
       <div className="form-actions d-flex justify-content-between mt-4">
-        {/*<Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           onClick={addQuestionTemplate}
         >
           <i className="bi bi-plus-circle"></i> (+) Question
-        </Button>*/}
-        <Button 
-          variant="success" 
+        </Button>
+        <Button
+          variant="success"
           onClick={saveForm}
         >
           <i className="bi bi-save"></i> Valider
