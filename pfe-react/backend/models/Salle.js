@@ -1,30 +1,34 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+// Dans models/Salle.js
+const mongoose = require('mongoose');
 
-const SalleSchema = new Schema({
-    numero:{
-        type: Number,
-        required: [true, "Veuillez saisir le numero de la salle"],
+const salleSchema = new mongoose.Schema({
+    numero: {
+        type: String,
+        required: [true, 'Le numéro de salle est requis'],
         unique: true,
-        MaxLenght: [3, "Le numero de la salle ne doit pas depasser 3 caracteres"],
+        trim: true
     },
-
     nom: {
         type: String,
-        required: [true, "Veuillez saisir le nom de la salle"],
-        MaxLenght: [15, "Le nom de la salle ne doit pas depasser 15 caracteres"],
+        required: [true, 'Le nom de salle est requis'],
+        trim: true
     },
-
-    capacite: {
-        type: Number,
-        required: [true, "Veuillez saisir la capacite de la salle"],
-    },
-
     type: {
         type: String,
-        enum: ["cours", "td", "tp", "amphi"],
-        required: [true, "Veuillez saisir le type de la salle"],
+        required: [true, 'Le type de salle est requis'],
+        enum: {
+            values: ['Salle de cours', 'Laboratoire', 'Amphithéâtre', 'Salle TD', 'Salle TP'],
+            message: 'Type de salle invalide'
+        }
+    },
+    capacite: {
+        type: Number,
+        required: [true, 'La capacité est requise'],
+        min: [1, 'La capacité doit être au moins 1'],
+        max: [500, 'La capacité ne peut pas dépasser 500']
     }
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model("Salle", SalleSchema);
+module.exports = mongoose.model('Salle', salleSchema);

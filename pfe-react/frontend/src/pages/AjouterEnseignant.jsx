@@ -15,7 +15,8 @@ const AjouterEnseignant = () => {
         commune: '',
         codePostal: '',
         role: 'enseignant',
-        modules: [], // <-- use modules as an array, not module
+        modules: [],
+        filieres: [],
         password: '',
         password2: ''
     });
@@ -44,17 +45,34 @@ const AjouterEnseignant = () => {
         }
     };
 
-    const fetchModulesByFiliere = async (filiereId) => {
+    const fetchModulesByFilieres = async (filiereIds) => {
         try {
-            if (!filiereId) {
+            if (!filiereIds || filiereIds.length === 0) {
                 setModules([]);
                 return;
             }
-            const response = await API.get(`/module/ModulesByFiliere/${filiereId}`);
-            setModules(response.data.modules || []);
+            
+            // Récupérer les modules pour toutes les filières sélectionnées
+            const allModules = [];
+            for (const filiereId of filiereIds) {
+                try {
+                    const response = await API.get(`/module/ModulesByFiliere/${filiereId}`);
+                    const filiereModules = response.data.modules || [];
+                    allModules.push(...filiereModules);
+                } catch (error) {
+                    console.error(`Erreur pour la filière ${filiereId}:`, error);
+                }
+            }
+            
+            // Supprimer les doublons basés sur l'ID
+            const uniqueModules = allModules.filter((module, index, self) => 
+                index === self.findIndex(m => m._id === module._id)
+            );
+            
+            setModules(uniqueModules);
         } catch (error) {
             setModules([]);
-            setError('Erreur lors de la récupération des modules pour la filière sélectionnée');
+            setError('Erreur lors de la récupération des modules');
         }
     };
 
@@ -75,8 +93,8 @@ const AjouterEnseignant = () => {
             return;
         }
 
-        if (!formData.filiere) { // <-- Ensure filiere is selected
-            setError("Veuillez sélectionner une filière.");
+        if (!formData.filieres || formData.filieres.length === 0) {
+            setError("Veuillez sélectionner au moins une filière.");
             setLoading(false);
             return;
         }
@@ -86,24 +104,37 @@ const AjouterEnseignant = () => {
             setLoading(false);
             return;
         }
+        
+        console.log({
+            nom: formData.nom,
+            prenom: formData.prenom,
+            date_naissance: formData.date_naissance,
+            numero_tel: formData.numero_tel,
+            email: formData.email,
+            wilaya: formData.wilaya,
+            commune: formData.commune,
+            code_postal: formData.codePostal,
+            filieres: formData.filieres,
+            password: formData.password,
+            role: formData.role,
+            modules: formData.modules
+        });
 
         try {
             const response = await API.post('/enseignant/EnseignantCreate', {
-                nom: formData.nom,
-                prenom: formData.prenom,
-                date_naissance: formData.date_naissance,
-                numero_tel: formData.numero_tel,
-                email: formData.email,
-                adresse: {
-                    wilaya: formData.wilaya,
-                    commune: formData.commune,
-                    code_postal: formData.codePostal,
-                },
-                filiere: formData.filiere, // <-- Make sure this is sent and not empty
-                password: formData.password,
-                role: formData.role,
-                ...(formData.role === "enseignant" ? { modules: formData.modules } : {})
-            });
+            nom: formData.nom,
+            prenom: formData.prenom,
+            date_naissance: formData.date_naissance,
+            numero_tel: formData.numero_tel,
+            email: formData.email,
+            wilaya: formData.wilaya,
+            commune: formData.commune,
+            code_postal: formData.codePostal,
+            filieres: formData.filieres,
+            password: formData.password,
+            role: formData.role,
+            ...(formData.role === "enseignant" ? { modules: formData.modules } : {})
+        });
     
             console.log('Réponse du serveur :', response.data);
             setSuccess(true);
@@ -143,7 +174,6 @@ const AjouterEnseignant = () => {
     };
 
     const handleReset = () => {
-        //reset form
         setFormData({
             nom: '',
             prenom: '',
@@ -154,10 +184,16 @@ const AjouterEnseignant = () => {
             commune: '',
             codePostal: '',
             role: 'enseignant',
-            modules: [], // <-- use modules as an array, not module
+            modules: [],
+            filieres: [],
             password: '',
             password2: ''
         });
+
+        setCommunes([]);
+        setModules([]);
+        setError(null);
+        setSuccess(false);
     };
 
     useEffect(() => {
@@ -187,12 +223,12 @@ const AjouterEnseignant = () => {
 
     // When filiere changes, fetch modules for that filiere
     useEffect(() => {
-        if (formData.filiere) {
-            fetchModulesByFiliere(formData.filiere);
+        if (formData.filieres && formData.filieres.length > 0) {
+            fetchModulesByFilieres(formData.filieres);
         } else {
             setModules([]);
         }
-    }, [formData.filiere]);
+    }, [formData.filieres]);
 
     const handleModuleChange = (e) => {
         const { options } = e.target;
@@ -203,6 +239,19 @@ const AjouterEnseignant = () => {
         setFormData({
             ...formData,
             modules: value
+        });
+    };
+
+    const handleFiliereChange = (e) => {
+        const { options } = e.target;
+        const value = Array.from(options)
+            .filter(option => option.selected)
+            .map(option => option.value);
+        
+        setFormData({
+            ...formData,
+            filieres: value,
+            modules: [] // Réinitialiser les modules quand les filières changent
         });
     };
 
@@ -237,12 +286,6 @@ const AjouterEnseignant = () => {
                 ...formData,
                 [name]: value,
                 modules: []
-            });
-        } else if (name === "filiere") {
-            setFormData({
-                ...formData,
-                filiere: value,
-                modules: [] // reset modules when filiere changes
             });
         } else {
             setFormData({
@@ -441,19 +484,23 @@ const AjouterEnseignant = () => {
                                 </div>
 
                                 <div className="form-group mb-3">
-                                    <label className="form-label">Filière</label>
+                                    <label className="form-label">Filières</label>
                                     <select
                                         className="form-control"
-                                        name="filiere"
-                                        value={formData.filiere || ''}
-                                        onChange={handleChange}
+                                        name="filieres"
+                                        multiple
+                                        size="4"
+                                        value={formData.filieres}
+                                        onChange={handleFiliereChange}
                                         required
                                     >
-                                        <option value="">Sélectionner une filière</option>
                                         {filieres.map(f => (
                                             <option key={f._id} value={f._id}>{f.nom}</option>
                                         ))}
                                     </select>
+                                    <small className="form-text text-muted">
+                                        Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs filières.
+                                    </small>
                                 </div>
                                 
                                 {/* Show modules select only if role is enseignant */}
@@ -464,14 +511,25 @@ const AjouterEnseignant = () => {
                                             className="form-control"
                                             name="modules"
                                             multiple
+                                            size="5"
                                             value={formData.modules}
                                             onChange={handleModuleChange}
+                                            required
                                         >
-                                            {(Array.isArray(modules) ? modules : []).map(m => (
-                                                <option key={m._id} value={m._id}>{m.nom}</option>
+                                            {modules.map(module => (
+                                                <option key={module._id} value={module._id}>
+                                                    {module.nom}
+                                                </option>
                                             ))}
                                         </select>
-                                        <small className="form-text text-muted">Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs modules.</small>
+                                        <small className="form-text text-muted">
+                                            Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs modules.
+                                        </small>
+                                        {modules.length === 0 && formData.filieres.length > 0 && (
+                                            <small className="text-warning">
+                                                Aucun module disponible pour les filières sélectionnées.
+                                            </small>
+                                        )}
                                     </div>
                                 )}
                                 

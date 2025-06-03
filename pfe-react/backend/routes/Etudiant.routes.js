@@ -18,5 +18,6 @@ router.put('/EtudiantEdit/:id', isAuthenticatedUser, authorizedRoles('admin'), u
 router.get('/byEmail/:email', getEtudiantByEmail);
 router.delete('/EtudiantDelete/:id', isAuthenticatedUser, authorizedRoles('admin'), deleteEtudiant); // Allow admin to delete by ID
 router.post('/login', require('../controllers/EtudiantController').login);
+router.get('/student/:studentId/results', SubmissionController.getResultsByStudent);
 
 module.exports = router;

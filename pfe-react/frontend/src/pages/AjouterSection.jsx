@@ -42,15 +42,22 @@ const AjouterSection = () => {
         setSuccess(false);
 
         if (
-            !e.target.nom.value ||
             !e.target.filiere.value ||
             !selectedCycle ||
             !e.target.niveau.value ||
-            !e.target.nombre_etudiants.value || // Fixed name
-            !e.target.nombre_groupes.value // Fixed name
+            !e.target.nombre_etudiants.value ||
+            !e.target.nombre_groupes.value
         ) {
-            setError('Veuillez remplir tous les champs');
+            setError('Veuillez remplir tous les champs obligatoires');
             return;
+        }
+
+        // Utiliser le nom tel que saisi par l'utilisateur ou générer un nom simple
+        let sectionName = e.target.nom.value.trim();
+        
+        // Si le nom est vide, générer un nom simple SANS suffixe
+        if (!sectionName) {
+            sectionName = e.target.niveau.value; // Juste le niveau, rien d'autre
         }
 
         try {
@@ -61,12 +68,12 @@ const AjouterSection = () => {
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                    nom: e.target.nom.value,
+                    nom: sectionName,
                     filiere: e.target.filiere.value,
                     cycle: selectedCycle,
                     niveau: e.target.niveau.value,
                     nombre_etudiants: e.target.nombre_etudiants.value,
-                    nombre_groupes: e.target.nombre_groupes.value, 
+                    nombre_groupes: e.target.nombre_groupes.value,
                 }),
             });
 
@@ -77,10 +84,11 @@ const AjouterSection = () => {
             }
 
             e.target.reset();
+            setSelectedCycle('');
             setSuccess(true);
-            toast.success('Section ajoutée avec succès !', {
+            toast.success(`Section "${sectionName}" ajoutée avec succès !`, {
                 position: "top-center",
-                autoClose: 2000,
+                autoClose: 3000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -94,7 +102,7 @@ const AjouterSection = () => {
             setError(error.message || "Une erreur est survenue lors de l'ajout de la section");
             toast.error(error.message || "Une erreur est survenue lors de l'ajout de la section", {
                 position: "top-center",
-                autoClose: 2000,
+                autoClose: 3000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -110,6 +118,13 @@ const AjouterSection = () => {
         e.preventDefault();
         setSuccess(false);
         setError(null);
+        setSelectedCycle(''); // Réinitialiser le cycle aussi
+        
+        // Réinitialiser le formulaire
+        const form = e.target.closest('form');
+        if (form) {
+            form.reset();
+        }
     };
 
     return (
@@ -125,8 +140,16 @@ const AjouterSection = () => {
                             {error && <p className="alert alert-danger">{error}</p>}
                             <form onSubmit={handleSubmit}>
                                 <div className="form-group mb-3">
-                                    <label className="form-label">Nom de la section</label>
-                                    <input type="text" className="form-control" name="nom" placeholder="Nom de la section" />
+                                    <label className="form-label">Nom de la section (optionnel)</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-control" 
+                                        name="nom" 
+                                        placeholder="Ex: Section A, Groupe 1, etc."
+                                    />
+                                    <small className="form-text text-muted">
+                                        Si laissé vide, le niveau sera utilisé comme nom (ex: si niveau = "1", nom = "1")
+                                    </small>
                                 </div>
 
                                 <div className="form-group mb-3">

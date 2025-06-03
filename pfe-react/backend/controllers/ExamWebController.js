@@ -11,6 +11,7 @@ const ExamWebController = {
       .populate('filiere')
       .populate('section')
       .populate('enseignant')
+      .populate('salle')
       .populate('questions');
 
     res.status(200).json({
@@ -20,7 +21,7 @@ const ExamWebController = {
   }),
 
   createExam: CatchAsyncError(async (req, res) => {
-    const { module, filiere, section, enseignant, examType, difficulte, examDate, duree, format, questions } = req.body;
+    const { module, filiere, section, enseignant, salle, examType, difficulte, examDate, duree, format, questions } = req.body;
 
     // Check if the exam already exists
     const existingExam = await Exam.findOne({ module, examDate });
@@ -45,6 +46,7 @@ const ExamWebController = {
       filiere,
       section,
       enseignant,
+      salle,
       examType,
       difficulte,
       examDate,
@@ -61,6 +63,7 @@ const ExamWebController = {
         filiere: exam.filiere,
         section: exam.section,
         enseignant: exam.enseignant,
+        salle: exam.salle,
         examType: exam.examType,
         difficulte: exam.difficulte,
         examDate: exam.examDate,
@@ -155,53 +158,53 @@ const ExamWebController = {
   }),
 
   generateWebExam: CatchAsyncError(async (req, res) => {
-    const { module, filiere, section, enseignant, examType, difficulte, examDate, duree, questions } = req.body;
+      const { module, filiere, section, enseignant, salle, examType, difficulte, examDate, duree, questions } = req.body;
 
-    // Check if the exam already exists
-    const existingExam = await Exam.findOne({ module, examDate, format: 'WEB' });
-    if (existingExam) {
-      return res.status(400).json({
-        success: false,
-        message: 'A web-based exam already exists for this module and date'
+      // Check if the exam already exists
+      const existingExam = await Exam.findOne({ module, examDate, format: 'WEB' });
+      if (existingExam) {
+          return res.status(400).json({
+              success: false,
+              message: 'A web-based exam already exists for this module and date'
+          });
+      }
+
+      // Verify questions exist
+      const questionCount = await Question.countDocuments({ _id: { $in: questions } });
+      if (questionCount !== questions.length) {
+          return res.status(400).json({
+              success: false,
+              message: 'Some questions were not found'
+          });
+      }
+
+      // Create the web-based exam
+      const exam = await Exam.create({
+          module,
+          filiere,
+          section,
+          enseignant,
+          salle,
+          examType,
+          difficulte,
+          examDate,
+          duree,
+          format: 'WEB',
+          questions
       });
-    }
 
-    // Verify questions exist
-    const questionCount = await Question.countDocuments({ _id: { $in: questions } });
-    if (questionCount !== questions.length) {
-      return res.status(400).json({
-        success: false,
-        message: 'Some questions were not found'
+      // Populate the exam data before returning
+      const populatedExam = await Exam.findById(exam._id)
+          .populate('module')
+          .populate('filiere')
+          .populate('section')
+          .populate('enseignant')
+          .populate('questions');
+
+      res.status(201).json({
+          success: true,
+          exam: populatedExam
       });
-    }
-
-    // Create the web-based exam
-    const exam = await Exam.create({
-      module,
-      filiere,
-      section,
-      enseignant,
-      examType,
-      difficulte,
-      examDate,
-      duree,
-      format: 'WEB',
-      questions,
-      shareableId: nanoid(10)
-    });
-
-    // Populate the exam data before returning
-    const populatedExam = await Exam.findById(exam._id)
-      .populate('module')
-      .populate('filiere')
-      .populate('section')
-      .populate('enseignant')
-      .populate('questions');
-
-    res.status(201).json({
-      success: true,
-      exam: populatedExam
-    });
   }),
 
   generateExamLink: CatchAsyncError(async (req, res) => {
@@ -383,7 +386,20 @@ const ExamWebController = {
       totalQuestions: exam.questions.length,
       percentage: Math.round((score / exam.questions.length) * 100)
     });
-  })
+}),
+
+getStudentResults: CatchAsyncError(async (req, res) => {
+  const { studentId } = req.params;
+  
+  const submissions = await Submission.find({ studentId })
+    .populate('examId')
+    .populate('questions');
+  
+  res.status(200).json({
+    success: true,
+    submissions
+  });
+}),
 };
 
 module.exports = ExamWebController;

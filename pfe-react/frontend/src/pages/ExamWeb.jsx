@@ -127,8 +127,8 @@ const ExamWeb = () => {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const studentId = localStorage.getItem('studentId');
-      const res = await axios.post(`/submission/submit/${shareableId}`, {
+      const studentId = localStorage.getItem('userId'); // Récupéré lors du login
+      const res = await axios.post(`http://localhost:5000/submission/submit/${shareableId}`, {
         studentId,
         answers
       });

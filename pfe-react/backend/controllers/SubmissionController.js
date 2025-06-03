@@ -64,32 +64,43 @@ const SubmissionController = {
         });
     }),
 
+    getResultsByStudent: CatchAsyncError(async (req, res) => {
+        const { studentId } = req.params;
+        const submissions = await Submission.find({ student: studentId }).populate('examId');
+        res.status(200).json({ success: true, submissions });
+    }),
+
     calculateScore: CatchAsyncError(async (req, res) => {
-        const { id } = req.params;
+    const { id } = req.params;
 
-        const submission = await Submission.findById(id).populate('examId');
-        if (!submission) {
-            return res.status(404).json({
-                success: false,
-                message: 'Submission not found'
-            });
-        }
-
-        const correctAnswers = submission.examId.questions.map(question => {
-            const correctOption = question.options.find(option => option.isCorrect);
-            return correctOption ? correctOption.text : null;
+    const submission = await Submission.findById(id).populate('examId');
+    if (!submission) {
+        return res.status(404).json({
+            success: false,
+            message: 'Submission not found'
         });
+    }
 
-        const score = submission.answers.reduce((acc, answer, index) => {
-            return acc + (answer === correctAnswers[index] ? 1 : 0);
-        }, 0);
+    const correctAnswers = submission.examId.questions.map(question => {
+        const correctOption = question.options.filter(option => option.isCorrect).map(opt => opt.text);
+        return { enonce: question.enonce, correct: correctOption };
+    });
 
-        res.status(200).json({
-            success: true,
-            score,
-            totalQuestions: correctAnswers.length
-        });
-    })
+    const score = submission.answers.reduce((acc, answer, index) => {
+        const correct = correctAnswers[index].correct;
+        return acc + (Array.isArray(answer) && answer.every(a => correct.includes(a)) ? 1 : 0);
+    }, 0);
+
+    submission.score = score;
+    await submission.save();
+
+    res.status(200).json({
+        success: true,
+        score,
+        totalQuestions: correctAnswers.length,
+        answerKey: correctAnswers,
+    });
+}),
 };
 
 module.exports = SubmissionController;

@@ -2,7 +2,6 @@ const Question = require('../models/Question');
 const Module = require('../models/Module');
 const mongoose = require('mongoose');
 
-// In CreerQuestionController.js
 exports.createQuestion = async (req, res) => {
     try {
         const { questions } = req.body;
@@ -20,7 +19,7 @@ exports.createQuestion = async (req, res) => {
         try {
             const validModules = await Module.find({ 
                 _id: { $in: moduleIds } 
-            }).select('_id'); // Only select ID for validation
+            }).select('_id'); 
             
             if (validModules.length !== new Set(moduleIds).size) {
                 return res.status(400).json({
@@ -103,54 +102,73 @@ exports.getQuestions = async (req, res) => {
 exports.getQuestionsByModule = async (req, res) => {
     try {
         const { moduleId } = req.params;
-        const { 
-            limit = 10, 
-            difficulte, 
-        } = req.query;
+        const { limit, difficulte } = req.query;
 
-        // Support both 'difficulte' and 'difficulte' for flexibility
-        const diff = difficulte || difficulte;
+        console.log('Recherche questions pour:', { moduleId, limit, difficulte });
 
-        // Validate moduleId
-        if (!mongoose.Types.ObjectId.isValid(moduleId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid module ID'
+        // Construire le filtre
+        let filter = { module: moduleId };
+        if (difficulte) {
+            filter.difficulte = new RegExp(`^${difficulte}$`, 'i'); // Case-insensitive
+        }
+
+        // Récupérer les questions
+        const questions = await Question.find(filter)
+            .populate('module', 'nom')
+            .limit(parseInt(limit) || 10);
+
+        console.log('Questions trouvées:', questions.length);
+
+        // ✅ CORRECTION : Vérifier que questions existe et est un tableau
+        if (!questions || !Array.isArray(questions)) {
+            return res.status(200).json({
+                success: true,
+                questions: [],
+                count: 0
             });
         }
 
-        // Build query
-        const query = { 
-            module: new mongoose.Types.ObjectId(moduleId) // Updated this line
-        };
+        // ✅ CORRECTION : Ajouter une vérification avant le .map()
+        const formattedQuestions = questions.map(question => {
+            if (!question) return null;
 
-        // Add difficulte filter if provided
-        if (diff) {
-            // Capitalize first letter to match model's enum
-            query.difficulte = diff.charAt(0).toUpperCase() + diff.slice(1);
-        }
-
-        // Use aggregation for random sampling
-        const questions = await Question.aggregate([
-            { $match: query },
-            { $sample: { size: parseInt(limit) } }
-        ]);
+            return {
+                _id: question._id,
+                enonce: question.enonce, // <-- use enonce
+                type: question.type,
+                difficulte: question.difficulte,
+                points: question.points,
+                options: question.options && Array.isArray(question.options)
+                    ? question.options.map(opt => ({
+                        text: opt?.text || '',
+                        isCorrect: opt?.isCorrect || false
+                    }))
+                    : [],
+                module: question.module ? {
+                    _id: question.module._id,
+                    nom: question.module.nom
+                } : null,
+                enseignant: question.enseignant ? {
+                    _id: question.enseignant._id,
+                    nom: question.enseignant.nom,
+                    prenom: question.enseignant.prenom
+                } : null,
+                createdAt: question.createdAt
+            };
+        }).filter(q => q !== null); // ✅ Filtrer les questions nulles
 
         res.status(200).json({
             success: true,
-            questions: questions.map(q => ({
-                _id: q._id,
-                text: q.enonce,
-                options: q.options.map(opt => opt.text)
-            })),
-            count: questions.length
+            questions: formattedQuestions,
+            count: formattedQuestions.length
         });
+
     } catch (error) {
         console.error('Error fetching questions:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error while fetching questions',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Erreur lors de la récupération des questions',
+            error: error.message
         });
     }
 };

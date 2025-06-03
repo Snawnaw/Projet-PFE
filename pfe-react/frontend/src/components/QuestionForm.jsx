@@ -5,7 +5,7 @@ import API from '../services/api';
 import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function QuestionForm({ userRole, userModules = [] }) {
+function QuestionForm({ userRole, userModules }) {
   const [modules, setModules] = useState([]);
   const [isLoadingModules, setIsLoadingModules] = useState(true);
   const [success, setSuccess] = useState(false);
@@ -19,7 +19,7 @@ function QuestionForm({ userRole, userModules = [] }) {
     options: [{ option: 'Option 1' }, { option: 'Option 2' }],
     open: true,
     difficulte: 'Facile',
-    module: '',
+    module: userRole?.toLowerCase() === 'admin' ? '' : '',
     correctAnswer: ''
   }]);
 
@@ -29,27 +29,29 @@ function QuestionForm({ userRole, userModules = [] }) {
   }, [userRole, userModules]);
 
   useEffect(() => {
-    const fetchModules = async () => {
-      setIsLoadingModules(true);
-      try {
-        const response = await API.get('/module/AllModules');
-        if (response.data && response.data.modules) {
-          setModules(response.data.modules);
-        }
-      } catch (error) {
-        console.error('Error fetching modules:', error);
-        setError("Impossible de charger les modules. Veuillez réessayer plus tard.");
-      } finally {
-        setIsLoadingModules(false);
-      }
-    };
-    fetchModules();
-  }, []);
+    setIsLoadingModules(true);
+    if (userRole?.toLowerCase() === 'enseignant' && Array.isArray(userModules)) {
+      setModules(userModules);
+      setIsLoadingModules(false);
+    } else if (userRole?.toLowerCase() === 'admin') {
+      // Admin: fetch all modules
+      API.get('/module/AllModules')
+        .then(response => {
+          setModules(response.data.modules || []);
+        })
+        .catch(() => {
+          setError("Impossible de charger les modules. Veuillez réessayer plus tard.");
+        })
+        .finally(() => setIsLoadingModules(false));
+    } else {
+      setModules([]);
+      setIsLoadingModules(false);
+    }
+  }, [userRole, userModules]);
 
   const [currentFocusedQuestionId, setCurrentFocusedQuestionId] = useState(null);
 
   useEffect(() => {
-    // Set the first question as focused by default
     if (questions.length > 0 && !currentFocusedQuestionId) {
       setCurrentFocusedQuestionId(questions[0]._id);
     }
@@ -64,7 +66,7 @@ function QuestionForm({ userRole, userModules = [] }) {
       options: [{ option: 'Option 1' }, { option: 'Option 2' }],
       open: true,
       difficulte: 'Facile',
-      module: '',
+      module: userRole?.toLowerCase() === 'admin' ? '' : '',
       correctAnswer: ''
     };
     closeAllExpandedQuestions();
@@ -166,6 +168,13 @@ function QuestionForm({ userRole, userModules = [] }) {
     setQuestions(updatedQuestions);
   };
 
+  // Function to update correct answer
+  const updateCorrectAnswer = (correctAnswer, questionIndex) => {
+    let updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].correctAnswer = correctAnswer;
+    setQuestions(updatedQuestions);
+  };
+
   // Render module selection based on user role
   const renderModuleSelection = (question, index) => {
     if (isLoadingModules) {
@@ -175,75 +184,25 @@ function QuestionForm({ userRole, userModules = [] }) {
       return <div className="text-danger">{error}</div>;
     }
 
-    // ADMIN: peut choisir n'importe quel module
-    if (userRole?.toLowerCase() === 'admin') {
-      return (
-        <Form.Select
-          value={question.module || ''}
-          onChange={(e) => updateModule(e.target.value, index)}
-          required
-        >
-          <option value="">Sélectionner un module</option>
-          {modules && modules.length > 0 ? (
-            modules.map((module) => (
-              <option key={module._id} value={module._id}>
-                {module.nom} ({module.code})
-              </option>
-            ))
-          ) : (
-            <option disabled>Aucun module disponible</option>
-          )}
-        </Form.Select>
-      );
-    }
-
-    // ENSEIGNANT: peut choisir parmi ses modules
-    if (userRole?.toLowerCase() === 'enseignant') {
-      if (!userModules || userModules.length === 0) {
-        return (
-          <Form.Control
-            type="text"
-            value="Aucun module associé"
-            readOnly
-            className="bg-light"
-          />
-        );
-      }
-      return (
-        <Form.Select
-          value={question.module || ''}
-          onChange={(e) => updateModule(e.target.value, index)}
-          required
-        >
-          <option value="">Sélectionner un module</option>
-          {userModules.map((moduleId) => {
-            const module = modules.find(m => m._id === moduleId);
-            return (
-              <option key={moduleId} value={moduleId}>
-                {module?.nom || `Module (ID: ${moduleId})`}
-              </option>
-            );
-          })}
-        </Form.Select>
-      );
-    }
-
-    // Par défaut
+    // Afficher la liste des modules pour les enseignants ET les admins
     return (
-      <Form.Control
-        type="text"
-        value="Module non disponible"
-        readOnly
-        className="bg-light"
-      />
+      <Form.Select
+        value={question.module || ''}
+        onChange={e => updateModule(e.target.value, index)}
+        required
+      >
+        <option value="">Sélectionner un module</option>
+        {modules.length > 0 ? (
+          modules.map(module => (
+            <option key={module._id} value={module._id}>
+              {module.nom} ({module.code})
+            </option>
+          ))
+        ) : (
+          <option disabled>Aucun module disponible</option>
+        )}
+      </Form.Select>
     );
-  };
-
-  // Function to update correct answer
-  const updateCorrectAnswer = (correctAnswer, questionIndex) => {
-    let updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].correctAnswer = correctAnswer;
-    setQuestions(updatedQuestions);
   };
 
   const saveForm = async () => {
@@ -252,7 +211,7 @@ function QuestionForm({ userRole, userModules = [] }) {
       const questionsWithMissingModule = questions.filter(q => !q.module);
       if (questionsWithMissingModule.length > 0) {
         alert(`Les questions suivantes n'ont pas de module sélectionné:
-                ${questionsWithMissingModule.map((q, i) => `\n${i + 1}. ${q.question || 'Sans titre'}`).join('')}
+                ${questionsWithMissingModule.map((q, i) => `\n${i+1}. ${q.question || 'Sans titre'}`).join('')}
             `);
         return;
       }
@@ -292,7 +251,6 @@ function QuestionForm({ userRole, userModules = [] }) {
         throw new Error(response.data.message);
       }
     } catch (error) {
-      console.error('Error saving questions:', error);
       toast.error(error.message || "Une erreur est survenue lors de l'ajout de la question", {
         position: "top-center",
         autoClose: 2000,
@@ -338,7 +296,6 @@ function QuestionForm({ userRole, userModules = [] }) {
                       </Button>
                     </div>
                   </div>
-
                   <div className="question-preview mt-2">
                     {question.questionType === 'RADIO' && (
                       <Form>
@@ -388,7 +345,6 @@ function QuestionForm({ userRole, userModules = [] }) {
                     onChange={(e) => updateQuestion(e.target.value, i)}
                   />
                 </Form.Group>
-
                 <Row className="mb-3">
                   <Col md={4}>
                     <Form.Group>
@@ -410,7 +366,7 @@ function QuestionForm({ userRole, userModules = [] }) {
                         onChange={(e) => updatedifficulte(e.target.value, i)}
                       >
                         <option value="Facile">Facile</option>
-                        <option value="Moyenne">Moyenne</option>
+                        <option value="Moyen">Moyen</option>
                         <option value="Difficile">Difficile</option>
                       </Form.Select>
                     </Form.Group>
@@ -422,8 +378,6 @@ function QuestionForm({ userRole, userModules = [] }) {
                     </Form.Group>
                   </Col>
                 </Row>
-
-                {/* Options Section */}
                 {(question.questionType === 'RADIO' || question.questionType === 'CHECKBOX') && (
                   <div className="options-container mb-3">
                     {question.options.map((option, j) => (
@@ -461,7 +415,6 @@ function QuestionForm({ userRole, userModules = [] }) {
                         )}
                       </div>
                     ))}
-
                     {question.options.length < 5 && (
                       <Button
                         variant="outline-primary"
@@ -474,8 +427,6 @@ function QuestionForm({ userRole, userModules = [] }) {
                     )}
                   </div>
                 )}
-
-                {/* Text Answer Section */}
                 {question.questionType === 'TEXT' && (
                   <Form.Group className="mb-3">
                     <Form.Label>Correct Answer</Form.Label>
@@ -487,8 +438,6 @@ function QuestionForm({ userRole, userModules = [] }) {
                     />
                   </Form.Group>
                 )}
-
-                {/* Question Footer */}
                 <div className="question-footer d-flex justify-content-between mt-4">
                   <div>
                     <Button
@@ -523,11 +472,9 @@ function QuestionForm({ userRole, userModules = [] }) {
       <div className="form-header mb-4">
         <h2 className="form-title">Ajouter la question</h2>
       </div>
-
       <div className="questions-container">
         {displayQuestions()}
       </div>
-
       <div className="form-actions d-flex justify-content-between mt-4">
         <Button
           variant="primary"
@@ -545,4 +492,5 @@ function QuestionForm({ userRole, userModules = [] }) {
     </div>
   );
 }
+
 export default QuestionForm;

@@ -37,11 +37,11 @@ const enseignantSchema = new mongoose.Schema({
         type: String,
         default: 'enseignant'
     },
-    filiere: {
+    filieres: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Filiere',
-        required: [true, "Veuillez entrer la filière"]
-    },
+        required: [true, "Veuillez entrer au moins une filière"]
+    }],
 
     modules: [{ 
         type: Schema.Types.ObjectId, 

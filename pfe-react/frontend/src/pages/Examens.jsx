@@ -82,11 +82,11 @@ const Examens = () => {
     );
   });
 
-  if (loading) return <div>Loading exams...</div>;
+  if (loading) return <div>Chargement des exams...</div>;
 
   return (
     <div className="container mt-4">
-      <h2>All Exams</h2>
+      <h2>Tous les examens</h2>
       {/* Filter controls */}
       <div className="row mb-3">
         <div className="col-md-2">
@@ -140,13 +140,13 @@ const Examens = () => {
       </div>
       {/* Select and answer key buttons */}
       <div className="form-group mb-3">
-        <label className="form-label">Select Existing Exam</label>
+        <label className="form-label">Selectionner un examen existant</label>
         <select
           className="form-control"
           value={selectedExam}
           onChange={(e) => setSelectedExam(e.target.value)}
         >
-          <option value="">Select an exam</option>
+          <option value="">Selectionner un examen</option>
           {filteredExams.length > 0 ? (
             filteredExams.map((exam) => (
               <option key={exam._id} value={exam._id}>
@@ -154,7 +154,7 @@ const Examens = () => {
               </option>
             ))
           ) : (
-            <option disabled>No exams available</option>
+            <option disabled>Pas d'examen disponible</option>
           )}
         </select>
       </div>
@@ -211,7 +211,7 @@ const Examens = () => {
             ))}
             {filteredExams.length === 0 && (
               <tr>
-                <td colSpan={8} className="text-center">No exams found</td>
+                <td colSpan={8} className="text-center">Pas d'examens trouvés</td>
               </tr>
             )}
           </tbody>

@@ -1,33 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import QuestionForm from '../components/QuestionForm';
 
 const CreerQuestion = () => {
     const [userRole, setUserRole] = useState('');
-    const [userModule, setUserModule] = useState('');
+    const [userModules, setUserModules] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUserData = async () => {
             setLoading(true);
             try {
+                // 1. Récupérer l'utilisateur connecté
                 const response = await fetch('http://localhost:5000/api/v1/auth/me', {
                     credentials: 'include'
                 });
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch user data');
-                }
-
+                if (!response.ok) throw new Error('Failed to fetch user data');
                 const data = await response.json();
-                // Correction ici :
                 setUserRole(data.user?.role || 'admin');
-                setUserModule(data.user?.modules || []);
+
+                // 2. Si enseignant, récupérer ses modules
+                if (data.user?.role === 'enseignant') {
+                    // Récupérer l'objet enseignant par email
+                    const enseignantRes = await fetch(`http://localhost:5000/api/v1/enseignant/byEmail/${data.user.email}`, {
+                        credentials: 'include'
+                    });
+                    const enseignantData = await enseignantRes.json();
+                    const enseignantId = enseignantData.enseignant?._id;
+                    if (enseignantId) {
+                        // Récupérer ses modules
+                        const modulesRes = await fetch(`http://localhost:5000/api/v1/module/modules/byEnseignant/${enseignantId}`, {
+                            credentials: 'include'
+                        });
+                        const modulesData = await modulesRes.json();
+                        setUserModules(modulesData.modules || []);
+                    } else {
+                        setUserModules([]);
+                    }
+                } else {
+                    // Si admin, récupérer tous les modules
+                    const modulesRes = await fetch('http://localhost:5000/api/v1/module/AllModules', {
+                        credentials: 'include'
+                    });
+                    const modulesData = await modulesRes.json();
+                    setUserModules(modulesData.modules || []);
+                }
             } catch (error) {
                 console.error('Error fetching user data:', error);
                 setUserRole('admin');
-                setUserModule('');
+                setUserModules([]);
             } finally {
                 setLoading(false);
             }
@@ -42,7 +63,7 @@ const CreerQuestion = () => {
 
     return (
         <div>
-            <QuestionForm userRole={userRole} userModules={userModule} />
+            <QuestionForm userRole={userRole} userModules={userModules} />
         </div>
     );
 }

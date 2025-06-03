@@ -10,6 +10,7 @@ const GénérateurExamen = () => {
     // Existing state
     const [selectedFiliere, setSelectedFiliere] = useState('');
     const [selectedModule, setSelectedModule] = useState('');
+    const [selectedSalle, setSelectedSalle] = useState('');
     const [examType, setExamType] = useState('');
     const [examDate, setExamDate] = useState('');
     const [exams, setExams] = useState([]);
@@ -21,6 +22,7 @@ const GénérateurExamen = () => {
     const [filieres, setFilieres] = useState([]);
     const [sections, setSections] = useState([]);
     const [modules, setModules] = useState([]);
+    const [salles, setSalles] = useState([]);
     const [selectedSection, setSelectedSection] = useState('');
     const [selectedEnseignant, setSelectedEnseignant] = useState('');
     const [enseignants, setEnseignants] = useState([]);
@@ -33,28 +35,31 @@ const GénérateurExamen = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [filieresRes, sectionsRes, modulesRes, enseignantsRes] = await Promise.all([
+                const [filieresRes, sectionsRes, modulesRes, enseignantsRes, sallesRes] = await Promise.all([
                     fetch('http://localhost:5000/api/v1/filiere/AllFiliere', { credentials: 'include' }),
                     fetch('http://localhost:5000/api/v1/section/AllSections', { credentials: 'include' }),
                     fetch('http://localhost:5000/api/v1/module/AllModules', { credentials: 'include' }),
-                    fetch('http://localhost:5000/api/v1/enseignant/AllEnseignant', { credentials: 'include' })
+                    fetch('http://localhost:5000/api/v1/enseignant/AllEnseignant', { credentials: 'include' }),
+                    fetch('http://localhost:5000/api/v1/salle/AllSalle', { credentials: 'include' })
                 ]);
 
-                if (!filieresRes.ok || !sectionsRes.ok || !modulesRes.ok || !enseignantsRes.ok) {
+                if (!filieresRes.ok || !sectionsRes.ok || !modulesRes.ok || !enseignantsRes.ok || !sallesRes.ok) {
                     throw new Error('Failed to fetch initial data');
                 }
 
-                const [filieresData, sectionsData, modulesData, enseignantsData] = await Promise.all([
+                const [filieresData, sectionsData, modulesData, enseignantsData, sallesData] = await Promise.all([
                     filieresRes.json(),
                     sectionsRes.json(),
                     modulesRes.json(),
-                    enseignantsRes.json()
+                    enseignantsRes.json(),
+                    sallesRes.json()
                 ]);
 
                 setFilieres(filieresData.filieres);
                 setSections(sectionsData.sections);
                 setModules(modulesData.modules);
                 setEnseignants(enseignantsData.enseignants);
+                setSalles(sallesData.salles);
             } catch (error) {
                 setError(error.message);
             }
@@ -104,6 +109,11 @@ const GénérateurExamen = () => {
             return false;
         }
 
+        if (!difficulte) {
+            setError('Veuillez sélectionner une difficulté');
+            return false;
+        }
+
         try {
             const response = await fetch(
                 `http://localhost:5000/api/v1/question/module/${selectedModule}?limit=${nbQuestions}&difficulte=${difficulte}`,
@@ -115,16 +125,16 @@ const GénérateurExamen = () => {
             const data = await response.json();
 
             if (!data.questions || data.questions.length === 0) {
-                setQuestions([]); // <-- important pour désactiver le bouton
+                setQuestions([]);
                 setError('Aucune question disponible pour les critères sélectionnés');
                 return false;
             }
 
-            setQuestions(data.questions); // Update the questions state
+            setQuestions(data.questions);
             setError(null);
-            return true;
+            return data.questions;
         } catch (error) {
-            setQuestions([]); // <-- important pour désactiver le bouton
+            setQuestions([]);
             setError(error.message);
             return false;
         }
@@ -154,112 +164,99 @@ const GénérateurExamen = () => {
         if (e && e.preventDefault) e.preventDefault();
         setError(null);
 
-    try {
-        // First fetch questions based on criteria
+        // First fetch questions
         const questionsFetched = await fetchQuestions();
-        if (!questionsFetched) return;
+        if (!Array.isArray(questionsFetched) || questionsFetched.length === 0) {
+            setError("Impossible de récupérer des questions. Vérifiez vos critères de sélection.");
+            return;
+        }
 
-        // Prepare exam payload
         const examPayload = {
             module: selectedModule,
             filiere: selectedFiliere,
             section: selectedSection,
             enseignant: selectedEnseignant,
+            salle: selectedSalle,
             examType: examType.toLowerCase(),
             difficulte: difficulte.toLowerCase(),
             examDate,
             duree: parseInt(duration),
-            format: examFormat,
-            questions: questions.map(q => q._id) // Send question IDs
+            format: "WEB",
+            questions: questionsFetched.map(q => q._id)
         };
 
-        // Use the correct endpoint based on format
-        const endpoint = examFormat === 'WEB' 
-            ? 'http://localhost:5000/api/v1/exam/generate-web-exam'
-            : 'http://localhost:5000/api/v1/exam';
+        try {
+            // Use the correct endpoint for WEB exams
+            const response = await fetch('http://localhost:5000/api/v1/exam/generate-web-exam', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(examPayload)
+            });
 
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(examPayload)
-        });
+            const data = await response.json();
 
-        const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to create WEB exam');
+            }
 
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to create exam');
-        }
-
-        // Refresh exams after creation
-        await fetchExams();
-
-        // Handle success
-        if (examFormat === 'WEB') {
             // Generate link for web exam
             const linkResponse = await fetch(
                 `http://localhost:5000/api/v1/exam/${data.exam._id}/generate-link`, 
                 { credentials: 'include' }
             );
             const linkData = await linkResponse.json();
-            
+
             if (linkData.success) {
                 setGeneratedLink(linkData.examLink);
                 toast.success('Exam link generated successfully!');
             }
-        } else {
-            // Handle PDF generation
-            const pdfGenerated = ExamPDF(data.exam, questions);
-            if (pdfGenerated) {
-                toast.success('PDF exam generated successfully!');
+        } catch (error) {
+            console.error('WEB Exam creation error:', error);
+            setError(error.message);
+            toast.error(error.message);
+        }
+    };
+
+    const handleGeneratePDFAnswerKey = async () => {
+        if (!selectedExam) {
+            toast.error('Please select an exam first');
+            return;
+        }
+
+        try {
+            window.open(
+                `http://localhost:5000/api/v1/exam/${selectedExam}/answer-key`,
+                '_blank'
+            );
+        } catch (error) {
+            setError(error.message);
+            toast.error('Failed to generate answer key');
+        }
+    };
+
+    // Handler for generating WEB answer key
+    const handleGenerateWebAnswerKey = async () => {
+        if (!selectedExam) {
+            toast.error('Please select an exam first');
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://localhost:5000/api/v1/exam/${selectedExam}/generate-link`,
+                { credentials: 'include' }
+            );
+            const data = await response.json();
+            
+            if (data.success) {
+                window.open(data.examLink, '_blank');
             }
+        } catch (error) {
+            setError(error.message);
+            toast.error('Failed to generate answer key');
         }
-    } catch (error) {
-        console.error('Exam creation error:', error);
-        setError(error.message);
-        toast.error(error.message);
-    }
-};
-
-const handleGeneratePDFAnswerKey = async () => {
-    if (!selectedExam) {
-        toast.error('Please select an exam first');
-        return;
-    }
-
-    try {
-        window.open(
-            `http://localhost:5000/api/v1/exam/${selectedExam}/answer-key`,
-            '_blank'
-        );
-    } catch (error) {
-        setError(error.message);
-        toast.error('Failed to generate answer key');
-    }
-};
-
-// Handler for generating WEB answer key
-const handleGenerateWebAnswerKey = async () => {
-    if (!selectedExam) {
-        toast.error('Please select an exam first');
-        return;
-    }
-
-    try {
-        const response = await fetch(
-            `http://localhost:5000/api/v1/exam/${selectedExam}/generate-link`,
-            { credentials: 'include' }
-        );
-        const data = await response.json();
-        
-        if (data.success) {
-            window.open(data.examLink, '_blank');
-        }
-    } catch (error) {
-        setError(error.message);
-        toast.error('Failed to generate answer key');
-    }
-};
+    };
 
     // Suppression de fetchQuestions et de la validation sur questions.length
 
@@ -283,6 +280,7 @@ const handleGenerateWebAnswerKey = async () => {
             filiere: selectedFiliere,
             section: selectedSection,
             enseignant: selectedEnseignant,
+            salle: selectedSalle,
             examType: examType.toLowerCase(),
             difficulte: difficulte.toLowerCase(),
             examDate,
@@ -460,6 +458,23 @@ const handleGenerateWebAnswerKey = async () => {
                                 </div>
 
                                 <div className="form-group mb-3">
+                                    <label className="form-label">Salle</label>
+                                    <select 
+                                        className="form-control"
+                                        value={selectedSalle}
+                                        onChange={(e) => setSelectedSalle(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Sélectionner une salle</option>
+                                        {salles.map(salle => (
+                                            <option key={salle._id} value={salle._id}>
+                                                {salle.nom} - {salle.numero} (Capacité: {salle.capacite}, Type: {salle.type})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group mb-3">
                                     <label className="form-label">Date de l'Examen</label>
                                     <input 
                                         type="datetime-local"
@@ -545,5 +560,6 @@ const handleGenerateWebAnswerKey = async () => {
             </div>
         </div>
     );
-};
+}
+
 export default GénérateurExamen;

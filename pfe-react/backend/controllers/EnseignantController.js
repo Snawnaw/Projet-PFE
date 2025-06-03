@@ -10,10 +10,23 @@ const { create } = require('../models/Filiere');
 // Get all teachers
 exports.getAllEnseignants = async (req, res) => {
     try {
-        const enseignants = await Enseignant.find().populate('modules'); // <-- populate modules
+        const enseignants = await Enseignant.find()
+            .populate('modules') // <-- populate modules
+            .populate('filieres'); // <-- populate filiere
         res.status(200).json({
             success: true,
-            enseignants
+            enseignants: enseignants.map(enseignant => ({
+                _id: enseignant._id,
+                nom: enseignant.nom,
+                prenom: enseignant.prenom,
+                email: enseignant.email,
+                numero_tel: enseignant.numero_tel,
+                date_naissance: enseignant.date_naissance,
+                filieres: enseignant.filieres?.map(f => f.nom).join(', ') || 'N/A', // AJOUTER
+                modules: enseignant.modules?.map(m => m.nom).join(', ') || 'N/A',   // AJOUTER
+                role: enseignant.role,
+                createdAt: enseignant.createdAt
+            }))
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -51,7 +64,7 @@ exports.getEnseignantByEmail = async (req, res) => {
 exports.getEnseignantsByFiliere = async (req, res) => {
     try {
         const { filiereID } = req.params;
-        const enseignants = await Enseignant.find({ filiere: filiereID }); // Filtrer par filière
+        const enseignants = await Enseignant.find({ filieres: filiereID }); // Filtrer par filière
         res.status(200).json({
             success: true,
             enseignants,
@@ -76,12 +89,12 @@ exports.createEnseignant = async (req, res) => {
             email, 
             password, 
             role = 'enseignant',
-            filiere,
+            filieres,
             modules
         } = req.body;
 
         // Validation: check required fields
-        if (!nom || !prenom || !date_naissance || !numero_tel || !email || !password || !filiere) {
+        if (!nom || !prenom || !date_naissance || !numero_tel || !email || !password || !filieres) {
             return res.status(400).json({ message: "Tous les champs obligatoires doivent être remplis." });
         }
 
@@ -107,7 +120,7 @@ exports.createEnseignant = async (req, res) => {
             email,
             password: hashedPassword,
             role,
-            filiere,
+            filieres,
             modules: modules || [],
             createdAt: new Date()
         });
@@ -256,3 +269,25 @@ exports.login = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+getSubmissionsWithAnswerKey: CatchAsyncError(async (req, res) => {
+    const { examId } = req.params;
+
+    const submissions = await Submission.find({ examId }).populate('studentId', 'name email');
+    const exam = await Exam.findById(examId).populate('questions');
+
+    if (!exam) {
+        return res.status(404).json({ success: false, message: 'Exam not found' });
+    }
+
+    const answerKey = exam.questions.map(question => ({
+        enonce: question.enonce,
+        correct: question.options.filter(option => option.isCorrect).map(opt => opt.text),
+    }));
+
+    res.status(200).json({
+        success: true,
+        submissions,
+        answerKey,
+    });
+});

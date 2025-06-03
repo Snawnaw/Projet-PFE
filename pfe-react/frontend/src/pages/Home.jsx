@@ -21,6 +21,7 @@ const Home = () => {
                 <Link to="/User" className="btn btn-primary">User</Link>
                 <Link to="/Etudiant" className="btn btn-primary">Etudiant</Link>
                 <Link to="/Examens" className="btn btn-primary">Examens</Link>
+                <Link to="/HomePage" className="btn btn-primary">Home Page</Link>
             </div>
         </div>
     );

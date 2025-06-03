@@ -25,6 +25,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
 import ClassIcon from '@mui/icons-material/Class';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import { DataGrid } from '@mui/x-data-grid';
 
 // --- Custom hook for user data ---
@@ -87,6 +89,28 @@ function useUserData() {
     };
 }
 
+// --- Placeholder pour Examens ---
+function ExamensEnseignant() {
+    return (
+        <Box>
+            <Typography variant="h5" gutterBottom>Mes Examens</Typography>
+            {/* TODO: Afficher la liste des examens créés par l'enseignant */}
+            <Typography>Liste des examens à venir ou passés (à implémenter).</Typography>
+        </Box>
+    );
+}
+
+// --- Placeholder pour Soumissions/Corrigés ---
+function SoumissionsEnseignant() {
+    return (
+        <Box>
+            <Typography variant="h5" gutterBottom>Soumissions & Corrigés</Typography>
+            {/* TODO: Afficher la liste des soumissions/réponses des étudiants et accès aux corrigés */}
+            <Typography>Liste des soumissions d'étudiants et corrigés d'examens web (à implémenter).</Typography>
+        </Box>
+    );
+}
+
 // --- Main User Component ---
 const User = () => {
     const navigate = useNavigate();
@@ -103,6 +127,8 @@ const User = () => {
         { text: 'Mon Profil', icon: <PersonIcon />, view: 'profile' },
         { text: 'Générer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
         { text: 'Banque de Questions', icon: <ClassIcon />, view: 'banque' },
+        { text: 'Examens', icon: <AssignmentIcon />, view: 'examens' },
+        { text: 'Soumissions', icon: <AssignmentTurnedInIcon />, view: 'soumissions' },
     ];
 
     const handleMenuClick = (view) => {
@@ -135,13 +161,15 @@ const User = () => {
         if (loading) return <Box display="flex" justifyContent="center" mt={5}><CircularProgress /></Box>;
         switch (currentView) {
             case 'génerer examen':
-                return (
-                    <GénérateurExamenEnseignant></GénérateurExamenEnseignant>
-                );
+                return <GénérateurExamenEnseignant />;
             case 'banque':
-                return <BanqueDeQuestionsEnseignant></BanqueDeQuestionsEnseignant>
+                return <BanqueDeQuestionsEnseignant />;
             case 'profile':
                 return <EnseignantProfile />;
+            case 'examens':
+                return <ExamensEnseignant />;
+            case 'soumissions':
+                return <SoumissionsEnseignant />;
             default:
                 return null;
         }

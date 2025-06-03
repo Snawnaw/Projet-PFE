@@ -1,5 +1,6 @@
 import API from '../services/api';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import CategoryIcon from '@mui/icons-material/Category';
 import PersonIcon from '@mui/icons-material/Person';
 import SchoolIcon from '@mui/icons-material/School';
@@ -8,7 +9,6 @@ import ClassIcon from '@mui/icons-material/Class';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../services/api';
-import { DataGrid } from '@mui/x-data-grid';
 import GénérateurExamen from './GénérateurExamen';
 import Examens from './Examens';
 import {
@@ -465,32 +465,29 @@ const Admin = () => {
     ];
 
     const sectionsColumns = [
-        { field: '_id', headerName: 'ID', width: 220 },
-        { field: 'nom', headerName: 'Nom', width: 130 },
+        { field: 'niveau', headerName: 'Niveau', width: 130 },
         { 
             field: 'filiere', 
             headerName: 'Filière', 
             width: 130, 
         },
-        { field: 'niveau', headerName: 'Niveau', width: 130 },
+        { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'nombre_etudiants', headerName: 'Nombre d\'étudiants', width: 180 },
         { field: 'nombre_groupes', headerName: 'Nombre de groupes', width: 180 }, // Ensure field name matches backend
         ...getActionColumns('section')
     ];
 
     const filiereColumns = [
-        { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'code', headerName: 'Code', width: 130 },
         { field: 'cycle', headerName: 'Cycle', width: 200 },
+        { field: 'niveau', headerName: 'Niveau', width: 130 },
         ...getActionColumns('filiere')
     ];
 
     const moduleColumns = [
-        { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'filiere', headerName: 'Filière', width: 130 },
-        { field: 'section', headerName: 'Section', width: 130 },
         { field: 'enseignant', headerName: 'Enseignant', width: 180 },
         { field: 'type', headerName: 'Type', width: 180 },
         ...getActionColumns('module')
@@ -508,15 +505,16 @@ const Admin = () => {
 
     // Update your columns definition
     const teachersColumns = [
-        { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'prenom', headerName: 'Prénom', width: 130 },
         { 
-            field: 'date_naissance',
-            headerName: 'Date de naissance',
+            field: 'date_naissance', 
+            headerName: 'Date de naissance', 
             width: 150,
-            type: 'date',
-            valueFormatter: formatDate
+            renderCell: (params) => {
+                if (!params.value) return 'Non renseignée';
+                return new Date(params.value).toLocaleDateString('fr-FR');
+            }
         },
         { field: 'email', headerName: 'Email', width: 200 },
         { field: 'numero_tel', headerName: 'Téléphone', width: 130 },
@@ -533,18 +531,20 @@ const Admin = () => {
     ];
 
     const etudiantsColumns = [
-        { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'prenom', headerName: 'Prénom', width: 130 },
         { 
-            field: 'date_naissance',
-            headerName: 'Date de naissance',
+            field: 'date_naissance', 
+            headerName: 'Date de naissance', 
             width: 150,
-            type: 'date',
-            valueFormatter: formatDate
+            renderCell: (params) => {
+                if (!params.value) return 'Non renseignée';
+                return new Date(params.value).toLocaleDateString('fr-FR');
+            }
         },
         { field: 'email', headerName: 'Email', width: 200 },
         { field: 'numero_tel', headerName: 'Téléphone', width: 130 },
+        { field: 'niveau', headerName: 'Niveau', width: 130 },
         { field: 'filiere', headerName: 'Filière', width: 130 },
         { field: 'section', headerName: 'Section', width: 130 },
         {
@@ -558,7 +558,6 @@ const Admin = () => {
     ];
 
     const sallesColumns = [
-        { field: '_id', headerName: 'ID', width: 220 },
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'numero', headerName: 'Numéro', width: 130 },
         { field: 'type', headerName: 'Type', width: 130 },
@@ -567,8 +566,9 @@ const Admin = () => {
     ];
 
     const questionColumns = [
-        { field: '_id', headerName: 'ID', width: 220 },
-        { field: 'enonce', headerName: 'Énoncé', width: 400 },
+        { field: 'module', headerName: 'Module', width: 180 },
+        { field: 'enonce', headerName: 'Énoncé', width: 400, flex: 1 },
+        { field: 'reponse', headerName: 'Réponse', width: 200, flex: 1 },
         { 
             field: 'type', 
             headerName: 'Type', 
@@ -580,6 +580,12 @@ const Admin = () => {
                         params.value === 'QCM' ? 'primary' : 
                         params.value === 'QCU' ? 'secondary' : 'default'
                     }
+                    sx={{
+                        bgcolor: 
+                            params.value === 'QCM' ? '#1976d2' : 
+                            params.value === 'QCU' ? '#9c27b0' : '#757575',
+                        color: 'white'
+                    }}
                 />
             )
         },
@@ -590,21 +596,15 @@ const Admin = () => {
             renderCell: (params) => (
                 <Chip 
                     label={params.value || 'N/A'} 
-                    color={
-                        params.value === 'Facile' ? 'success' : 
-                        params.value === 'Moyen' ? 'warning' : 'error'
-                    }
+                    sx={{
+                        bgcolor: 
+                            params.value === 'Facile' ? '#4caf50' : 
+                            params.value === 'Moyen' ? '#ff9800' : 
+                            params.value === 'Difficile' ? '#f44336' : '#757575',
+                        color: 'white'
+                    }}
                 />
             )
-        },
-        { 
-            field: 'module',
-            headerName: 'Module',
-            width: 180,
-            valueGetter: (params) => {
-                // Safely access the module name
-                return params?.row?.module?.nom || 'N/A';
-            },
         },
         ...getActionColumns('question')
     ];
@@ -616,14 +616,14 @@ const Admin = () => {
     const menuItems = [
         { text: 'Mon Profil', icon: <PersonIcon />, view: 'profile' },
         { text: 'Enseignants', icon: <SchoolIcon />, view: 'enseignants' },
+        { text: 'Étudiants', icon: <PersonIcon />, view: 'etudiants' },
+        { text: 'Salles', icon: <MeetingRoomIcon />, view: 'salles' }, 
         { text: 'Filières', icon: <CategoryIcon />, view: 'filieres' },
         { text: 'Sections', icon: <ClassIcon />, view: 'sections' },
         { text: 'Modules', icon: <ClassIcon />, view: 'modules' },
-        { text: 'Salles', icon: <MeetingRoomIcon />, view: 'salles' },
-        { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
         { text: 'Banque de Questions', icon: <SchoolIcon />, view: 'banque de questions' },
         { text: 'Examens', icon: <SchoolIcon />, view: 'examens' },
-        { text: 'Étudiants', icon: <PersonIcon />, view: 'etudiants' }, // Add this line
+        { text: 'Génerer Examen', icon: <SchoolIcon />, view: 'génerer examen' },
     ];
 
     const handleMenuClick = (view) => {
@@ -651,37 +651,37 @@ const Admin = () => {
             </AppBar>
 
             {/* Sidebar */}
-            <Drawer
-                variant="temporary"
-                anchor="left"
-                open={open}
-                onClose={toggleDrawer}
-                sx={{
-                    width: 240,
-                    flexShrink: 0,
-                    '& .MuiDrawer-paper': {
-                        width: 240,
-                        boxSizing: 'border-box',
-                        backgroundColor: '#f5f5f5',
-                    },
-                }}
-            >
-                <Toolbar /> {/* Space below the AppBar */}
-                <List>
-                    {menuItems.map((item) => (
-                        <ListItem 
-                            component="button"
-                            key={item.text}
-                            onClick={() => handleMenuClick(item.view)}
+                        <Drawer
+                            variant="temporary"
+                            anchor="left"
+                            open={open}
+                            onClose={toggleDrawer}
+                            sx={{
+                                width: 240,
+                                flexShrink: 0,
+                                '& .MuiDrawer-paper': {
+                                    width: 240,
+                                    boxSizing: 'border-box',
+                                    backgroundColor: '#f5f5f5',
+                                },
+                            }}
                         >
-                            <ListItemIcon>
-                                {item.icon}
-                            </ListItemIcon>
-                            <ListItemText primary={item.text} />
-                        </ListItem>
-                    ))}
-                </List>
-            </Drawer>
+                            <Toolbar />
+                            <List>
+                                {menuItems.map((item) => (
+                                    <ListItem
+                                        button
+                                        key={item.text}
+                                        onClick={() => handleMenuClick(item.view)}
+                                    >
+                                        <ListItemIcon>
+                                            {item.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={item.text} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Drawer>
 
             {/* Main Content */}
             <Box 
@@ -726,7 +726,8 @@ const Admin = () => {
                                             _id: filiere._id,
                                             nom: filiere.nom,
                                             code: filiere.code,
-                                            cycle: filiere.cycle
+                                            cycle: filiere.cycle,
+                                            niveau: filiere.niveau
                                         }))}
                                         columns={filiereColumns}
                                         pageSize={5}
@@ -896,14 +897,31 @@ const Admin = () => {
                                 <Box sx={{ flex: 1, height: 600, width: '100%' }}>
                                     <DataGrid
                                         rows={questionsData.map(q => ({
-                                            ...q,
-                                            id: q._id // Make sure each row has an id property
+                                            id: q._id,
+                                            _id: q._id,
+                                            enonce: q.enonce || 'N/A',
+                                            type: q.type || 'N/A',
+                                            difficulte: q.difficulte || 'N/A',
+                                            module: q.module?.nom || 'N/A',
+                                            reponse: Array.isArray(q.options) 
+                                                ? q.options
+                                                    .filter(opt => opt && opt.isCorrect)
+                                                    .map(opt => opt && opt.text || 'N/A')
+                                                    .join(', ')
+                                                : 'N/A'
                                         }))}
                                         columns={questionColumns}
                                         pageSize={10}
                                         rowsPerPageOptions={[10, 25, 50]}
-                                        getRowId={(row) => row._id}
+                                        getRowId={(row) => row.id}
                                         loading={loadingQuestions}
+                                        components={{ Toolbar: GridToolbar }}
+                                        componentsProps={{
+                                            toolbar: {
+                                                showQuickFilter: true,
+                                                quickFilterProps: { debounceMs: 500 },
+                                            },
+                                        }}
                                         sx={{
                                             '& .MuiDataGrid-virtualScroller': {
                                                 minHeight: 200

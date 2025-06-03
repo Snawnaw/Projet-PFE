@@ -12,14 +12,26 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Examens from '../pages/Examens';
 import AnswerKey from '../pages/AnswerKey';
 import EtudiantProfile from '../components/Etudiant/EtudiantProfile';
+//import NotificationBell from '../components/NotificationBell';
 
 const drawerWidth = 240;
+
+//const [notifications, setNotifications] = useState([]);
+
+{/*useEffect(() => {
+  const fetchNotifications = async () => {
+    const res = await axios.get('/api/v1/notifications');
+    setNotifications(res.data.notifications);
+  };
+  fetchNotifications();
+}, []);*/}
 
 const menuItems = [
     { text: 'Profile', icon: <CheckCircleIcon />, view: 'profile' },
     { text: 'Examens', icon: <MenuBookIcon />, view: 'examens' },
     { text: 'Corrigés', icon: <SendIcon />, view: 'corriges' },
     { text: 'Résultats', icon: <AssignmentTurnedInIcon />, view: 'resultats' },
+    { text: 'Notifications', icon: <CheckCircleIcon />, view: 'notifications' }
 ];
 
 const Etudiant = () => {
@@ -41,8 +53,8 @@ const Etudiant = () => {
             return <Examens></Examens>;
         case 'resultats':
             return
-        case 'corriges':
-            return <AnswerKey />;
+        case 'notifications':
+          return <NotificationBell />;
         default:
             return null;
     }

@@ -17,5 +17,6 @@ router.get('/byEmail/:email', isAuthenticatedUser, getEnseignantByEmail);
 router.post('/EnseignantCreate', isAuthenticatedUser, authorizedRoles('admin'), createEnseignant); // Only admin can create
 router.put('/EnseignantEdit/:id', isAuthenticatedUser, authorizedRoles('admin', 'enseignant'), updateEnseignant); // Missing :id parameter
 router.delete('/EnseignantDelete', isAuthenticatedUser, authorizedRoles('admin'), deleteEnseignant); // Missing :id parameter
+router.get('/exam/:examId/submissions', SubmissionController.getSubmissionsWithAnswerKey);
 
 module.exports = router;

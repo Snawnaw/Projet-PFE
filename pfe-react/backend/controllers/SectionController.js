@@ -1,4 +1,5 @@
 const Section = require('../models/Section');
+const Enseignant = require('../models/Enseignant');
 const catchAsyncError = require('../middleware/catchAsyncError');
 
 // Get all sections
@@ -119,8 +120,35 @@ exports.deleteSection = async (req, res) => {
 
 // Pour les sections de l'enseignant
 exports.getSectionsByEnseignant = async (req, res) => {
-    const sections = await Section.find({ enseignant: req.params.enseignantId });
-    res.json({ sections });
+  try {
+    const enseignantId = req.params.enseignantId;
+    
+    // Approche 1: Récupérer les sections depuis les modules de l'enseignant
+    const enseignant = await Enseignant.findById(enseignantId);
+    
+    if (!enseignant) {
+      return res.status(404).json({ message: "Enseignant non trouvé" });
+    }
+    
+    // Récupérer toutes les sections liées aux modules de l'enseignant
+    const moduleIds = enseignant.modules || [];
+    
+    // Rechercher les sections qui appartiennent à ces modules
+    const sections = await Section.find().populate('filiere');
+    
+    // Renvoyer les sections
+    return res.status(200).json({ 
+      success: true,
+      sections: sections 
+    });
+    
+  } catch (error) {
+    console.error("Erreur dans getSectionsByEnseignant:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
 };
 
 module.exports = exports;

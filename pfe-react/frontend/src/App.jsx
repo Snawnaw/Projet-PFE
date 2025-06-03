@@ -20,6 +20,7 @@ import Etudiant from './pages/Etudiant';
 import Admin from './pages/Admin';
 import './styles/global/App.css';
 import Home from './pages/Home';
+import HomePage from './pages/HomePage'; // Gardez seulement celui-ci
 import User from './pages/User';
 import ExamWeb from "./pages/ExamWeb";
 import Examens from './pages/Examens';
@@ -71,6 +72,7 @@ function App() {
             <Route path="/SignUp" element={<SignUp />} />
             <Route path="/SignIn" element={<SignIn />} />
             <Route path="/Home" element={<Home />} />
+            <Route path="/HomePage" element={<HomePage />} />
             <Route path="/Admin" element={<Admin />} />
             <Route path="/Sections" element={<Sections />} />
             <Route path="/Etudiant" element={<Etudiant />} />

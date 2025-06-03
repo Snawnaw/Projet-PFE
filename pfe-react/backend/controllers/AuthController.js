@@ -131,6 +131,7 @@ exports.updateUserProfile = CatchAsyncError(async (req, res, next) => {
 
     // Vérification de l'utilisateur connecté
     const user = await User.findById(req.user.id);
+    
     if (!user) {
         return res.status(404).json({ success: false, message: "Utilisateur non trouvé" });
     }

@@ -1,5 +1,6 @@
 const CatchAsyncError = require('../middleware/catchAsyncError');
 const Filiere = require('../models/Filiere');
+const Enseignant = require('../models/Enseignant');
 
 // Get all filieres
 exports.getAllFilieres = CatchAsyncError(async (req, res) => {
@@ -22,7 +23,7 @@ exports.getAllFilieres = CatchAsyncError(async (req, res) => {
 
 exports.createFiliere = CatchAsyncError(async (req, res, next) => {
     try {
-        const { nom, code, cycle } = req.body;
+        const { nom, code, cycle, niveau } = req.body;
 
         // Check if filiere with same code already exists
         const existingFiliere = await Filiere.findOne({ code });
@@ -37,7 +38,8 @@ exports.createFiliere = CatchAsyncError(async (req, res, next) => {
         const filiere = await Filiere.create({
             nom,
             code,
-            cycle
+            cycle,
+            niveau: niveau || null, 
         });
 
         res.status(201).json({
@@ -47,7 +49,8 @@ exports.createFiliere = CatchAsyncError(async (req, res, next) => {
                 nom: filiere.nom,
                 code: filiere.code,
                 cycle: filiere.cycle,
-                createdAt: filiere.createdAt
+                niveau: filiere.niveau,
+                //createdAt: filiere.createdAt
             }
         });
     } catch (error) {
@@ -69,12 +72,12 @@ exports.createFiliere = CatchAsyncError(async (req, res, next) => {
 
 // Update a filiere
 exports.updateFiliere = CatchAsyncError(async (req, res) => {
-    const { nom, code, cycle } = req.body;
+    const { nom, code, cycle, niveau } = req.body;
 
     try {
         const filiere = await Filiere.findByIdAndUpdate(
             req.params.id, 
-            { nom, code, cycle },
+            { nom, code, cycle, niveau },
             { 
                 new: true,
                 runValidators: true
@@ -126,6 +129,6 @@ exports.deleteFiliere = CatchAsyncError(async (req, res) => {
 
 // Pour les filières de l'enseignant
 exports.getFilieresByEnseignant = async (req, res) => {
-    const filieres = await Filiere.find({ enseignant: req.params.enseignantId });
-    res.json({ filieres });
+    const enseignant = await Enseignant.findById(req.params.enseignantId).populate('filieres');
+    res.json({ filieres: enseignant.filieres });
 };

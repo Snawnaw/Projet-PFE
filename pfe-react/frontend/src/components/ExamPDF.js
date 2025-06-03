@@ -46,6 +46,12 @@ export const ExamPDF = (exam, questions) => {
               <td><strong>Date :</strong></td>
               <td>${exam.examDate ? new Date(exam.examDate).toLocaleDateString() : ''}</td>
             </tr>
+            <tr>
+              <td><strong>Salle :</strong></td>
+              <td>
+                ${exam.salle && typeof exam.salle === 'object' ? exam.salle.nom || '' : ''}
+              </td>
+            </tr>
           </table>
         </header>
 

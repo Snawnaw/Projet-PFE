@@ -1,3 +1,4 @@
+// AjouterSalle.jsx - VERSION CORRIGÉE
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,9 @@ function AjouterSalle() {
         type: '',
         capacite: ''
     });
+    
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
 
     const handleChange = (e) => {
         setFormData({
@@ -22,41 +26,60 @@ function AjouterSalle() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+        setSuccess(false);
+
+        const { numero, nom, type, capacite } = formData;
+
+        // Validation côté client
+        if (!numero || !nom || !type || !capacite) {
+            setError('Tous les champs sont requis');
+            return;
+        }
+
+        if (isNaN(capacite) || capacite <= 0) {
+            setError('La capacité doit être un nombre positif');
+            return;
+        }
+
         try {
-            const token = localStorage.getItem('token'); // Or wherever the token is stored
-            await axios.post('http://localhost:5000/api/v1/salle/SalleCreate', formData, {
-                withCredentials: true,
+            console.log('Envoi des données:', { numero, nom, type, capacite });
+
+            const response = await fetch('http://localhost:5000/api/v1/salle/SalleCreate', {
+                method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
-            });
-            setSuccess(true);
-            toast.success('Salle ajoutée avec succès !', {
-                position: "top-center",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Slide,
+                credentials: 'include',
+                body: JSON.stringify({
+                    numero: numero.trim(),
+                    nom: nom.trim(),
+                    type: type,
+                    capacite: parseInt(capacite)
+                })
             });
 
-        } catch (error) {
-            //console.error('Error:', error);
-            //setError(error.message || "Une erreur est survenue lors de l'ajout de la salle");
-            toast.error(error.message || "Une erreur est survenue lors de l'ajout de la salle", {
-                position: "top-center",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Slide,
+            const data = await response.json();
+            console.log('Réponse serveur:', data);
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Une erreur est survenue');
+            }
+
+            setSuccess(true);
+            toast.success('Salle ajoutée avec succès !');
+
+            setFormData({
+                numero: '',
+                nom: '',
+                type: '',
+                capacite: ''
             });
+            
+        } catch (error) {
+            console.error('Erreur:', error);
+            setError(error.message || "Une erreur est survenue lors de l'ajout de la salle");
+            toast.error(error.message);
         }
     };
 
@@ -70,7 +93,18 @@ function AjouterSalle() {
                             <h3 className="text-center">Ajouter une salle</h3>
                         </div>
                         <div className="card-body">
-                            <form>
+                            {error && (
+                                <div className="alert alert-danger" role="alert">
+                                    {error}
+                                </div>
+                            )}
+                            {success && (
+                                <div className="alert alert-success" role="alert">
+                                    Salle ajoutée avec succès !
+                                </div>
+                            )}
+                            
+                            <form onSubmit={handleSubmit}>
                                 <div className="form-group mb-3">
                                     <label className="form-label">Numéro de salle</label>
                                     <input 
@@ -104,11 +138,12 @@ function AjouterSalle() {
                                         onChange={handleChange}
                                         required
                                     >
-                                        <option value="">Type de salle</option>
-                                        <option value="cours">Salle de cours</option>
-                                        <option value="td">Salle TD</option>
-                                        <option value="tp">Laboratoire</option>
-                                        <option value="amphi">Amphithéâtre</option>
+                                        <option value="">Choisir le type de salle</option>
+                                        <option value="Salle de cours">Salle de cours</option>
+                                        <option value="Salle TD">Salle TD</option>
+                                        <option value="Laboratoire">Laboratoire</option>
+                                        <option value="Amphithéâtre">Amphithéâtre</option>
+                                        <option value="Salle TP">Salle TP</option>
                                     </select>
                                 </div>
                                 <div className="form-group mb-3">
@@ -120,13 +155,27 @@ function AjouterSalle() {
                                         placeholder="Capacité" 
                                         value={formData.capacite}
                                         onChange={handleChange}
+                                        min="1"
+                                        max="500"
                                         required 
                                     />
                                 </div>
                                 <div className="text-center">
-                                    <button type="submit" className="btn btn-primary me-2" onClick={handleSubmit}>Ajouter</button>
-                                    <button type="reset" className="btn btn-danger me-2">Annuler</button>
-                                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/salles')}>Retourner</button>
+                                    <button type="submit" className="btn btn-primary me-2">Ajouter</button>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-danger me-2"
+                                        onClick={() => setFormData({ numero: '', nom: '', type: '', capacite: '' })}
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-secondary" 
+                                        onClick={() => navigate('/Admin')}
+                                    >
+                                        Retourner
+                                    </button>
                                 </div>
                             </form>
                         </div>

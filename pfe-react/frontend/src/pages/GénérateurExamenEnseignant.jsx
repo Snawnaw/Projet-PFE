@@ -8,12 +8,14 @@ const GénérateurExamenEnseignant = () => {
     const [selectedFiliere, setSelectedFiliere] = useState('');
     const [selectedModule, setSelectedModule] = useState('');
     const [selectedSection, setSelectedSection] = useState('');
+    const [selectedSalle, setSelectedSalle] = useState('');
     const [examType, setExamType] = useState('');
     const [examDate, setExamDate] = useState('');
     const [duration, setDuration] = useState(60);
     const [filieres, setFilieres] = useState([]);
     const [sections, setSections] = useState([]);
     const [modules, setModules] = useState([]);
+    const [salles, setSalles] = useState([]);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [difficulte, setDifficulte] = useState('');
@@ -40,15 +42,27 @@ const GénérateurExamenEnseignant = () => {
                     fetch(`http://localhost:5000/api/v1/filiere/FiliereByEnseignant/${enseignantId}`, { credentials: 'include' }),
                     fetch(`http://localhost:5000/api/v1/section/SectionsByEnseignant/${enseignantId}`, { credentials: 'include' }),
                 ]);
-                const [modulesData, filieresData, sectionsData] = await Promise.all([
+
+                const sallesRes = await fetch('http://localhost:5000/api/v1/salle/AllSalle', { credentials: 'include' });
+
+                const [modulesData, filieresData, sectionsData, sallesData] = await Promise.all([
                     modulesRes.json(),
                     filieresRes.json(),
                     sectionsRes.json(),
+                    sallesRes.json()
                 ]);
+                
+                // Ajout des logs pour le débogage
+                console.log("Modules récupérés:", modulesData.modules);
+                console.log("Filières récupérées:", filieresData.filieres);
+                console.log("Sections récupérées:", sectionsData.sections);
+                
                 setModules(modulesData.modules || []);
                 setFilieres(filieresData.filieres || []);
                 setSections(sectionsData.sections || []);
+                setSalles(sallesData.salles || []);
             } catch (error) {
+                console.error("Erreur détaillée:", error);
                 setError("Erreur lors du chargement des données");
             }
         };
@@ -82,29 +96,93 @@ const GénérateurExamenEnseignant = () => {
         }
     };
 
+    const handleSendExamLink = async () => {
+        try {
+            const response = await axios.post('/api/v1/notification/send-exam-link', {
+                examId: generatedExamId,
+                shareableLink: generatedLink,
+                filiereId: selectedFiliere,
+                sectionId: selectedSection,
+            });
+            if (response.data.success) {
+                toast.success('Lien envoyé aux étudiants avec succès!');
+            }
+        } catch (err) {
+            toast.error('Erreur lors de l\'envoi du lien.');
+        }
+    };
+
     const handleSubmitWeb = async (e) => {
         if (e) e.preventDefault();
         setError(null);
         setSuccess(false);
+        
+        // 1. Validation complète des champs requis
+        if (!selectedFiliere) {
+            setError("Veuillez sélectionner une filière");
+            return;
+        }
+        if (!selectedSection) {
+            setError("Veuillez sélectionner une section");
+            return;
+        }
+        if (!selectedModule) {
+            setError("Veuillez sélectionner un module");
+            return;
+        }
+        if (!selectedEnseignant) {
+            setError("Identifiant enseignant manquant");
+            return;
+        }
+        if (!selectedSalle) {
+            setError("Veuillez sélectionner une salle");
+            return;
+        }
+        if (!examType) {
+            setError("Veuillez sélectionner un type d'examen");
+            return;
+        }
+        if (!difficulte) {
+            setError("Veuillez sélectionner une difficulté");
+            return;
+        }
+        if (!examDate) {
+            setError("Veuillez sélectionner une date d'examen");
+            return;
+        }
+        if (!duration || isNaN(parseInt(duration)) || parseInt(duration) <= 0) {
+            setError("Veuillez indiquer une durée valide");
+            return;
+        }
 
+        // 1. Récupérer les questions AVANT de créer le payload
         const questionsFetched = await fetchQuestions();
-        if (!questionsFetched) return;
-
+        if (!Array.isArray(questionsFetched) || questionsFetched.length === 0) {
+            setError("Impossible de récupérer des questions. Vérifiez vos critères de sélection.");
+            return;
+        }
+        
+        // 2. Assigner format="WEB" explicitement et utiliser questionsFetched directement
         const examPayload = {
             module: selectedModule,
             filiere: selectedFiliere,
             section: selectedSection,
             enseignant: selectedEnseignant,
+            salle: selectedSalle,
             examType: examType.toLowerCase(),
             difficulte: difficulte.toLowerCase(),
             examDate,
             duree: parseInt(duration),
-            format: "WEB",
-            questions: questions.map(q => q._id)
+            format: "WEB", // Format explicitement défini comme "WEB", jamais vide
+            questions: questionsFetched.map(q => q._id) // Utiliser les questions récupérées
         };
-
+        
+        // Debug pour vérifier le payload
+        console.log("Payload final:", JSON.stringify(examPayload, null, 2));
+        
         try {
-            const response = await fetch('http://localhost:5000/api/v1/exam/generate-web-exam', {
+            // Modifier cette ligne pour utiliser le même endpoint que pour PDF
+            const response = await fetch('http://localhost:5000/api/v1/exam', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -137,22 +215,66 @@ const GénérateurExamenEnseignant = () => {
         setError(null);
         setSuccess(false);
 
+        // Même validation complète que pour Web
+        if (!selectedFiliere) {
+            setError("Veuillez sélectionner une filière");
+            return;
+        }
+        if (!selectedSection) {
+            setError("Veuillez sélectionner une section");
+            return;
+        }
+        if (!selectedModule) {
+            setError("Veuillez sélectionner un module");
+            return;
+        }
+        if (!selectedEnseignant) {
+            setError("Identifiant enseignant manquant");
+            return;
+        }
+        if (!selectedSalle) {
+            setError("Veuillez sélectionner une salle");
+            return;
+        }
+        if (!examType) {
+            setError("Veuillez sélectionner un type d'examen");
+            return;
+        }
+        if (!difficulte) {
+            setError("Veuillez sélectionner une difficulté");
+            return;
+        }
+        if (!examDate) {
+            setError("Veuillez sélectionner une date d'examen");
+            return;
+        }
+        if (!duration || isNaN(parseInt(duration)) || parseInt(duration) <= 0) {
+            setError("Veuillez indiquer une durée valide");
+            return;
+        }
+
         const fetchedQuestions = await fetchQuestions();
-        if (!fetchedQuestions) return;
+        if (!Array.isArray(fetchedQuestions) || fetchedQuestions.length === 0) {
+            setError("Impossible de récupérer des questions. Vérifiez vos critères de sélection.");
+            return;
+        }
 
         const examPayload = {
             module: selectedModule,
             filiere: selectedFiliere,
             section: selectedSection,
             enseignant: selectedEnseignant,
+            salle: selectedSalle,
             examType: examType.toLowerCase(),
             difficulte: difficulte.toLowerCase(),
             examDate,
             duree: parseInt(duration),
-            format: "PDF",
-            questions: fetchedQuestions.map(q => q._id)
+            format: "PDF", // Format explicitement défini à "PDF"
+            questions: fetchedQuestions.map(q => q._id) // Toujours utiliser le résultat de fetchQuestions
         };
 
+        console.log("Payload examen PDF:", JSON.stringify(examPayload, null, 2));
+        
         try {
             const response = await fetch('http://localhost:5000/api/v1/exam', {
                 method: 'POST',
@@ -191,7 +313,7 @@ const GénérateurExamenEnseignant = () => {
             {success && <div className="alert alert-success">Examen généré avec succès!</div>}
             <form>
                 <div className="form-group mb-3">
-                    <label>Filière</label>
+                    <label>Filière (vos filières)</label>
                     <select className="form-control" value={selectedFiliere} onChange={e => setSelectedFiliere(e.target.value)} required>
                         <option value="">Sélectionner une filière</option>
                         {filieres.map(f => (
@@ -200,16 +322,26 @@ const GénérateurExamenEnseignant = () => {
                     </select>
                 </div>
                 <div className="form-group mb-3">
-                    <label>Section</label>
+                    <label>Section (vos sections)</label>
                     <select className="form-control" value={selectedSection} onChange={e => setSelectedSection(e.target.value)} required>
                         <option value="">Sélectionner une section</option>
-                        {sections.map(s => (
-                            <option key={s._id} value={s._id}>{s.nom}</option>
-                        ))}
+                        {/* Modifié pour être moins restrictif et montrer toutes les sections si besoin */}
+                        {sections.length > 0 ? (
+                            sections.map(s => (
+                                <option key={s._id} value={s._id}>
+                                    {s.nom} {s.filiere && s.filiere.nom ? `(${s.filiere.nom})` : ''}
+                                </option>
+                            ))
+                        ) : (
+                            <option disabled>Aucune section disponible</option>
+                        )}
                     </select>
+                    <small className="form-text text-muted">
+                        {sections.length} section(s) disponible(s)
+                    </small>
                 </div>
                 <div className="form-group mb-3">
-                    <label>Module</label>
+                    <label>Module (vos modules)</label>
                     <select className="form-control" value={selectedModule} onChange={e => setSelectedModule(e.target.value)} required>
                         <option value="">Sélectionner un module</option>
                         {modules.map(m => (
@@ -233,6 +365,22 @@ const GénérateurExamenEnseignant = () => {
                         <option value="facile">Facile</option>
                         <option value="moyen">Moyen</option>
                         <option value="difficile">Difficile</option>
+                    </select>
+                </div>
+                <div className="form-group mb-3">
+                    <label className="form-label">Salle</label>
+                    <select 
+                        className="form-control"
+                        value={selectedSalle}
+                        onChange={(e) => setSelectedSalle(e.target.value)}
+                        required
+                    >
+                        <option value="">Sélectionner une salle</option>
+                        {salles.map(salle => (
+                            <option key={salle._id} value={salle._id}>
+                                {salle.nom} - {salle.numero} (Capacité: {salle.capacite}, Type: {salle.type})
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div className="form-group mb-3">

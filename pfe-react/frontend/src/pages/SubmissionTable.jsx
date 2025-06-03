@@ -8,17 +8,15 @@ const SubmissionTable = ({ examId }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!examId) return;
-    setLoading(true);
-    setError('');
-    axios.get(`/api/v1/exam/submissions/${examId}`)
-      .then(res => {
-        setSubmissions(res.data.submissions || []);
-      })
-      .catch(err => {
-        setError('Erreur lors du chargement des soumissions');
-      })
-      .finally(() => setLoading(false));
+      if (!examId) return;
+      axios.get(`/api/v1/exam/${examId}/submissions`)
+          .then(res => {
+              setSubmissions(res.data.submissions || []);
+              setAnswerKey(res.data.answerKey || []);
+          })
+          .catch(err => {
+              setError('Erreur lors du chargement des soumissions');
+          });
   }, [examId]);
 
   if (!examId) return null;

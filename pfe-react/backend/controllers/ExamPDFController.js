@@ -14,7 +14,8 @@ getAllExams: CatchAsyncError(async (req, res) => {
             .populate('filiere')
             .populate('section')
             .populate('enseignant')
-            .populate('questions');
+            .populate('questions')
+            .populate('salle', 'nom');
 
         res.status(200).json({
             success: true,
@@ -33,10 +34,10 @@ createExam: CatchAsyncError(async (req, res) => {
     try {
         console.log('Received exam data:', req.body); // Debug log
         
-        const { module, filiere, section, enseignant, examType, difficulte, examDate, duree, format, questions } = req.body;
+        const { module, filiere, section, enseignant, examType, difficulte, salle, examDate, duree, format, questions } = req.body;
 
         // Validate required fields
-        if (!module || !filiere || !section || !enseignant || !examType || !difficulte || !examDate || !duree || !format) {
+        if (!module || !filiere || !section || !enseignant || !examType || !difficulte ||!salle || !examDate || !duree || !format) {
             return res.status(400).json({
                 success: false,
                 message: 'All required fields must be provided'
@@ -70,6 +71,7 @@ createExam: CatchAsyncError(async (req, res) => {
             enseignant,
             examType,
             difficulte,
+            salle,
             examDate,
             duree,
             format,
@@ -82,6 +84,7 @@ createExam: CatchAsyncError(async (req, res) => {
             .populate('filiere', 'nom')
             .populate('section', 'nom')
             .populate('enseignant', 'nom prenom')
+            .populate('salle', 'nom')
             .populate('questions');
 
         res.status(201).json({
@@ -106,6 +109,7 @@ getExamById : CatchAsyncError(async (req, res) => {
             .populate('section')
             .populate('filiere')
             .populate('module')
+            .populate('salle')
             .populate('enseignant')
             .populate('questions');
 

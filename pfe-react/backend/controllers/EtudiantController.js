@@ -8,10 +8,23 @@ const mongoose = require('mongoose');
 // Get all teachers
 exports.getAllEtudiants = async (req, res) => {
     try {
-        const etudiants = await Etudiant.find();
+        const etudiants = await Etudiant.find()
+        .populate('filiere', 'nom') // AJOUTER cette ligne
+        .populate('section', 'nom'); // AJOUTER cette ligne
         res.status(200).json({
             success: true,
-            etudiants
+            etudiants: etudiants.map(etudiant => ({
+                _id: etudiant._id,
+                nom: etudiant.nom,
+                prenom: etudiant.prenom,
+                email: etudiant.email,
+                numero_tel: etudiant.numero_tel,
+                date_naissance: etudiant.date_naissance,
+                filiere: etudiant.filiere?.nom || 'N/A', // AJOUTER
+                section: etudiant.section?.nom || 'N/A', // AJOUTER
+                role: etudiant.role,
+                createdAt: etudiant.createdAt
+            }))
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

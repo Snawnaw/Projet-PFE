@@ -7,6 +7,7 @@ const AjouterFiliere = () => {
     const [filiere, setFiliere] = useState('');
     const [code, setCode] = useState('');
     const [cycle, setCycle] = useState('');
+    const [niveau, setNiveau] = useState('');
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
 
@@ -16,7 +17,7 @@ const AjouterFiliere = () => {
         setSuccess(false);
 
         // Validation
-        if (!filiere || !code || !cycle) {
+        if (!filiere || !code || !cycle || !niveau) {
             setError('Veuillez remplir tous les champs');
             return;
         }
@@ -31,7 +32,8 @@ const AjouterFiliere = () => {
                 body: JSON.stringify({
                     nom: filiere,
                     code: code,
-                    cycle: cycle
+                    cycle: cycle,
+                    niveau: niveau
                 })
             });
 
@@ -58,6 +60,7 @@ const AjouterFiliere = () => {
             setFiliere('');
             setCode('');
             setCycle('');
+            setNiveau('');
             setSuccess(true);
         } catch (error) {
             console.error('Error:', error);
@@ -135,6 +138,23 @@ const AjouterFiliere = () => {
                                         <option value="" disabled>Choisissez un cycle</option>
                                         <option value="Licence">Licence</option>
                                         <option value="Master">Master</option>
+                                    </select>
+                                </div>
+
+                                <div className="form-group mb-3">
+                                    <label className="form-label">Niveau</label>
+                                    <select 
+                                        className="form-control" 
+                                        value={cycle} 
+                                        onChange={(e) => setNiveau(e.target.value)}
+                                        required
+                                    >
+                                        <option value="" disabled>Choisissez un niveau</option>
+                                        <option value="L1">L1</option>
+                                        <option value="L2">L2</option>
+                                        <option value="L3">L3</option>
+                                        <option value="M1">M1</option>
+                                        <option value="M2">M2</option>
                                     </select>
                                 </div>
 
