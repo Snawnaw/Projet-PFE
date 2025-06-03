@@ -12,7 +12,7 @@ const {
 // Fix the route handlers
 router.get('/AllSalle', isAuthenticatedUser, getAllSalles);
 router.post('/SalleCreate', isAuthenticatedUser, authorizedRoles('admin'), createSalle);
-router.put('/SalleEdit/:id', isAuthenticatedUser, authorizedRoles('admin'), updateSalle);
-router.delete('/SalleDelete/:id', isAuthenticatedUser, authorizedRoles('admin'), deleteSalle);
+router.put('/:id', isAuthenticatedUser, authorizedRoles('admin'), updateSalle);
+router.delete('/:id', isAuthenticatedUser, authorizedRoles('admin'), deleteSalle);
 
 module.exports = router;

@@ -8,7 +8,8 @@ const {
     updateSection, 
     deleteSection, 
     getSectionsByFiliere,
-    getSectionsByEnseignant
+    getSectionsByEnseignant,
+    getSectionById
 } = require('../controllers/SectionController');
 
 router.get('/AllSections', isAuthenticatedUser, getAllSections); // Get all sections
@@ -16,6 +17,7 @@ router.get('/SectionsByFiliere/:filiereId', isAuthenticatedUser, getSectionsByFi
 router.get('/SectionsByEnseignant/:enseignantId', isAuthenticatedUser, getSectionsByEnseignant); // Get sections by enseignant ID
 router.post('/SectionCreate', isAuthenticatedUser, authorizedRoles("admin"), createSection); // Create a new section
 router.put('/SectionEdit/:id', isAuthenticatedUser, authorizedRoles("admin"), updateSection); // Update a section by ID
-router.delete('/SectionDelete/:id', isAuthenticatedUser, authorizedRoles("admin"), deleteSection); // Delete a section by ID
+router.delete('/:id', isAuthenticatedUser, authorizedRoles("admin"), deleteSection); // Delete a section by ID
+router.get('/:id', isAuthenticatedUser, getSectionById); // Get a section by ID
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const CatchAsyncError = require('../middleware/catchAsyncError');
+const CatchAsyncError = require('../middleware/CatchAsyncError');
 const Exam = require('../models/Exam');
 const Question = require('../models/Question');
 const { nanoid } = require('nanoid');

@@ -22,7 +22,7 @@ import React from 'react';
 // Fond violet clair pour la page
 const BgBox = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: '#f3e8fd',
+  background: '#36b1f7',
   paddingTop: theme.spacing(6),
   paddingBottom: theme.spacing(6),
 }));

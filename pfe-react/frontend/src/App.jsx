@@ -8,6 +8,12 @@ import AjouterSection from './pages/AjouterSection';
 import AjouterFiliere from './pages/AjouterFiliere';
 import AjouterModule from './pages/AjouterModule';
 import AjouterSalle from './pages/AjouterSalle';
+import ModifierFiliere from './pages/ModifierFiliere';
+import ModifierSection from './pages/ModifierSection';
+import ModifierModule from './pages/ModifierModule';
+import ModifierSalle from './pages/ModifierSalle';
+import ModifierEnseignant from './pages/ModifierEnseignant';
+import ModifierEtudiant from './pages/ModifierEtudiant';
 import CreerQuestion from './pages/CreerQuestion';
 import BanqueDeQuestions from './pages/BanqueDeQuestions';
 import BanqueDeQuestionsEnseignant from './pages/BanqueDeQuestionsEnseignant';
@@ -60,7 +66,7 @@ function App() {
     <Router>
       <div className="App">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/AjouterEnseignant" element={<AjouterEnseignant />} />
             <Route path="/AjouterEtudiant" element={<AjouterEtudiant />} />
             <Route path="/AjouterFiliere" element={<AjouterFiliere />} />
@@ -84,6 +90,12 @@ function App() {
             <Route path="/submissions/:submissionId" element={<SubmissionView />} />
             <Route path="/exam/:shareableId" element={<ExamWeb />} />
             <Route path="/Examens" element={<Examens />} />
+            <Route path="/ModifierFiliere/:id" element={<ModifierFiliere />} />
+            <Route path="/ModifierSection/:id" element={<ModifierSection />} />
+            <Route path="/ModifierModule/:id" element={<ModifierModule />} />
+            <Route path="/ModifierSalle/:id" element={<ModifierSalle />} />
+            <Route path="/ModifierEnseignant/:id" element={<ModifierEnseignant />} />
+            <Route path="/ModifierEtudiant/:id" element={<ModifierEtudiant />} />
           </Routes>
         </div>
       </Router>

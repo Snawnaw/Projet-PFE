@@ -6,6 +6,7 @@ const Module = require('../models/Module');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { create } = require('../models/Filiere');
+const catchAsyncError = require('../middleware/CatchAsyncError');
 
 // Get all teachers
 exports.getAllEnseignants = async (req, res) => {
@@ -270,7 +271,7 @@ exports.login = async (req, res) => {
     }
 };
 
-getSubmissionsWithAnswerKey: CatchAsyncError(async (req, res) => {
+exports.getSubmissionsWithAnswerKey = catchAsyncError(async (req, res) => {
     const { examId } = req.params;
 
     const submissions = await Submission.find({ examId }).populate('studentId', 'name email');

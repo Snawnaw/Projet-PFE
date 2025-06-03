@@ -1,6 +1,6 @@
 const Section = require('../models/Section');
 const Enseignant = require('../models/Enseignant');
-const catchAsyncError = require('../middleware/catchAsyncError');
+const catchAsyncError = require('../middleware/CatchAsyncError');
 
 // Get all sections
 exports.getAllSections = catchAsyncError(async (req, res) => {
@@ -149,6 +149,18 @@ exports.getSectionsByEnseignant = async (req, res) => {
       message: error.message 
     });
   }
+};
+
+exports.getSectionById = async (req, res) => {
+    try {
+        const section = await Section.findById(req.params.id).populate('filiere');
+        if (!section) {
+            return res.status(404).json({ message: "Section not found" });
+        }
+        res.status(200).json({ section });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 module.exports = exports;

@@ -20,7 +20,8 @@ function QuestionForm({ userRole, userModules }) {
     open: true,
     difficulte: 'Facile',
     module: userRole?.toLowerCase() === 'admin' ? '' : '',
-    correctAnswer: ''
+    correctAnswer: '',
+    correctAnswers: [] // <-- Ajout pour permettre plusieurs réponses
   }]);
 
   // Log props for debugging
@@ -67,7 +68,8 @@ function QuestionForm({ userRole, userModules }) {
       open: true,
       difficulte: 'Facile',
       module: userRole?.toLowerCase() === 'admin' ? '' : '',
-      correctAnswer: ''
+      correctAnswer: '',
+      correctAnswers: [] // <-- Ajout pour permettre plusieurs réponses
     };
     closeAllExpandedQuestions();
     setQuestions([...questions, newQuestion]);
@@ -175,6 +177,19 @@ function QuestionForm({ userRole, userModules }) {
     setQuestions(updatedQuestions);
   };
 
+  // Fonction pour gérer plusieurs réponses correctes (CHECKBOX)
+  const updateCorrectAnswers = (optionValue, questionIndex) => {
+    let updatedQuestions = [...questions];
+    let correctAnswers = updatedQuestions[questionIndex].correctAnswers || [];
+    if (correctAnswers.includes(optionValue)) {
+      correctAnswers = correctAnswers.filter(ans => ans !== optionValue);
+    } else {
+      correctAnswers = [...correctAnswers, optionValue];
+    }
+    updatedQuestions[questionIndex].correctAnswers = correctAnswers;
+    setQuestions(updatedQuestions);
+  };
+
   // Render module selection based on user role
   const renderModuleSelection = (question, index) => {
     if (isLoadingModules) {
@@ -222,11 +237,12 @@ function QuestionForm({ userRole, userModules }) {
         difficulte: q.difficulte,
         type: q.questionType === 'CHECKBOX' ? 'QCM' : 'TEXT',
         module: q.module,
-        options: q.questionType !== 'TEXT' ?
-          q.options.map(opt => ({
-            text: opt.option,
-            isCorrect: q.correctAnswer === opt.option
-          })) : undefined,
+        options: q.questionType === 'CHECKBOX'
+          ? q.options.map(opt => ({
+              text: opt.option,
+              isCorrect: (q.correctAnswers || []).includes(opt.option)
+            }))
+          : undefined,
         correctAnswer: q.questionType === 'TEXT' ? q.correctAnswer : undefined
       }));
 
@@ -383,11 +399,7 @@ function QuestionForm({ userRole, userModules }) {
                     {question.options.map((option, j) => (
                       <div key={j} className="option-row d-flex align-items-center mb-2">
                         <div className="option-icon me-2">
-                          {question.questionType === 'RADIO' ? (
-                            <i className="bi bi-circle"></i>
-                          ) : (
-                            <i className="bi bi-square"></i>
-                          )}
+                          <i className="bi bi-square"></i>
                         </div>
                         <Form.Control
                           type="text"
@@ -396,14 +408,24 @@ function QuestionForm({ userRole, userModules }) {
                           onChange={(e) => handleOptionValue(e.target.value, i, j)}
                           className="me-2"
                         />
-                        <Form.Check
-                          type="radio"
-                          name={`correct-answer-${i}`}
-                          onChange={() => updateCorrectAnswer(option.option, i)}
-                          checked={question.correctAnswer === option.option}
-                          label="Correct"
-                          className="me-2"
-                        />
+                        {question.questionType === 'CHECKBOX' ? (
+                          <Form.Check
+                            type="checkbox"
+                            onChange={() => updateCorrectAnswers(option.option, i)}
+                            checked={question.correctAnswers && question.correctAnswers.includes(option.option)}
+                            label="Correct"
+                            className="me-2"
+                          />
+                        ) : (
+                          <Form.Check
+                            type="radio"
+                            name={`correct-answer-${i}`}
+                            onChange={() => updateCorrectAnswer(option.option, i)}
+                            checked={question.correctAnswer === option.option}
+                            label="Correct"
+                            className="me-2"
+                          />
+                        )}
                         {question.options.length > 1 && (
                           <Button
                             variant="outline-danger"
@@ -415,6 +437,7 @@ function QuestionForm({ userRole, userModules }) {
                         )}
                       </div>
                     ))}
+                    {/* Ajout du bouton pour ajouter une option */}
                     {question.options.length < 5 && (
                       <Button
                         variant="outline-primary"
@@ -422,7 +445,7 @@ function QuestionForm({ userRole, userModules }) {
                         onClick={() => addOption(i)}
                         className="mt-2"
                       >
-                        Add Option
+                        <i className="bi bi-plus"></i> Ajouter une option
                       </Button>
                     )}
                   </div>

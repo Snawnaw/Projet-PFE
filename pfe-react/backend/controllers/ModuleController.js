@@ -1,4 +1,4 @@
-const CatchAsyncError = require('../middleware/catchAsyncError');
+const CatchAsyncError = require('../middleware/CatchAsyncError');
 const Module = require('../models/Module');
 
 exports.getAllModules = CatchAsyncError(async (req, res) => {
@@ -84,4 +84,28 @@ exports.getModulesByFiliere = async (req, res) => {
 exports.getModulesByEnseignant = async (req, res) => {
     const modules = await Module.find({ enseignant: req.params.enseignantId });
     res.json({ modules });
+};
+
+exports.deleteModule = async (req, res) => {
+    try {
+        const module = await Module.findByIdAndDelete(req.params.id);
+        if (!module) {
+            return res.status(404).json({ success: false, message: 'Module not found' });
+        }
+        res.status(200).json({ success: true, message: 'Module deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.updateModule = async (req, res) => {
+    try {
+        const module = await Module.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!module) {
+            return res.status(404).json({ success: false, message: 'Module not found' });
+        }
+        res.status(200).json({ success: true, module });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 };

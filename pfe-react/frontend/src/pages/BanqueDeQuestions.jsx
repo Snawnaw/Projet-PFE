@@ -3,6 +3,8 @@ import axios from 'axios';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'; // Import GridToolbar
 import { Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 const BanqueDeQuestions = () => {
     const navigate = useNavigate();
@@ -35,6 +37,19 @@ const BanqueDeQuestions = () => {
         (!filterModule || (q.module?._id || q.module) === filterModule) &&
         (!filterDifficulte || (q.difficulte || '').toLowerCase() === filterDifficulte.toLowerCase())
     );
+
+    // Suppression d'une question
+    const handleDeleteQuestion = async (id) => {
+        console.log("Suppression question id:", id); // debug
+        if (!window.confirm("Voulez-vous vraiment supprimer cette question ?")) return;
+        try {
+            // Corrige ici l'URL si besoin
+            await axios.delete(`/api/v1/question/${id}`);
+            setQuestions(questions.filter(q => (q._id || q.id) !== id));
+        } catch (err) {
+            alert("Erreur lors de la suppression.");
+        }
+    };
 
     const columns = [
         { 
@@ -74,13 +89,49 @@ const BanqueDeQuestions = () => {
             headerName: 'Type',
             width: 130,
             filterable: true
-        }
+        },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 150,
+            sortable: false,
+            filterable: false,
+            renderCell: (params) => (
+                <div>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        style={{ marginRight: 8 }}
+                        onClick={() => navigate(`/ModifierQuestion/${params.row.id}`)}
+                    >
+                        <EditIcon fontSize="small" />
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        onClick={() => handleDeleteQuestion(params.row.id)}
+                    >
+                        <DeleteIcon fontSize="small" />
+                    </Button>
+                </div>
+            ),
+        },
     ];
 
-    const rows = [
-        { id: '001', enoncé: 'Question 1', difficulte: 'facile', type: 'QCM' },
-        { id: '002', enoncé: 'Question 2', difficulte: 'moyen', type: 'QCU' },
-    ];
+    // Adapter la structure des rows pour correspondre aux vraies questions
+    const rows = filteredQuestions.map(q => ({
+        id: q._id || q.id,
+        module: q.module?.nom || '',
+        enoncé: q.enonce || q.enoncé || '',
+        reponse: Array.isArray(q.options)
+            ? q.options.filter(opt => opt.isCorrect).map(opt => opt.text).join(', ')
+            : (q.correctAnswer || ''),
+        difficulte: q.difficulte,
+        type: q.type,
+        // ...autres champs si besoin
+    }));
 
     const handleAddQuestion = () => {
         navigate('/CreerQuestion'); // Navigate to the question creation page
@@ -117,7 +168,7 @@ const BanqueDeQuestions = () => {
                 </div>
             </div>
             <DataGrid
-                rows={filteredQuestions}
+                rows={rows}
                 columns={columns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}

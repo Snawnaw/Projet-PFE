@@ -1,4 +1,4 @@
-const CatchAsyncError = require('../middleware/catchAsyncError');
+const CatchAsyncError = require('../middleware/CatchAsyncError');
 const Salle = require('../models/Salle');
 
 // Get all salles

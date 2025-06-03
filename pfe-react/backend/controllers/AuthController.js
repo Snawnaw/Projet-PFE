@@ -1,4 +1,4 @@
-const CatchAsyncError = require("../middleware/catchAsyncError");
+const CatchAsyncError = require("../middleware/CatchAsyncError");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
