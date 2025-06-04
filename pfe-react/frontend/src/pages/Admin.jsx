@@ -99,20 +99,20 @@ const AdminProfile = () => {
             <CircularProgress />
         </Box>
     );
-    
+
     if (error) return (
         <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>
     );
-    
+
     if (!adminData) return (
         <Alert severity="info" sx={{ my: 2 }}>No admin data available</Alert>
     );
 
     return (
         <Box sx={{ maxWidth: 600, mx: 'auto', p: 2 }}>
-            <Paper elevation={4} sx={{ 
-                p: 4, 
-                borderRadius: 4, 
+            <Paper elevation={4} sx={{
+                p: 4,
+                borderRadius: 4,
                 background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)',
                 boxShadow: '0 4px 24px rgba(0,0,0,0.07)'
             }}>
@@ -120,9 +120,9 @@ const AdminProfile = () => {
                     <Typography variant="h4" fontWeight={700} gutterBottom color="primary">
                         {adminData.nom} {adminData.prenom}
                     </Typography>
-                    <Chip 
-                        label={adminData.role?.toUpperCase() || 'ADMIN'} 
-                        color="primary" 
+                    <Chip
+                        label={adminData.role?.toUpperCase() || 'ADMIN'}
+                        color="primary"
                         sx={{ fontWeight: 'bold', fontSize: 16, mb: 1, px: 2 }}
                     />
                 </Box>
@@ -151,9 +151,9 @@ const AdminProfile = () => {
                     </Grid>
                 </Grid>
                 <Box display="flex" justifyContent="flex-end" mt={2}>
-                    <Button 
-                        variant="outlined" 
-                        size="small" 
+                    <Button
+                        variant="outlined"
+                        size="small"
                         onClick={handleEditOpen}
                     >
                         Modifier
@@ -201,7 +201,7 @@ const AdminProfile = () => {
                         label="Date de naissance"
                         name="date_naissance"
                         type="date"
-                        value={editData?.date_naissance ? editData.date_naissance.slice(0,10) : ''}
+                        value={editData?.date_naissance ? editData.date_naissance.slice(0, 10) : ''}
                         onChange={handleEditChange}
                         fullWidth
                         InputLabelProps={{ shrink: true }}
@@ -242,7 +242,7 @@ const Admin = () => {
     const loadData = async (view) => {
         setLoading(true);
         setError('');
-        
+
         try {
             switch (view) {
                 case 'profile':
@@ -251,14 +251,14 @@ const Admin = () => {
                         setAdminData(response.data.admin);
                     }
                     break;
-                    
+
                 case 'sections':
                     if (sectionsData.length === 0) {
                         const response = await API.get('/section/AllSections');
                         setSectionsData(response.data.sections);
                     }
                     break;
-                    
+
                 case 'enseignants':
                     if (teacherData.length === 0) {
                         const response = await API.get('/enseignant/AllEnseignant');
@@ -268,18 +268,19 @@ const Admin = () => {
 
                 case 'etudiants':
                     if (etudiantsData.length === 0) {
-                        const response = await API.get('/etudiant/AllEtudiant'); // <-- remove /api/v1
-                        setEtudiantsData(response.data.etudiants);
+                        const response = await API.get('/etudiant/AllEtudiant');
+                        console.log('Students API Response:', response.data); // Debug log
+                        setEtudiantsData(response.data.etudiants || []);
                     }
                     break;
-                    
+
                 case 'salles':
                     if (sallesData.length === 0) {
                         const response = await API.get('/salle/AllSalle');
                         setSallesData(response.data.salles);
                     }
                     break;
-                    
+
                 case 'filieres':
                     if (filieresData.length === 0) {
                         const response = await API.get('/filiere/AllFiliere');
@@ -313,19 +314,19 @@ const Admin = () => {
     const fetchQuestions = async (moduleId) => {
         setLoadingQuestions(true);
         try {
-            const response = await API.get(moduleId 
+            const response = await API.get(moduleId
                 ? `/question/module/${moduleId}`
                 : '/question');
-            
+
             console.log('Questions API Response:', response); // Add this line
-            
-            const questions = Array.isArray(response.data?.questions) 
+
+            const questions = Array.isArray(response.data?.questions)
                 ? response.data.questions.map(q => ({
                     ...q,
                     module: q.module || { _id: null, nom: 'N/A' }
                 }))
                 : [];
-            
+
             console.log('Processed Questions:', questions); // Add this line
             setQuestionsData(questions);
         } catch (error) {
@@ -370,7 +371,7 @@ const Admin = () => {
     }, [currentView]);
 
     const handleUpdate = (row, type) => {
-        switch(type) {
+        switch (type) {
             case 'filiere':
                 navigate(`/ModifierFiliere/${row._id}`);
                 break;
@@ -398,7 +399,7 @@ const Admin = () => {
     const handleDelete = async () => {
         try {
             let endpoint = '';
-            switch(deleteType) {
+            switch (deleteType) {
                 case 'filiere':
                     endpoint = `/filiere/${itemToDelete}`;
                     break;
@@ -422,15 +423,49 @@ const Admin = () => {
                     break;
             }
 
-            await API.delete(endpoint);
-            
-            // Refresh data after deletion
-            loadData(currentView);
-            
+            const response = await API.delete(endpoint);
+
+            // Refresh data after deletion based on type
+            switch (deleteType) {
+                case 'section':
+                    const sectionResponse = await API.get('/section/AllSections');
+                    setSectionsData(sectionResponse.data.sections);
+                    break;
+                case 'enseignant':
+                    const enseignantResponse = await API.get('/enseignant/AllEnseignant');
+                    setTeacherData(enseignantResponse.data.enseignants);
+                    break;
+                case 'etudiant':
+                    const etudiantResponse = await API.get('/etudiant/AllEtudiant');
+                    setEtudiantsData(etudiantResponse.data.etudiants);
+                    break;
+                case 'salle':
+                    const salleResponse = await API.get('/salle/AllSalle');
+                    setSallesData(salleResponse.data.salles);
+                    break;
+                case 'filiere':
+                    const filiereResponse = await API.get('/filiere/AllFiliere');
+                    setFilieresData(filiereResponse.data.filieres);
+                    break;
+                case 'module':
+                    const moduleResponse = await API.get('/module/AllModules');
+                    setModulesData(moduleResponse.data.modules);
+                    break;
+                case 'question':
+                    fetchQuestions();
+                    break;
+                default:
+                    loadData(currentView);
+                    break;
+            }
+
             setDeleteDialogOpen(false);
             setItemToDelete(null);
+            setDeleteType('');
         } catch (error) {
-            setError(`Erreur lors de la suppression: ${error.message}`);
+            console.error('Delete error:', error);
+            setError(`Erreur lors de la suppression: ${error.response?.data?.message || error.message}`);
+            setDeleteDialogOpen(false);
         }
     };
 
@@ -447,14 +482,14 @@ const Admin = () => {
             width: 200,
             renderCell: (params) => (
                 <Box>
-                    <IconButton 
-                        color="primary" 
+                    <IconButton
+                        color="primary"
                         onClick={() => handleUpdate(params.row, type)}
                     >
                         <EditIcon />
                     </IconButton>
-                    <IconButton 
-                        color="error" 
+                    <IconButton
+                        color="error"
                         onClick={() => openDeleteDialog(params.row._id, type)}
                     >
                         <DeleteIcon />
@@ -466,10 +501,10 @@ const Admin = () => {
 
     const sectionsColumns = [
         { field: 'niveau', headerName: 'Niveau', width: 130 },
-        { 
-            field: 'filiere', 
-            headerName: 'Filière', 
-            width: 130, 
+        {
+            field: 'filiere',
+            headerName: 'Filière',
+            width: 130,
         },
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'nombre_etudiants', headerName: 'Nombre d\'étudiants', width: 180 },
@@ -507,9 +542,9 @@ const Admin = () => {
     const teachersColumns = [
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'prenom', headerName: 'Prénom', width: 130 },
-        { 
-            field: 'date_naissance', 
-            headerName: 'Date de naissance', 
+        {
+            field: 'date_naissance',
+            headerName: 'Date de naissance',
             width: 150,
             renderCell: (params) => {
                 if (!params.value) return 'Non renseignée';
@@ -518,24 +553,25 @@ const Admin = () => {
         },
         { field: 'email', headerName: 'Email', width: 200 },
         { field: 'numero_tel', headerName: 'Téléphone', width: 130 },
-        { field: 'module', headerName: 'Module', width: 130 },
+        { field: 'modules', headerName: 'Modules', width: 200 }, // Changed from 'module' to 'modules'
+        { field: 'filieres', headerName: 'Filières', width: 150 }, // Added filieres column
         { field: 'role', headerName: 'Rôle', width: 100 },
-        {
-            field: 'createdAt',
-            headerName: 'Date de création',
-            width: 150,
-            type: 'date',
-            valueFormatter: formatDate
-        },
+        // {
+        //     field: 'createdAt',
+        //     headerName: 'Date de création',
+        //     width: 150,
+        //     type: 'date',
+        //     valueFormatter: formatDate
+        // },
         ...getActionColumns('enseignant')
     ];
 
     const etudiantsColumns = [
         { field: 'nom', headerName: 'Nom', width: 130 },
         { field: 'prenom', headerName: 'Prénom', width: 130 },
-        { 
-            field: 'date_naissance', 
-            headerName: 'Date de naissance', 
+        {
+            field: 'date_naissance',
+            headerName: 'Date de naissance',
             width: 150,
             renderCell: (params) => {
                 if (!params.value) return 'Non renseignée';
@@ -544,15 +580,16 @@ const Admin = () => {
         },
         { field: 'email', headerName: 'Email', width: 200 },
         { field: 'numero_tel', headerName: 'Téléphone', width: 130 },
-        { field: 'niveau', headerName: 'Niveau', width: 130 },
         { field: 'filiere', headerName: 'Filière', width: 130 },
         { field: 'section', headerName: 'Section', width: 130 },
         {
             field: 'createdAt',
             headerName: 'Date de création',
             width: 150,
-            type: 'date',
-            valueFormatter: formatDate
+            renderCell: (params) => {
+                if (!params.value) return 'N/A';
+                return new Date(params.value).toLocaleDateString('fr-FR');
+            }
         },
         ...getActionColumns('etudiant')
     ];
@@ -569,38 +606,38 @@ const Admin = () => {
         { field: 'module', headerName: 'Module', width: 180 },
         { field: 'enonce', headerName: 'Énoncé', width: 400, flex: 1 },
         { field: 'reponse', headerName: 'Réponse', width: 200, flex: 1 },
-        { 
-            field: 'type', 
-            headerName: 'Type', 
+        {
+            field: 'type',
+            headerName: 'Type',
             width: 120,
             renderCell: (params) => (
-                <Chip 
-                    label={params.value || 'N/A'} 
+                <Chip
+                    label={params.value || 'N/A'}
                     color={
-                        params.value === 'QCM' ? 'primary' : 
-                        params.value === 'QCU' ? 'secondary' : 'default'
+                        params.value === 'QCM' ? 'primary' :
+                            params.value === 'QCU' ? 'secondary' : 'default'
                     }
                     sx={{
-                        bgcolor: 
-                            params.value === 'QCM' ? '#1976d2' : 
-                            params.value === 'QCU' ? '#9c27b0' : '#757575',
+                        bgcolor:
+                            params.value === 'QCM' ? '#1976d2' :
+                                params.value === 'QCU' ? '#9c27b0' : '#757575',
                         color: 'white'
                     }}
                 />
             )
         },
-        { 
-            field: 'difficulte', 
-            headerName: 'Difficulté', 
+        {
+            field: 'difficulte',
+            headerName: 'Difficulté',
             width: 120,
             renderCell: (params) => (
-                <Chip 
-                    label={params.value || 'N/A'} 
+                <Chip
+                    label={params.value || 'N/A'}
                     sx={{
-                        bgcolor: 
-                            params.value === 'Facile' ? '#4caf50' : 
-                            params.value === 'Moyen' ? '#ff9800' : 
-                            params.value === 'Difficile' ? '#f44336' : '#757575',
+                        bgcolor:
+                            params.value === 'Facile' ? '#4caf50' :
+                                params.value === 'Moyen' ? '#ff9800' :
+                                    params.value === 'Difficile' ? '#f44336' : '#757575',
                         color: 'white'
                     }}
                 />
@@ -617,7 +654,7 @@ const Admin = () => {
         { text: 'Mon Profil', icon: <PersonIcon />, view: 'profile' },
         { text: 'Enseignants', icon: <SchoolIcon />, view: 'enseignants' },
         { text: 'Étudiants', icon: <PersonIcon />, view: 'etudiants' },
-        { text: 'Salles', icon: <MeetingRoomIcon />, view: 'salles' }, 
+        { text: 'Salles', icon: <MeetingRoomIcon />, view: 'salles' },
         { text: 'Filières', icon: <CategoryIcon />, view: 'filieres' },
         { text: 'Sections', icon: <ClassIcon />, view: 'sections' },
         { text: 'Modules', icon: <ClassIcon />, view: 'modules' },
@@ -651,69 +688,69 @@ const Admin = () => {
             </AppBar>
 
             {/* Sidebar */}
-                        <Drawer
-                            variant="temporary"
-                            anchor="left"
-                            open={open}
-                            onClose={toggleDrawer}
-                            sx={{
-                                width: 240,
-                                flexShrink: 0,
-                                '& .MuiDrawer-paper': {
-                                    width: 240,
-                                    boxSizing: 'border-box',
-                                    backgroundColor: '#f5f5f5',
-                                },
-                            }}
+            <Drawer
+                variant="temporary"
+                anchor="left"
+                open={open}
+                onClose={toggleDrawer}
+                sx={{
+                    width: 240,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: 240,
+                        boxSizing: 'border-box',
+                        backgroundColor: '#f5f5f5',
+                    },
+                }}
+            >
+                <Toolbar />
+                <List>
+                    {menuItems.map((item) => (
+                        <ListItem
+                            button
+                            key={item.text}
+                            onClick={() => handleMenuClick(item.view)}
                         >
-                            <Toolbar />
-                            <List>
-                                {menuItems.map((item) => (
-                                    <ListItem
-                                        button
-                                        key={item.text}
-                                        onClick={() => handleMenuClick(item.view)}
-                                    >
-                                        <ListItemIcon>
-                                            {item.icon}
-                                        </ListItemIcon>
-                                        <ListItemText primary={item.text} />
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Drawer>
+                            <ListItemIcon>
+                                {item.icon}
+                            </ListItemIcon>
+                            <ListItemText primary={item.text} />
+                        </ListItem>
+                    ))}
+                </List>
+            </Drawer>
 
             {/* Main Content */}
-            <Box 
-                component="main" 
-                sx={{ 
-                    flexGrow: 1, 
-                    p: 3, 
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    p: 3,
                     backgroundColor: '#fafafa',
                     minHeight: '100vh'
                 }}
             >
                 <Toolbar /> {/* This creates space below the AppBar */}
-                
+
                 {error && (
                     <Alert severity="error" sx={{ mb: 2 }}>
                         {error}
                     </Alert>
                 )}
-                
+
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
                         <CircularProgress />
                     </Box>
                 ) : (
                     <>
-                        {currentView === 'profile' && <AdminProfile/>}
-                        
+                        {currentView === 'profile' && <AdminProfile />}
+
                         {currentView === 'filieres' && filieresData && (
                             <>
-                                <Button 
-                                    variant="contained" 
-                                    onClick={() => navigate('/AjouterFiliere')} 
+                                <Button
+                                    variant="contained"
+                                    onClick={() => navigate('/AjouterFiliere')}
                                     sx={{ mb: 2 }}
                                 >
                                     Ajouter Filière
@@ -741,12 +778,12 @@ const Admin = () => {
                                 )}
                             </>
                         )}
-                        
+
                         {currentView === 'sections' && (
                             <>
-                                <Button 
-                                    variant="contained" 
-                                    onClick={() => navigate('/AjouterSection')} 
+                                <Button
+                                    variant="contained"
+                                    onClick={() => navigate('/AjouterSection')}
                                     sx={{ mb: 2 }}
                                 >
                                     Ajouter Section
@@ -780,15 +817,22 @@ const Admin = () => {
                                     Ajouter Module
                                 </Button>
                                 <DataGrid
-                                    rows={modulesData.map(module => ({
-                                        id: module._id,
-                                        _id: module._id,
-                                        nom: module.nom,
-                                        filiere: module.filiere?.nom || 'N/A',      // <-- use ?.nom
-                                        section: module.section?.nom || 'N/A',      // <-- use ?.nom
-                                        enseignant: module.enseignant?.nom || 'N/A',// <-- use ?.nom
-                                        type: module.type,
-                                    }))}
+                                    rows={modulesData.map(module => {
+                                        console.log('Module data:', module); // Debug log to see structure
+                                        return {
+                                            id: module._id,
+                                            _id: module._id,
+                                            nom: module.nom,
+                                            filiere: module.filiere?.nom || 'N/A',
+                                            section: module.section?.nom || 'N/A',
+                                            enseignant: module.enseignant
+                                                ? (typeof module.enseignant === 'object'
+                                                    ? `${module.enseignant.nom || ''} ${module.enseignant.prenom || ''}`.trim()
+                                                    : module.enseignant)
+                                                : 'Non assigné',
+                                            type: module.type || 'N/A',
+                                        };
+                                    })}
                                     columns={moduleColumns}
                                     pageSize={5}
                                     rowsPerPageOptions={[5]}
@@ -825,13 +869,13 @@ const Admin = () => {
                             </>
                         )}
 
-                        
-                        
+
+
                         {currentView === 'enseignants' && Array.isArray(teacherData) && (
                             <Box sx={{ width: '100%', height: '100%' }}>
-                                <Button 
-                                    variant="contained" 
-                                    onClick={() => navigate('/AjouterEnseignant')} 
+                                <Button
+                                    variant="contained"
+                                    onClick={() => navigate('/AjouterEnseignant')}
                                     sx={{ mb: 2 }}
                                 >
                                     Ajouter Enseignant
@@ -848,7 +892,8 @@ const Admin = () => {
                                             email: t.email || '',
                                             role: t.role || '',
                                             createdAt: t.createdAt || '',
-                                            modules: Array.isArray(t.modules) ? t.modules.map(m => m?.nom || 'N/A').join(', ') : 'N/A'
+                                            modules: t.modules || 'N/A', // Backend already returns joined string
+                                            filieres: t.filieres || 'N/A' // Backend already returns joined string
                                         }))}
                                         columns={teachersColumns}
                                         pageSize={5}
@@ -859,13 +904,13 @@ const Admin = () => {
                                 </Box>
                             </Box>
                         )}
-                        
+
                         {currentView === 'génerer examen' && (
                             <>
                                 <Box>
-                                <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
-                                        <Button 
-                                            variant="contained" 
+                                    <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
+                                        <Button
+                                            variant="contained"
                                             onClick={() => navigate('/CreerQuestion')}
                                             color="success"
                                             sx={{ borderRadius: 2, mb: 2 }}
@@ -881,14 +926,14 @@ const Admin = () => {
                         {currentView === 'banque de questions' && (
                             <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <Box>
-                                    <Button 
-                                        variant="contained" 
-                                        onClick={() => navigate('/CreerQuestion')} 
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => navigate('/CreerQuestion')}
                                         sx={{ mb: 2 }}
                                     >
                                         Ajouter Question
                                     </Button>
-                                    
+
                                     <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                                         {/* Your filter controls */}
                                     </Box>
@@ -903,7 +948,7 @@ const Admin = () => {
                                             type: q.type || 'N/A',
                                             difficulte: q.difficulte || 'N/A',
                                             module: q.module?.nom || 'N/A',
-                                            reponse: Array.isArray(q.options) 
+                                            reponse: Array.isArray(q.options)
                                                 ? q.options
                                                     .filter(opt => opt && opt.isCorrect)
                                                     .map(opt => opt && opt.text || 'N/A')
@@ -947,26 +992,30 @@ const Admin = () => {
                                 >
                                     Ajouter Étudiant
                                 </Button>
-                                <DataGrid
-                                    rows={etudiantsData.map(e => ({
-                                        id: e._id,
-                                        _id: e._id,
-                                        nom: e.nom,
-                                        prenom: e.prenom,
-                                        date_naissance: e.date_naissance,
-                                        numero_tel: e.numero_tel,
-                                        email: e.email,
-                                        filiere: e.filiere?.nom || 'N/A',
-                                        section: e.section?.nom || 'N/A',
-                                        role: e.role,
-                                        createdAt: e.createdAt,
-                                    }))}
-                                    columns={etudiantsColumns}
-                                    pageSize={5}
-                                    rowsPerPageOptions={[5]}
-                                    autoHeight
-                                    disableSelectionOnClick
-                                />
+                                <Box sx={{ height: 400, width: '100%' }}>
+                                    <DataGrid
+                                        rows={etudiantsData.map(e => ({
+                                            id: e._id,
+                                            _id: e._id,
+                                            nom: e.nom || 'N/A',
+                                            prenom: e.prenom || 'N/A',
+                                            date_naissance: e.date_naissance,
+                                            numero_tel: e.numero_tel || 'N/A',
+                                            email: e.email || 'N/A',
+                                            niveau: e.niveau || 'N/A',
+                                            filiere: e.filiere || 'N/A',
+                                            section: e.section || 'N/A',
+                                            role: e.role || 'etudiant',
+                                            createdAt: e.createdAt,
+                                        }))}
+                                        columns={etudiantsColumns}
+                                        pageSize={10}
+                                        rowsPerPageOptions={[5, 10, 25]}
+                                        autoHeight
+                                        disableSelectionOnClick
+                                        loading={loading}
+                                    />
+                                </Box>
                             </>
                         )}
 

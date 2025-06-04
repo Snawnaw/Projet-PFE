@@ -19,7 +19,7 @@ const ModifierEtudiant = () => {
                 .then(res => setForm(res.data))
                 .catch(() => setError("Erreur lors du chargement"))
                 .finally(() => setLoading(false));
-            
+
             // Fetch filieres
             const filieresResponse = await fetch('http://localhost:5000/api/v1/filiere/AllFiliere', { credentials: 'include' });
             if (filieresResponse.ok) {
@@ -59,7 +59,7 @@ const ModifierEtudiant = () => {
                     <TextField label="Prénom" name="prenom" value={form.prenom} onChange={handleChange} fullWidth margin="normal" />
                     <TextField label="Email" name="email" value={form.email} onChange={handleChange} fullWidth margin="normal" />
                     <TextField label="Téléphone" name="numero_tel" value={form.numero_tel} onChange={handleChange} fullWidth margin="normal" />
-                    <TextField label="Date de naissance" name="date_naissance" type="date" value={form.date_naissance ? form.date_naissance.slice(0,10) : ''} onChange={handleChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
+                    <TextField label="Date de naissance" name="date_naissance" type="date" value={form.date_naissance ? form.date_naissance.slice(0, 10) : ''} onChange={handleChange} fullWidth margin="normal" InputLabelProps={{ shrink: true }} />
                     <div className="form-group mb-3">
                         <label className="form-label">Filière</label>
                         <select className="form-control" name="filiere" value={form.filiere} onChange={handleChange} required>

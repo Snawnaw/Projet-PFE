@@ -25,6 +25,7 @@ const AjouterEnseignant = () => {
     const [communes, setCommunes] = useState([]);
     const [modules, setModules] = useState([]);
     const [filieres, setFilieres] = useState([]);
+    const [allModules, setAllModules] = useState([]); // Store all modules for filtering
     const [isAddressOpen, setIsAddressOpen] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
@@ -35,8 +36,8 @@ const AjouterEnseignant = () => {
 
     const fetchModules = async () => {
         try {
-            // Use the correct endpoint
             const response = await API.get('/module/AllModules');
+            setAllModules(response.data.modules || []);
             return response.data.modules || [];
         } catch (error) {
             console.error('Erreur lors de la récupération des modules :', error);
@@ -45,35 +46,22 @@ const AjouterEnseignant = () => {
         }
     };
 
-    const fetchModulesByFilieres = async (filiereIds) => {
-        try {
-            if (!filiereIds || filiereIds.length === 0) {
-                setModules([]);
-                return;
+    // Filter modules by selected filieres
+    const filterModulesByFilieres = (modules, filiereIds) => {
+        return modules.filter(module => {
+            // module.filiere can be an object or an array of objects/ids
+            if (Array.isArray(module.filiere)) {
+                return module.filiere.some(f =>
+                    typeof f === "object"
+                        ? filiereIds.includes(f._id)
+                        : filiereIds.includes(f)
+                );
+            } else if (typeof module.filiere === "object" && module.filiere !== null) {
+                return filiereIds.includes(module.filiere._id);
+            } else {
+                return filiereIds.includes(module.filiere);
             }
-            
-            // Récupérer les modules pour toutes les filières sélectionnées
-            const allModules = [];
-            for (const filiereId of filiereIds) {
-                try {
-                    const response = await API.get(`/module/ModulesByFiliere/${filiereId}`);
-                    const filiereModules = response.data.modules || [];
-                    allModules.push(...filiereModules);
-                } catch (error) {
-                    console.error(`Erreur pour la filière ${filiereId}:`, error);
-                }
-            }
-            
-            // Supprimer les doublons basés sur l'ID
-            const uniqueModules = allModules.filter((module, index, self) => 
-                index === self.findIndex(m => m._id === module._id)
-            );
-            
-            setModules(uniqueModules);
-        } catch (error) {
-            setModules([]);
-            setError('Erreur lors de la récupération des modules');
-        }
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -104,7 +92,7 @@ const AjouterEnseignant = () => {
             setLoading(false);
             return;
         }
-        
+
         console.log({
             nom: formData.nom,
             prenom: formData.prenom,
@@ -122,20 +110,20 @@ const AjouterEnseignant = () => {
 
         try {
             const response = await API.post('/enseignant/EnseignantCreate', {
-            nom: formData.nom,
-            prenom: formData.prenom,
-            date_naissance: formData.date_naissance,
-            numero_tel: formData.numero_tel,
-            email: formData.email,
-            wilaya: formData.wilaya,
-            commune: formData.commune,
-            code_postal: formData.codePostal,
-            filieres: formData.filieres,
-            password: formData.password,
-            role: formData.role,
-            ...(formData.role === "enseignant" ? { modules: formData.modules } : {})
-        });
-    
+                nom: formData.nom,
+                prenom: formData.prenom,
+                date_naissance: formData.date_naissance,
+                numero_tel: formData.numero_tel,
+                email: formData.email,
+                wilaya: formData.wilaya,
+                commune: formData.commune,
+                code_postal: formData.codePostal,
+                filieres: formData.filieres,
+                password: formData.password,
+                role: formData.role,
+                ...(formData.role === "enseignant" ? { modules: formData.modules } : {})
+            });
+
             console.log('Réponse du serveur :', response.data);
             setSuccess(true);
             toast.success('Enseignant ajoutée avec succès !', {
@@ -149,10 +137,10 @@ const AjouterEnseignant = () => {
                 theme: "light",
                 transition: Slide,
             });
-            
+
             // Clear form after successful submission
             handleReset();
-            
+
         } catch (error) {
             // Show backend validation error if available
             const backendMsg = error?.response?.data?.message;
@@ -208,7 +196,7 @@ const AjouterEnseignant = () => {
                 console.error("Erreur lors du chargement des communes :", err);
                 setError("Erreur lors du chargement des wilayas");
             });
-        
+
         // Load modules
         fetchModules()
             .then(fetchedModules => {
@@ -221,21 +209,21 @@ const AjouterEnseignant = () => {
             .catch(() => setFilieres([]));
     }, [navigate]);
 
-    // When filiere changes, fetch modules for that filiere
+    // When filiere changes, filter modules for that filiere
     useEffect(() => {
         if (formData.filieres && formData.filieres.length > 0) {
-            fetchModulesByFilieres(formData.filieres);
+            setModules(filterModulesByFilieres(allModules, formData.filieres));
         } else {
             setModules([]);
         }
-    }, [formData.filieres]);
+    }, [formData.filieres, allModules]);
 
     const handleModuleChange = (e) => {
         const { options } = e.target;
         const value = Array.from(options)
             .filter(option => option.selected)
             .map(option => option.value);
-        
+
         setFormData({
             ...formData,
             modules: value
@@ -247,7 +235,7 @@ const AjouterEnseignant = () => {
         const value = Array.from(options)
             .filter(option => option.selected)
             .map(option => option.value);
-        
+
         setFormData({
             ...formData,
             filieres: value,
@@ -313,61 +301,61 @@ const AjouterEnseignant = () => {
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>
                                 <div className="form-group mb-3">
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
-                                        name="nom" 
-                                        placeholder="Nom" 
-                                        value={formData.nom} 
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        name="nom"
+                                        placeholder="Nom"
+                                        value={formData.nom}
                                         onChange={handleChange}
-                                        required 
+                                        required
                                     />
                                 </div>
                                 <div className="form-group mb-3">
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
-                                        name="prenom" 
-                                        placeholder="Prénom" 
-                                        value={formData.prenom} 
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        name="prenom"
+                                        placeholder="Prénom"
+                                        value={formData.prenom}
                                         onChange={handleChange}
-                                        required 
+                                        required
                                     />
                                 </div>
                                 <div className="form-group mb-3">
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    name="date_naissance"
-                                    placeholder="Date de naissance"
-                                    value={formData.date_naissance || ''} 
-                                    onChange={handleChange}
-                                    required
-                                />
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        name="date_naissance"
+                                        placeholder="Date de naissance"
+                                        value={formData.date_naissance || ''}
+                                        onChange={handleChange}
+                                        required
+                                    />
                                 </div>
                                 <div className="form-group mb-3">
-                                    <input 
-                                        type="tel" 
-                                        className="form-control" 
-                                        name="numero_tel" 
-                                        placeholder="Telephone" 
+                                    <input
+                                        type="tel"
+                                        className="form-control"
+                                        name="numero_tel"
+                                        placeholder="Telephone"
                                         value={formData.numero_tel}
                                         onChange={handleChange}
-                                        required 
+                                        required
                                     />
                                 </div>
-                                
+
                                 {/* Section d'adresse déroulante */}
                                 <div className="card mb-4">
-                                    <div 
-                                        className="card-header bg-light d-flex justify-content-between align-items-center" 
+                                    <div
+                                        className="card-header bg-light d-flex justify-content-between align-items-center"
                                         onClick={toggleAddress}
                                         style={{ cursor: 'pointer' }}
                                     >
                                         <h6 className="mb-0">Adresse</h6>
                                         <span className="accordion-icon">
-                                            {isAddressOpen ? 
-                                                <i className="fas fa-chevron-up"></i> : 
+                                            {isAddressOpen ?
+                                                <i className="fas fa-chevron-up"></i> :
                                                 <i className="fas fa-chevron-down"></i>
                                             }
                                         </span>
@@ -375,9 +363,9 @@ const AjouterEnseignant = () => {
                                     <div className={`card-body collapse ${isAddressOpen ? 'show' : ''}`}>
                                         <div className="form-group mb-3">
                                             <label className="form-label">Wilaya</label>
-                                            <select 
-                                                className="form-control" 
-                                                name="wilaya" 
+                                            <select
+                                                className="form-control"
+                                                name="wilaya"
                                                 value={formData.wilaya}
                                                 onChange={handleWilayaChange}
                                                 required
@@ -390,8 +378,8 @@ const AjouterEnseignant = () => {
                                         </div>
                                         <div className="form-group mb-3">
                                             <label className="form-label">Commune</label>
-                                            <select 
-                                                className="form-control" 
+                                            <select
+                                                className="form-control"
                                                 name="commune"
                                                 value={formData.commune}
                                                 onChange={handleChange}
@@ -406,38 +394,38 @@ const AjouterEnseignant = () => {
                                         </div>
                                         <div className="form-group mb-3">
                                             <label className="form-label">Code Postal</label>
-                                            <input 
-                                                type="text" 
-                                                className="form-control" 
-                                                name="codePostal" 
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                name="codePostal"
                                                 placeholder="Code Postal"
                                                 value={formData.codePostal}
                                                 onChange={handleChange}
-                                                required 
+                                                required
                                             />
                                         </div>
                                     </div>
                                 </div>
                                 <div className="form-group mb-3">
-                                    <input 
-                                        type="email" 
-                                        className="form-control" 
-                                        name="email" 
-                                        placeholder="Email" 
-                                        value={formData.email} 
+                                    <input
+                                        type="email"
+                                        className="form-control"
+                                        name="email"
+                                        placeholder="Email"
+                                        value={formData.email}
                                         onChange={handleChange}
-                                        required 
+                                        required
                                     />
                                 </div>
                                 <div className="form-group mb-3">
-                                    <input 
+                                    <input
                                         type={showPassword ? "text" : "password"}
-                                        className="form-control" 
-                                        name="password" 
-                                        placeholder="Mot de passe" 
-                                        value={formData.password} 
+                                        className="form-control"
+                                        name="password"
+                                        placeholder="Mot de passe"
+                                        value={formData.password}
                                         onChange={handleChange}
-                                        required 
+                                        required
                                     />
                                     <div style={{ marginTop: "0.5rem" }}>
                                         <input
@@ -451,14 +439,14 @@ const AjouterEnseignant = () => {
                                     </div>
                                 </div>
                                 <div className="form-group mb-3">
-                                    <input 
+                                    <input
                                         type={showPassword2 ? "text" : "password"}
-                                        className="form-control" 
-                                        name="password2" 
-                                        placeholder="Confirmer le mot de passe" 
-                                        value={formData.password2} 
+                                        className="form-control"
+                                        name="password2"
+                                        placeholder="Confirmer le mot de passe"
+                                        value={formData.password2}
                                         onChange={handleChange}
-                                        required 
+                                        required
                                     />
                                     <div style={{ marginTop: "0.5rem" }}>
                                         <input
@@ -472,8 +460,8 @@ const AjouterEnseignant = () => {
                                     </div>
                                 </div>
                                 <div className="form-group mb-3">
-                                    <select 
-                                        className="form-control" 
+                                    <select
+                                        className="form-control"
                                         name="role"
                                         value={formData.role}
                                         onChange={handleChange}
@@ -502,7 +490,7 @@ const AjouterEnseignant = () => {
                                         Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs filières.
                                     </small>
                                 </div>
-                                
+
                                 {/* Show modules select only if role is enseignant */}
                                 {formData.role === "enseignant" && (
                                     <div className="form-group mb-3">
@@ -532,25 +520,25 @@ const AjouterEnseignant = () => {
                                         )}
                                     </div>
                                 )}
-                                
+
                                 <div className="text-center">
-                                    <button 
-                                        type="submit" 
-                                        className="btn btn-primary me-2" 
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary me-2"
                                         disabled={loading}
                                     >
                                         {loading ? 'Chargement...' : 'Ajouter enseignant'}
                                     </button>
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-danger me-2" 
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger me-2"
                                         onClick={handleReset}
                                         disabled={loading}
                                     >
                                         Annuler
                                     </button>
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         className="btn btn-secondary"
                                         onClick={() => navigate('/Admin')}
                                         disabled={loading}
